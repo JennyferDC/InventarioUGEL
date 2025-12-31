@@ -12,7 +12,37 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('equipos', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // id : int
+
+            $table->string('cod_informatica'); // cod_informatica : varchar
+
+            $table->enum('tipo', [
+                'PC',
+                'LAPTOP',
+                'MONITOR',
+                'TECLADO',
+                'MOUSE',
+                'IMPRESORA',
+                'OTRO'
+            ]); // tipo : enum
+
+            $table->enum('estado', [
+                'LIBRE',
+                'ACTIVO',
+                'MANTENIMIENTO',
+                'DANADO',
+                'EXTRAVIADO',
+                'BAJA'
+            ]); // estado : enum
+
+            $table->date('fecha_disponible_uso'); // fecha_disponible_uso : date
+            $table->integer('vida_util_anios'); // vida_util_anios : int
+
+            // FK -> personas
+            $table->foreignId('id_persona')
+                  ->constrained('personas')
+                  ->onDelete('restrict');
+
             $table->timestamps();
         });
     }

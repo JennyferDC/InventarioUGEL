@@ -12,7 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('personas', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // id : int
+            $table->string('nombre_completo'); // nombre_completo : varchar
+
+            // FK -> areas
+            $table->foreignId('id_area')
+                  ->constrained('areas')
+                  ->onDelete('restrict');
+
             $table->timestamps();
         });
     }

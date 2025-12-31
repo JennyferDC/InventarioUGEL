@@ -13,13 +13,22 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+
+            // === UML ===
+            $table->string('usuario')->unique();            // usuario : varchar
+            $table->string('nombre_completo');              // nombre_completo : varchar
+            $table->string('email')->unique();               // email : varchar
+            $table->string('password');                      // password : varchar
+
+            $table->enum('rol', ['ADMIN', 'MIEMBRO']);       // rol : enum
+            $table->boolean('activo')->default(true);        // activo : boolean
+
+            // === Laravel / Jetstream ===
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
+
             $table->timestamps();
         });
 
@@ -39,13 +48,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

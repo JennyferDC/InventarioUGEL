@@ -12,7 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cronograma_mantenimientos', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // id : int
+            $table->integer('anio'); // anio : int
+            $table->date('fecha_inicio'); // fecha_inicio : date
+            $table->date('fecha_fin'); // fecha_fin : date
+
+            // FK -> areas
+            $table->foreignId('id_area')
+                  ->constrained('areas')
+                  ->onDelete('restrict');
+
             $table->timestamps();
         });
     }

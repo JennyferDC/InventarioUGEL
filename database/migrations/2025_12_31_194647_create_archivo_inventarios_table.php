@@ -12,7 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('archivo_inventarios', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // id : int
+            $table->string('nombre_archivo'); // nombre_archivo : varchar
+            $table->string('ruta'); // ruta : varchar
+            $table->date('fecha_carga'); // fecha_carga : date
+
+            // FK -> users
+            $table->foreignId('id_usuario')
+                  ->constrained('users')
+                  ->onDelete('restrict');
+
             $table->timestamps();
         });
     }

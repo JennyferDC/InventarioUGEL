@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('caracteristica_equipos', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // id : int
+            $table->string('clave'); // clave : varchar
+            $table->string('valor'); // valor : varchar
+
+            // FK -> equipos
+            $table->foreignId('id_equipo')
+                  ->constrained('equipos')
+                  ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

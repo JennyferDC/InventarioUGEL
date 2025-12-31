@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             AreaSeeder::class,
             PersonaSeeder::class,
             EquipoSeeder::class,
-            UsuarioSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

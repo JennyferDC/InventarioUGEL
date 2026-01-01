@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Area extends Model
 {
@@ -14,6 +15,16 @@ class Area extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
+    ];
+
+    /**
+     * Los atributos que deben ser convertidos a tipos nativos.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

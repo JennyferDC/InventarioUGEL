@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
-            // === UML ===
-            $table->string('usuario')->unique();            // usuario : varchar
-            $table->string('nombre_completo');              // nombre_completo : varchar
+          // usuario : varchar
+            $table->string('name');              // nombre_completo : varchar
             $table->string('email')->unique();               // email : varchar
             $table->string('password');                      // password : varchar
 

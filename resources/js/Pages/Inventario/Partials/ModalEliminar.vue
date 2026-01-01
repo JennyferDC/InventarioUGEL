@@ -1,13 +1,12 @@
 <script setup>
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
-import { computed } from "vue";
 
 const props = defineProps({
     show: {
         type: Boolean,
         default: false,
     },
-    area: {
+    equipo: {
         type: Object,
         default: null,
     },
@@ -15,38 +14,25 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    title: {
-        type: String,
-        default: "Eliminar área",
-    },
-    itemName: {
-        type: String,
-        default: "",
-    },
 });
 
 const emit = defineEmits(["close", "confirm"]);
-
-const displayName = computed(() => {
-    if (props.itemName?.length) {
-        return props.itemName;
-    }
-
-    return props.area?.nombre ?? "este registro";
-});
 </script>
 
 <template>
     <ConfirmationModal :show="show" @close="emit('close')">
-        <template #title>{{ title }}</template>
+        <template #title>Eliminar equipo</template>
 
         <template #content>
             <p class="text-gray-700">
-                ¿Estás seguro de que deseas eliminar
-                <span class="font-semibold text-ugel-guinda">{{
-                    displayName
-                }}</span
-                >? Esta acción no se puede deshacer.
+                ¿Estás seguro de que deseas eliminar el equipo con código
+                <span class="font-semibold text-ugel-guinda">
+                    {{ equipo?.cod_informatica || "sin código" }}
+                </span>
+                ?
+            </p>
+            <p class="text-gray-500 mt-1 text-sm">
+                Esta acción no se puede deshacer.
             </p>
         </template>
 
@@ -62,7 +48,7 @@ const displayName = computed(() => {
 
             <button
                 type="button"
-                class="inline-flex items-center rounded-lg bg-ugel-guinda px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-azul disabled:opacity-50 disabled:cursor-not-allowed"
+                class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="emit('confirm')"
                 :disabled="loading"
             >

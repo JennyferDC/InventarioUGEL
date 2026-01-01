@@ -1,15 +1,15 @@
 <script setup>
 import DialogModal from "@/Components/DialogModal.vue";
-import { reactive, watch } from "vue";
+import { reactive } from "vue";
 
 const props = defineProps({
     show: {
         type: Boolean,
         default: false,
     },
-    area: {
-        type: Object,
-        default: null,
+    areas: {
+        type: Array,
+        default: () => [],
     },
     loading: {
         type: Boolean,
@@ -20,67 +20,77 @@ const props = defineProps({
 const emit = defineEmits(["close", "save"]);
 
 const form = reactive({
-    id: null,
-    nombre: "",
-    descripcion: "",
+    nombre_completo: "",
+    id_area: "",
 });
 
-watch(
-    () => props.area,
-    (value) => {
-        form.id = value?.id ?? null;
-        form.nombre = value?.nombre ?? "";
-        form.descripcion = value?.descripcion ?? "";
-    },
-    { immediate: true }
-);
+const resetForm = () => {
+    form.nombre_completo = "";
+    form.id_area = "";
+};
+
+const handleClose = () => {
+    resetForm();
+    emit("close");
+};
 
 const handleSubmit = () => {
-    if (!form.id) return;
-    emit("save", { ...form });
+    emit("save", {
+        nombre_completo: form.nombre_completo,
+        id_area: form.id_area,
+    });
 };
+
+defineExpose({ resetForm });
 </script>
 
 <template>
-    <DialogModal :show="show" @close="emit('close')" max-width="lg">
+    <DialogModal :show="show" @close="handleClose" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda">Editar área</span>
+            <span class="text-ugel-guinda font-semibold">Nueva persona</span>
         </template>
 
         <template #content>
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
                     <label
-                        for="nombre"
+                        for="persona_nombre"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Nombre
+                        Nombre completo
                     </label>
                     <input
-                        id="nombre"
-                        v-model="form.nombre"
+                        id="persona_nombre"
+                        v-model="form.nombre_completo"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Nombre del área"
+                        placeholder="Nombre y apellidos"
                         :disabled="loading"
                     />
                 </div>
 
                 <div>
                     <label
-                        for="descripcion"
+                        for="persona_area"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Descripción
+                        Área
                     </label>
-                    <textarea
-                        id="descripcion"
-                        v-model="form.descripcion"
-                        rows="3"
-                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Describe las funciones principales"
+                    <select
+                        id="persona_area"
+                        v-model="form.id_area"
+                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
                         :disabled="loading"
-                    />
+                    >
+                        <option value="" disabled>Selecciona un área</option>
+                        <option
+                            v-for="area in areas"
+                            :key="area.id"
+                            :value="area.id"
+                        >
+                            {{ area.nombre }}
+                        </option>
+                    </select>
                 </div>
             </form>
         </template>
@@ -88,17 +98,20 @@ const handleSubmit = () => {
         <template #footer>
             <button
                 type="button"
-                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-                @click="emit('close')"
+                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-70"
+                @click="handleClose"
                 :disabled="loading"
             >
                 Cancelar
             </button>
+
             <button
                 type="button"
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
-                :disabled="loading || !form.nombre.trim()"
+                :disabled="
+                    loading || !form.nombre_completo.trim() || !form.id_area
+                "
             >
                 <svg
                     v-if="loading"
@@ -121,7 +134,7 @@ const handleSubmit = () => {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                 </svg>
-                Guardar cambios
+                Crear persona
             </button>
         </template>
     </DialogModal>

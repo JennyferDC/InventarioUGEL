@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Persona;
 
 class PersonaSeeder extends Seeder
 {
-    
+
     public function run(): void
     {
         Persona::insert([

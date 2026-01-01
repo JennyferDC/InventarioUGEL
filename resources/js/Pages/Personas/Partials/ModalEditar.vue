@@ -7,9 +7,13 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    area: {
+    persona: {
         type: Object,
         default: null,
+    },
+    areas: {
+        type: Array,
+        default: () => [],
     },
     loading: {
         type: Boolean,
@@ -21,66 +25,78 @@ const emit = defineEmits(["close", "save"]);
 
 const form = reactive({
     id: null,
-    nombre: "",
-    descripcion: "",
+    nombre_completo: "",
+    id_area: "",
 });
 
 watch(
-    () => props.area,
+    () => props.persona,
     (value) => {
         form.id = value?.id ?? null;
-        form.nombre = value?.nombre ?? "";
-        form.descripcion = value?.descripcion ?? "";
+        form.nombre_completo = value?.nombre_completo ?? "";
+        form.id_area = value?.id_area ?? "";
     },
     { immediate: true }
 );
 
 const handleSubmit = () => {
     if (!form.id) return;
-    emit("save", { ...form });
+
+    emit("save", {
+        id: form.id,
+        nombre_completo: form.nombre_completo,
+        id_area: form.id_area,
+    });
 };
 </script>
 
 <template>
     <DialogModal :show="show" @close="emit('close')" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda">Editar área</span>
+            <span class="text-ugel-guinda font-semibold">Editar persona</span>
         </template>
 
         <template #content>
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
                     <label
-                        for="nombre"
+                        for="nombre_completo"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Nombre
+                        Nombre completo
                     </label>
                     <input
-                        id="nombre"
-                        v-model="form.nombre"
+                        id="nombre_completo"
+                        v-model="form.nombre_completo"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Nombre del área"
+                        placeholder="Nombre y apellidos"
                         :disabled="loading"
                     />
                 </div>
 
                 <div>
                     <label
-                        for="descripcion"
+                        for="id_area"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Descripción
+                        Área
                     </label>
-                    <textarea
-                        id="descripcion"
-                        v-model="form.descripcion"
-                        rows="3"
-                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Describe las funciones principales"
+                    <select
+                        id="id_area"
+                        v-model="form.id_area"
+                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
                         :disabled="loading"
-                    />
+                    >
+                        <option value="" disabled>Selecciona un área</option>
+                        <option
+                            v-for="area in areas"
+                            :key="area.id"
+                            :value="area.id"
+                        >
+                            {{ area.nombre }}
+                        </option>
+                    </select>
                 </div>
             </form>
         </template>
@@ -88,17 +104,20 @@ const handleSubmit = () => {
         <template #footer>
             <button
                 type="button"
-                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-70"
                 @click="emit('close')"
                 :disabled="loading"
             >
                 Cancelar
             </button>
+
             <button
                 type="button"
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
-                :disabled="loading || !form.nombre.trim()"
+                :disabled="
+                    loading || !form.nombre_completo.trim() || !form.id_area
+                "
             >
                 <svg
                     v-if="loading"

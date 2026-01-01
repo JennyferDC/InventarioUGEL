@@ -13,8 +13,7 @@ class UserSeeder extends Seeder
     {
         User::insert([
             [
-                'usuario' => 'admin',
-                'nombre_completo' => 'Administrador del Sistema',
+                'name' => 'Administrador del Sistema',
                 'email' => 'admin@sistema.com',
                 'password' => Hash::make('admin123'),
                 'rol' => 'ADMIN',
@@ -23,8 +22,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'usuario' => 'miembro',
-                'nombre_completo' => 'Usuario Miembro',
+                'name' => 'Usuario Miembro',
                 'email' => 'miembro@sistema.com',
                 'password' => Hash::make('miembro123'),
                 'rol' => 'MIEMBRO',

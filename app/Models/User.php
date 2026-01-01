@@ -20,8 +20,7 @@ class User extends Authenticatable
     use TwoFactorAuthenticatable;
 
     protected $fillable = [
-        'usuario',
-        'nombre_completo',
+        'name',
         'email',
         'password',
         'rol',

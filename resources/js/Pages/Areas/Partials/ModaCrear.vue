@@ -1,15 +1,11 @@
 <script setup>
 import DialogModal from "@/Components/DialogModal.vue";
-import { reactive, watch } from "vue";
+import { reactive } from "vue";
 
 const props = defineProps({
     show: {
         type: Boolean,
         default: false,
-    },
-    area: {
-        type: Object,
-        default: null,
     },
     loading: {
         type: Boolean,
@@ -20,31 +16,34 @@ const props = defineProps({
 const emit = defineEmits(["close", "save"]);
 
 const form = reactive({
-    id: null,
     nombre: "",
     descripcion: "",
 });
 
-watch(
-    () => props.area,
-    (value) => {
-        form.id = value?.id ?? null;
-        form.nombre = value?.nombre ?? "";
-        form.descripcion = value?.descripcion ?? "";
-    },
-    { immediate: true }
-);
+const resetForm = () => {
+    form.nombre = "";
+    form.descripcion = "";
+};
+
+const handleClose = () => {
+    resetForm();
+    emit("close");
+};
 
 const handleSubmit = () => {
-    if (!form.id) return;
-    emit("save", { ...form });
+    emit("save", {
+        nombre: form.nombre,
+        descripcion: form.descripcion,
+    });
 };
+
+defineExpose({ resetForm });
 </script>
 
 <template>
-    <DialogModal :show="show" @close="emit('close')" max-width="lg">
+    <DialogModal :show="show" @close="handleClose" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda">Editar área</span>
+            <span class="text-ugel-guinda font-semibold">Nueva área</span>
         </template>
 
         <template #content>
@@ -61,7 +60,7 @@ const handleSubmit = () => {
                         v-model="form.nombre"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Nombre del área"
+                        placeholder="Área de recursos humanos"
                         :disabled="loading"
                     />
                 </div>
@@ -78,7 +77,7 @@ const handleSubmit = () => {
                         v-model="form.descripcion"
                         rows="3"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Describe las funciones principales"
+                        placeholder="Funciones principales del área"
                         :disabled="loading"
                     />
                 </div>
@@ -88,12 +87,13 @@ const handleSubmit = () => {
         <template #footer>
             <button
                 type="button"
-                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-                @click="emit('close')"
+                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-70"
+                @click="handleClose"
                 :disabled="loading"
             >
                 Cancelar
             </button>
+
             <button
                 type="button"
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
@@ -121,7 +121,7 @@ const handleSubmit = () => {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                 </svg>
-                Guardar cambios
+                Crear área
             </button>
         </template>
     </DialogModal>

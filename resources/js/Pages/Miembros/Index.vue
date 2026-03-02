@@ -8,34 +8,29 @@ import ModalEditar from "./Partials/ModalEditar.vue";
 import ModalCrear from "./Partials/ModaCrear.vue";
 
 const props = defineProps({
-    equipos: {
-        type: Array,
-        default: () => [],
-    },
-    personas: {
+    miembros: {
         type: Array,
         default: () => [],
     },
 });
 
-const equipos = ref([...props.equipos]);
+const miembros = ref([...props.miembros]);
 
 watch(
-    () => props.equipos,
+    () => props.miembros,
     (value) => {
-        equipos.value = [...value];
+        miembros.value = [...value];
     },
     { deep: true },
 );
 
 const searchTerm = ref("");
-const filtroEstado = ref("todos");
 
 const showDeleteModal = ref(false);
 const showEditModal = ref(false);
 const showCreateModal = ref(false);
-const equipoSeleccionado = ref(null);
-const equipoEditando = ref(null);
+const miembroSeleccionado = ref(null);
+const miembroEditando = ref(null);
 const deleting = ref(false);
 const saving = ref(false);
 const creating = ref(false);
@@ -72,14 +67,65 @@ const triggerMessage = (type, message) => {
     }, 4000);
 };
 
-const abrirModalEditar = (equipo) => {
-    equipoEditando.value = { ...equipo };
+const filteredMiembros = computed(() => {
+    const term = searchTerm.value.trim().toLowerCase();
+
+    return miembros.value.filter((miembro) => {
+        const coincideBusqueda =
+            !term ||
+            miembro.name?.toLowerCase().includes(term) ||
+            miembro.email?.toLowerCase().includes(term) ||
+            miembro.rol?.toLowerCase().includes(term);
+
+        return coincideBusqueda;
+    });
+});
+
+const hayMiembros = computed(() => filteredMiembros.value.length > 0);
+
+const abrirModalEliminar = (miembro) => {
+    miembroSeleccionado.value = miembro;
+    showDeleteModal.value = true;
+};
+
+const cerrarModalEliminar = () => {
+    showDeleteModal.value = false;
+    miembroSeleccionado.value = null;
+};
+
+const confirmarEliminacion = async () => {
+    if (!miembroSeleccionado.value) return;
+
+    deleting.value = true;
+
+    try {
+        await axios.delete(
+            route("miembros.destroy", miembroSeleccionado.value.id),
+        );
+        miembros.value = miembros.value.filter(
+            (miembro) => miembro.id !== miembroSeleccionado.value.id,
+        );
+        cerrarModalEliminar();
+        triggerMessage("success", "Miembro eliminado correctamente.");
+    } catch (error) {
+        triggerMessage(
+            "error",
+            error.response?.data?.message ||
+                "No se pudo eliminar al miembro. Intenta nuevamente.",
+        );
+    } finally {
+        deleting.value = false;
+    }
+};
+
+const abrirModalEditar = (miembro) => {
+    miembroEditando.value = { ...miembro };
     showEditModal.value = true;
 };
 
 const cerrarModalEditar = () => {
     showEditModal.value = false;
-    equipoEditando.value = null;
+    miembroEditando.value = null;
 };
 
 const guardarCambios = async (payload) => {
@@ -89,22 +135,22 @@ const guardarCambios = async (payload) => {
 
     try {
         const { data } = await axios.put(
-            route("equipos.update", payload.id),
+            route("miembros.update", payload.id),
             payload,
         );
 
         const updated = data?.data ?? payload;
 
-        equipos.value = equipos.value.map((equipo) =>
-            equipo.id === payload.id ? { ...equipo, ...updated } : equipo,
+        miembros.value = miembros.value.map((miembro) =>
+            miembro.id === payload.id ? { ...miembro, ...updated } : miembro,
         );
-        triggerMessage("success", "Equipo actualizado correctamente.");
+        triggerMessage("success", "Miembro actualizado correctamente.");
         cerrarModalEditar();
     } catch (error) {
         triggerMessage(
             "error",
             error.response?.data?.message ||
-                "No se pudo actualizar el equipo. Revisa los datos.",
+                "No se pudo actualizar el miembro. Revisa los datos.",
         );
     } finally {
         saving.value = false;
@@ -120,95 +166,38 @@ const cerrarModalCrear = () => {
     modalCrearRef.value?.resetForm();
 };
 
-const crearEquipo = async (payload) => {
-    if (!payload?.cod_informatica || !payload.tipo || !payload.estado) return;
+const crearMiembro = async (payload) => {
+    if (!payload?.name || !payload.email || !payload.password || !payload.rol) {
+        return;
+    }
 
     creating.value = true;
 
     try {
-        const { data } = await axios.post(route("equipos.store"), payload);
+        const { data } = await axios.post(route("miembros.store"), payload);
         if (data?.data) {
-            equipos.value = [...equipos.value, data.data].sort((a, b) =>
-                a.cod_informatica.localeCompare(b.cod_informatica),
+            miembros.value = [...miembros.value, data.data].sort((a, b) =>
+                (a.name ?? "").localeCompare(b.name ?? ""),
             );
         }
-
-        triggerMessage("success", "Equipo registrado correctamente.");
+        triggerMessage("success", "Miembro creado correctamente.");
         cerrarModalCrear();
     } catch (error) {
         const message =
             error.response?.data?.message ||
-            "No se pudo registrar el equipo. Intenta nuevamente.";
+            "No se pudo crear el miembro. Intenta nuevamente.";
         triggerMessage("error", message);
     } finally {
         creating.value = false;
     }
 };
-
-const filteredEquipos = computed(() => {
-    const term = searchTerm.value.trim().toLowerCase();
-    const estado = filtroEstado.value.toLowerCase();
-
-    return equipos.value.filter((equipo) => {
-        const coincideBusqueda =
-            !term ||
-            equipo.cod_informatica?.toLowerCase().includes(term) ||
-            equipo.tipo?.toLowerCase().includes(term) ||
-            equipo.persona?.nombre_completo?.toLowerCase().includes(term);
-
-        const coincideEstado =
-            estado === "todos" ||
-            (equipo.estado ?? "").toLowerCase() === estado;
-
-        return coincideBusqueda && coincideEstado;
-    });
-});
-
-const hayEquipos = computed(() => filteredEquipos.value.length > 0);
-
-const abrirModalEliminar = (equipo) => {
-    equipoSeleccionado.value = equipo;
-    showDeleteModal.value = true;
-};
-
-const cerrarModalEliminar = () => {
-    showDeleteModal.value = false;
-    equipoSeleccionado.value = null;
-};
-
-const confirmarEliminacion = async () => {
-    if (!equipoSeleccionado.value) return;
-
-    deleting.value = true;
-
-    try {
-        await axios.delete(
-            route("equipos.destroy", equipoSeleccionado.value.id),
-        );
-
-        equipos.value = equipos.value.filter(
-            (equipo) => equipo.id !== equipoSeleccionado.value.id,
-        );
-
-        triggerMessage("success", "Equipo eliminado correctamente.");
-        cerrarModalEliminar();
-    } catch (error) {
-        triggerMessage(
-            "error",
-            error.response?.data?.message ||
-                "No se pudo eliminar el equipo. Intenta nuevamente.",
-        );
-    } finally {
-        deleting.value = false;
-    }
-};
 </script>
 
 <template>
-    <AppLayout title="Inventario">
+    <AppLayout title="Miembros">
         <template #header>
             <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
-                Inventario de Equipos
+                Miembros
             </h2>
         </template>
 
@@ -234,8 +223,8 @@ const confirmarEliminacion = async () => {
                         class="flex flex-col gap-3 sm:flex-row sm:items-center"
                     >
                         <div class="w-full sm:w-72">
-                            <label class="sr-only" for="search-equipo"
-                                >Buscar equipo</label
+                            <label class="sr-only" for="search-persona"
+                                >Buscar miembro</label
                             >
                             <div class="relative">
                                 <span
@@ -256,40 +245,22 @@ const confirmarEliminacion = async () => {
                                     </svg>
                                 </span>
                                 <input
-                                    id="search-equipo"
+                                    id="search-persona"
                                     v-model="searchTerm"
                                     type="text"
-                                    placeholder="Buscar por código, tipo o responsable..."
+                                    placeholder="Buscar por nombre, email o rol..."
                                     class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                                 />
                             </div>
-                        </div>
-
-                        <div class="w-full sm:w-52">
-                            <label class="sr-only" for="filtro-estado"
-                                >Estado</label
-                            >
-                            <select
-                                id="filtro-estado"
-                                v-model="filtroEstado"
-                                class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
-                            >
-                                <option value="todos">Todos los estados</option>
-                                <option value="operativo">Operativo</option>
-                                <option value="mantenimiento">
-                                    Mantenimiento
-                                </option>
-                                <option value="baja">De baja</option>
-                            </select>
                         </div>
                     </div>
 
                     <button
                         type="button"
-                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul/98 px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                         @click="abrirModalCrear"
                     >
-                        + Nuevo equipo
+                        + Nuevo miembro
                     </button>
                 </div>
 
@@ -303,32 +274,27 @@ const confirmarEliminacion = async () => {
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
-                                        Código
+                                        #
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
-                                        Tipo
+                                        Nombre
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                    >
+                                        Email
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                    >
+                                        Rol
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
                                         Estado
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
-                                    >
-                                        Responsable
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
-                                    >
-                                        Disponible desde
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
-                                    >
-                                        Vida útil (años)
                                     </th>
                                     <th
                                         class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul"
@@ -338,54 +304,45 @@ const confirmarEliminacion = async () => {
                                 </tr>
                             </thead>
                             <tbody
-                                v-if="hayEquipos"
+                                v-if="hayMiembros"
                                 class="divide-y divide-ugel-azul/10"
                             >
                                 <tr
-                                    v-for="equipo in filteredEquipos"
-                                    :key="equipo.id"
+                                    v-for="miembro in filteredMiembros"
+                                    :key="miembro.id"
                                     class="hover:bg-ugel-azul/5 transition"
                                 >
                                     <td
-                                        class="px-6 py-4 text-sm text-gray-700 font-semibold"
+                                        class="px-6 py-4 text-sm text-gray-600 font-semibold"
                                     >
-                                        {{ equipo.cod_informatica }}
+                                        #{{ miembro.id }}
                                     </td>
                                     <td
-                                        class="px-6 py-4 text-sm text-ugel-guinda"
+                                        class="px-6 py-4 text-sm text-ugel-guinda font-semibold"
                                     >
-                                        {{ equipo.tipo }}
+                                        {{ miembro.name }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
-                                        {{ equipo.estado || "Sin estado" }}
+                                        {{ miembro.email }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
-                                        {{
-                                            equipo.persona?.nombre_completo ||
-                                            "No asignado"
-                                        }}
+                                        {{ miembro.rol }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                        {{
-                                            equipo.fecha_disponible_uso
-                                                ? new Date(
-                                                      equipo.fecha_disponible_uso,
-                                                  ).toLocaleDateString(
-                                                      "es-PE",
-                                                      {
-                                                          year: "numeric",
-                                                          month: "short",
-                                                          day: "numeric",
-                                                      },
-                                                  )
-                                                : "Sin registro"
-                                        }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                        {{
-                                            equipo.vida_util_anios ??
-                                            "No definido"
-                                        }}
+                                    <td class="px-6 py-4 text-sm">
+                                        <span
+                                            class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                                            :class="
+                                                miembro.activo
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-gray-200 text-gray-700'
+                                            "
+                                        >
+                                            {{
+                                                miembro.activo
+                                                    ? "Activo"
+                                                    : "Inactivo"
+                                            }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div
@@ -395,7 +352,7 @@ const confirmarEliminacion = async () => {
                                                 type="button"
                                                 class="inline-flex items-center rounded-full border border-ugel-azul/40 p-2 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
                                                 @click="
-                                                    abrirModalEditar(equipo)
+                                                    abrirModalEditar(miembro)
                                                 "
                                             >
                                                 <svg
@@ -416,7 +373,7 @@ const confirmarEliminacion = async () => {
                                                 type="button"
                                                 class="inline-flex items-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-600 hover:text-white transition"
                                                 @click="
-                                                    abrirModalEliminar(equipo)
+                                                    abrirModalEliminar(miembro)
                                                 "
                                             >
                                                 <svg
@@ -440,11 +397,11 @@ const confirmarEliminacion = async () => {
                             <tbody v-else>
                                 <tr>
                                     <td
-                                        colspan="7"
+                                        colspan="5"
                                         class="px-6 py-12 text-center text-gray-600"
                                     >
-                                        No hay equipos que coincidan con la
-                                        búsqueda o filtros aplicados.
+                                        No hay miembros registrados o que
+                                        coincidan con la búsqueda.
                                     </td>
                                 </tr>
                             </tbody>
@@ -456,7 +413,7 @@ const confirmarEliminacion = async () => {
 
         <ModalEliminar
             :show="showDeleteModal"
-            :equipo="equipoSeleccionado"
+            :miembro="miembroSeleccionado"
             :loading="deleting"
             @close="cerrarModalEliminar"
             @confirm="confirmarEliminacion"
@@ -464,8 +421,7 @@ const confirmarEliminacion = async () => {
 
         <ModalEditar
             :show="showEditModal"
-            :equipo="equipoEditando"
-            :personas="personas"
+            :miembro="miembroEditando"
             :loading="saving"
             @close="cerrarModalEditar"
             @save="guardarCambios"
@@ -474,10 +430,9 @@ const confirmarEliminacion = async () => {
         <ModalCrear
             ref="modalCrearRef"
             :show="showCreateModal"
-            :personas="personas"
             :loading="creating"
             @close="cerrarModalCrear"
-            @save="crearEquipo"
+            @save="crearMiembro"
         />
     </AppLayout>
 </template>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\PersonaController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -42,4 +43,10 @@ Route::middleware([
     Route::get('/inventario/{equipo}', [EquipoController::class, 'show'])->name('equipos.show');
     Route::put('/inventario/{equipo}', [EquipoController::class, 'update'])->name('equipos.update');
     Route::delete('/inventario/{equipo}', [EquipoController::class, 'destroy'])->name('equipos.destroy');
+
+    Route::get('/miembros', [UsuarioController::class, 'index'])->name('miembros.index');
+    Route::post('/miembros', [UsuarioController::class, 'store'])->name('miembros.store');
+    Route::get('/miembros/{usuario}', [UsuarioController::class, 'show'])->name('miembros.show');
+    Route::put('/miembros/{usuario}', [UsuarioController::class, 'update'])->name('miembros.update');
+    Route::delete('/miembros/{usuario}', [UsuarioController::class, 'destroy'])->name('miembros.destroy');
 });

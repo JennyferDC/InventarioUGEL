@@ -314,7 +314,7 @@ const quitarCaracteristica = (index) => {
                                                     v-model="item.clave"
                                                     type="text"
                                                     list="caracteristicas-por-defecto"
-                                                    class="block w-full rounded-lg border border-ugel-azul/30 px-3 py-2 pe-10 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                                    class="datalist-input appearance-none block w-full rounded-lg border border-ugel-azul/30 px-3 py-2 pe-10 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                                                     placeholder="Modelo, RAM, Procesador"
                                                     :disabled="loading"
                                                 />
@@ -447,3 +447,15 @@ const quitarCaracteristica = (index) => {
         </Transition>
     </div>
 </template>
+
+<style scoped>
+.datalist-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    display: none;
+}
+
+.datalist-input::-webkit-list-button {
+    opacity: 0;
+    display: none;
+}
+</style>

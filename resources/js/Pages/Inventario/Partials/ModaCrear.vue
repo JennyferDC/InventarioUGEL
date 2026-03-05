@@ -292,15 +292,34 @@ defineExpose({ resetForm });
                                             >
                                                 Clave
                                             </label>
-                                            <input
-                                                :id="`car_clave_${index}`"
-                                                v-model="item.clave"
-                                                type="text"
-                                                list="caracteristicas-por-defecto"
-                                                class="mt-1 block w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                                                placeholder="Modelo, RAM, Procesador"
-                                                :disabled="loading"
-                                            />
+                                            <div class="relative mt-1">
+                                                <input
+                                                    :id="`car_clave_${index}`"
+                                                    v-model="item.clave"
+                                                    type="text"
+                                                    list="caracteristicas-por-defecto"
+                                                    class="datalist-input block w-full appearance-none rounded-lg border border-ugel-azul/30 px-3 py-2 pe-10 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                                    placeholder="Modelo, RAM, Procesador"
+                                                    :disabled="loading"
+                                                />
+                                                <div
+                                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pe-3 text-gray-400"
+                                                >
+                                                    <svg
+                                                        class="size-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            d="M19 9l-7 7-7-7"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="sm:col-span-6">
@@ -400,3 +419,15 @@ defineExpose({ resetForm });
         </Transition>
     </div>
 </template>
+
+<style scoped>
+.datalist-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    display: none;
+}
+
+.datalist-input::-webkit-list-button {
+    opacity: 0;
+    display: none;
+}
+</style>

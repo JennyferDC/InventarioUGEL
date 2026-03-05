@@ -6,6 +6,7 @@ use App\Models\Equipo;
 use App\Models\Persona;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,9 +52,34 @@ class EquipoController extends Controller
             'fecha_disponible_uso' => ['nullable', 'date'],
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
             'id_persona' => ['nullable', 'exists:personas,id'],
+            'caracteristicas' => ['nullable', 'array'],
+            'caracteristicas.*.clave' => ['required_with:caracteristicas', 'string', 'max:255'],
+            'caracteristicas.*.valor' => ['required_with:caracteristicas', 'string', 'max:255'],
         ]);
 
-        $equipo = Equipo::create($data)->load('persona:id,nombre_completo');
+        $caracteristicas = $data['caracteristicas'] ?? [];
+        unset($data['caracteristicas']);
+
+        $equipo = DB::transaction(function () use ($data, $caracteristicas) {
+            $equipo = Equipo::create($data);
+
+            $caracteristicasPayload = collect($caracteristicas)
+                ->filter(fn ($item) => is_array($item) && trim((string)($item['clave'] ?? '')) !== '' && trim((string)($item['valor'] ?? '')) !== '')
+                ->map(fn ($item) => [
+                    'clave' => $item['clave'],
+                    'valor' => $item['valor'],
+                ])
+                ->values()
+                ->all();
+
+            if (count($caracteristicasPayload) > 0) {
+                $equipo->caracteristicas()->createMany($caracteristicasPayload);
+            }
+
+            return $equipo;
+        });
+
+        $equipo->load('persona:id,nombre_completo', 'caracteristicas:id,clave,valor,id_equipo');
 
         return response()->json([
             'message' => 'Equipo registrado correctamente.',
@@ -67,7 +93,7 @@ class EquipoController extends Controller
     public function show(Equipo $equipo): JsonResponse
     {
         return response()->json([
-            'data' => $equipo->load('persona:id,nombre_completo'),
+            'data' => $equipo->load('persona:id,nombre_completo', 'caracteristicas:id,clave,valor,id_equipo'),
         ]);
     }
 
@@ -83,13 +109,38 @@ class EquipoController extends Controller
             'fecha_disponible_uso' => ['nullable', 'date'],
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
             'id_persona' => ['nullable', 'exists:personas,id'],
+            'caracteristicas' => ['nullable', 'array'],
+            'caracteristicas.*.clave' => ['required_with:caracteristicas', 'string', 'max:255'],
+            'caracteristicas.*.valor' => ['required_with:caracteristicas', 'string', 'max:255'],
         ]);
 
-        $equipo->update($data);
+        $caracteristicas = $data['caracteristicas'] ?? null;
+        unset($data['caracteristicas']);
+
+        DB::transaction(function () use ($equipo, $data, $caracteristicas) {
+            $equipo->update($data);
+
+            if (is_array($caracteristicas)) {
+                $equipo->caracteristicas()->delete();
+
+                $caracteristicasPayload = collect($caracteristicas)
+                    ->filter(fn ($item) => is_array($item) && trim((string)($item['clave'] ?? '')) !== '' && trim((string)($item['valor'] ?? '')) !== '')
+                    ->map(fn ($item) => [
+                        'clave' => $item['clave'],
+                        'valor' => $item['valor'],
+                    ])
+                    ->values()
+                    ->all();
+
+                if (count($caracteristicasPayload) > 0) {
+                    $equipo->caracteristicas()->createMany($caracteristicasPayload);
+                }
+            }
+        });
 
         return response()->json([
             'message' => 'Equipo actualizado correctamente.',
-            'data' => $equipo->fresh()->load('persona:id,nombre_completo'),
+            'data' => $equipo->fresh()->load('persona:id,nombre_completo', 'caracteristicas:id,clave,valor,id_equipo'),
         ]);
     }
 

@@ -72,9 +72,23 @@ const triggerMessage = (type, message) => {
     }, 4000);
 };
 
-const abrirModalEditar = (equipo) => {
-    equipoEditando.value = { ...equipo };
-    showEditModal.value = true;
+const abrirModalEditar = async (equipo) => {
+    if (!equipo?.id) return;
+
+    saving.value = true;
+    try {
+        const { data } = await axios.get(route("equipos.show", equipo.id));
+        equipoEditando.value = { ...(data?.data ?? equipo) };
+        showEditModal.value = true;
+    } catch (error) {
+        triggerMessage(
+            "error",
+            error.response?.data?.message ||
+                "No se pudo cargar el equipo para edición.",
+        );
+    } finally {
+        saving.value = false;
+    }
 };
 
 const cerrarModalEditar = () => {
@@ -286,7 +300,7 @@ const confirmarEliminacion = async () => {
 
                     <button
                         type="button"
-                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul/98 px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                         @click="abrirModalCrear"
                     >
                         + Nuevo equipo

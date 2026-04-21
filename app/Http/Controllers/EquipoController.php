@@ -17,7 +17,7 @@ class EquipoController extends Controller
      */
     public function index(): Response
     {
-        $equipos = Equipo::with('persona:id,nombre_completo')
+        $equipos = Equipo::with(['persona:id,nombre_completo,id_area', 'persona.area:id,nombre'])
             ->select(
                 'id',
                 'cod_informatica',
@@ -30,7 +30,8 @@ class EquipoController extends Controller
             ->orderBy('cod_informatica')
             ->get();
 
-        $personas = Persona::select('id', 'nombre_completo')
+        $personas = Persona::with('area:id,nombre')
+            ->select('id', 'nombre_completo', 'id_area')
             ->orderBy('nombre_completo')
             ->get();
 
@@ -45,6 +46,18 @@ class EquipoController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $messages = [
+            'cod_informatica.required' => 'El código de informática es obligatorio.',
+            'cod_informatica.unique' => 'Este código de informática ya está en uso.',
+            'tipo.required' => 'El tipo de equipo es obligatorio.',
+            'estado.required' => 'El estado es obligatorio.',
+            'id_persona.exists' => 'El responsable seleccionado no es válido.',
+            'vida_util_anios.min' => 'La vida útil debe ser mínimo 0 años.',
+            'fecha_disponible_uso.date' => 'La fecha no tiene un formato válido.',
+            'caracteristicas.*.clave.required_with' => 'La clave es requerida si hay valor.',
+            'caracteristicas.*.valor.required_with' => 'El valor es requerido si hay clave.',
+        ];
+
         $data = $request->validate([
             'cod_informatica' => ['required', 'string', 'max:255', 'unique:equipos,cod_informatica'],
             'tipo' => ['required', 'string', 'max:255'],
@@ -53,9 +66,9 @@ class EquipoController extends Controller
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
             'id_persona' => ['nullable', 'exists:personas,id'],
             'caracteristicas' => ['nullable', 'array'],
-            'caracteristicas.*.clave' => ['required_with:caracteristicas', 'string', 'max:255'],
-            'caracteristicas.*.valor' => ['required_with:caracteristicas', 'string', 'max:255'],
-        ]);
+            'caracteristicas.*.clave' => ['required_with:caracteristicas.*.valor', 'string', 'max:255'],
+            'caracteristicas.*.valor' => ['required_with:caracteristicas.*.clave', 'string', 'max:255'],
+        ], $messages);
 
         $caracteristicas = $data['caracteristicas'] ?? [];
         unset($data['caracteristicas']);
@@ -79,7 +92,7 @@ class EquipoController extends Controller
             return $equipo;
         });
 
-        $equipo->load('persona:id,nombre_completo', 'caracteristicas:id,clave,valor,id_equipo');
+        $equipo->load(['persona:id,nombre_completo,id_area', 'persona.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']);
 
         return response()->json([
             'message' => 'Equipo registrado correctamente.',
@@ -93,7 +106,7 @@ class EquipoController extends Controller
     public function show(Equipo $equipo): JsonResponse
     {
         return response()->json([
-            'data' => $equipo->load('persona:id,nombre_completo', 'caracteristicas:id,clave,valor,id_equipo'),
+            'data' => $equipo->load(['persona:id,nombre_completo,id_area', 'persona.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
         ]);
     }
 
@@ -102,6 +115,18 @@ class EquipoController extends Controller
      */
     public function update(Request $request, Equipo $equipo): JsonResponse
     {
+        $messages = [
+            'cod_informatica.required' => 'El código de informática es obligatorio.',
+            'cod_informatica.unique' => 'Este código de informática ya está en uso.',
+            'tipo.required' => 'El tipo de equipo es obligatorio.',
+            'estado.required' => 'El estado es obligatorio.',
+            'id_persona.exists' => 'El responsable seleccionado no es válido.',
+            'vida_util_anios.min' => 'La vida útil debe ser mínimo 0 años.',
+            'fecha_disponible_uso.date' => 'La fecha no tiene un formato válido.',
+            'caracteristicas.*.clave.required_with' => 'La clave es requerida si hay valor.',
+            'caracteristicas.*.valor.required_with' => 'El valor es requerido si hay clave.',
+        ];
+
         $data = $request->validate([
             'cod_informatica' => ['required', 'string', 'max:255', 'unique:equipos,cod_informatica,' . $equipo->id],
             'tipo' => ['required', 'string', 'max:255'],
@@ -110,9 +135,9 @@ class EquipoController extends Controller
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
             'id_persona' => ['nullable', 'exists:personas,id'],
             'caracteristicas' => ['nullable', 'array'],
-            'caracteristicas.*.clave' => ['required_with:caracteristicas', 'string', 'max:255'],
-            'caracteristicas.*.valor' => ['required_with:caracteristicas', 'string', 'max:255'],
-        ]);
+            'caracteristicas.*.clave' => ['required_with:caracteristicas.*.valor', 'string', 'max:255'],
+            'caracteristicas.*.valor' => ['required_with:caracteristicas.*.clave', 'string', 'max:255'],
+        ], $messages);
 
         $caracteristicas = $data['caracteristicas'] ?? null;
         unset($data['caracteristicas']);
@@ -140,7 +165,7 @@ class EquipoController extends Controller
 
         return response()->json([
             'message' => 'Equipo actualizado correctamente.',
-            'data' => $equipo->fresh()->load('persona:id,nombre_completo', 'caracteristicas:id,clave,valor,id_equipo'),
+            'data' => $equipo->fresh()->load(['persona:id,nombre_completo,id_area', 'persona.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
         ]);
     }
 

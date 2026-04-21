@@ -33,6 +33,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    errors: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const emit = defineEmits(["close", "save"]);
@@ -157,6 +161,9 @@ const quitarCaracteristica = (index) => {
                     </div>
 
                     <div class="flex-1 overflow-y-auto px-5 py-5">
+                        <div v-if="errors && Object.keys(errors).length > 0 && !errors.cod_informatica && !errors.tipo && !errors.estado" class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200">
+                            Revisa los campos para corregir los errores.
+                        </div>
                         <form
                             class="grid grid-cols-1 gap-4 md:grid-cols-2"
                             @submit.prevent="handleSubmit"
@@ -165,48 +172,64 @@ const quitarCaracteristica = (index) => {
                                 <label
                                     for="equipo_cod"
                                     class="block text-sm font-medium text-gray-700"
-                                    >Código informática</label
+                                    >Código informática <span class="text-red-500">*</span></label
                                 >
                                 <input
                                     id="equipo_cod"
                                     v-model="form.cod_informatica"
                                     type="text"
-                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:ring-ugel-azul transition-colors"
+                                    :class="errors.cod_informatica ? 'border-red-500 focus:border-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul'"
                                     placeholder="EQ-001"
                                     :disabled="loading"
                                 />
+                                <p v-if="errors.cod_informatica" class="mt-1 text-xs text-red-600">{{ errors.cod_informatica[0] }}</p>
                             </div>
 
                             <div>
                                 <label
                                     for="equipo_tipo"
                                     class="block text-sm font-medium text-gray-700"
-                                    >Tipo</label
+                                    >Tipo <span class="text-red-500">*</span></label
                                 >
-                                <input
+                                <select
                                     id="equipo_tipo"
                                     v-model="form.tipo"
-                                    type="text"
-                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                                    placeholder="Laptop, CPU, Impresora..."
+                                    class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:ring-ugel-azul transition-colors"
+                                    :class="errors.tipo ? 'border-red-500 focus:border-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul'"
                                     :disabled="loading"
-                                />
+                                >
+                                    <option value="">Seleccione tipo</option>
+                                    <option value="PC">PC</option>
+                                    <option value="LAPTOP">LAPTOP</option>
+                                    <option value="TODO EN UNO">TODO EN UNO</option>
+                                    <option value="COMPONENTE">COMPONENTE</option>
+                                    <option value="TECLADO">TECLADO</option>
+                                    <option value="MOUSE">MOUSE</option>
+                                    <option value="OTRO">OTRO</option>
+                                </select>
+                                <p v-if="errors.tipo" class="mt-1 text-xs text-red-600">{{ errors.tipo[0] }}</p>
                             </div>
 
                             <div>
                                 <label
                                     for="equipo_estado"
                                     class="block text-sm font-medium text-gray-700"
-                                    >Estado</label
+                                    >Estado <span class="text-red-500">*</span></label
                                 >
-                                <input
+                                <select
                                     id="equipo_estado"
                                     v-model="form.estado"
-                                    type="text"
-                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                                    placeholder="Operativo"
+                                    class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:ring-ugel-azul transition-colors"
+                                    :class="errors.estado ? 'border-red-500 focus:border-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul'"
                                     :disabled="loading"
-                                />
+                                >
+                                    <option value="">Seleccione estado</option>
+                                    <option value="LIBRE">LIBRE</option>
+                                    <option value="DE BAJA">DE BAJA</option>
+                                    <option value="EN USO">EN USO</option>
+                                </select>
+                                <p v-if="errors.estado" class="mt-1 text-xs text-red-600">{{ errors.estado[0] }}</p>
                             </div>
 
                             <div>
@@ -259,7 +282,7 @@ const quitarCaracteristica = (index) => {
                                         :key="persona.id"
                                         :value="persona.id"
                                     >
-                                        {{ persona.nombre_completo }}
+                                        {{ persona.nombre_completo }}{{ persona.area ? ` - ${persona.area.nombre}` : '' }}
                                     </option>
                                 </select>
                             </div>

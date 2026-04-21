@@ -41,6 +41,9 @@ const saving = ref(false);
 const creating = ref(false);
 const modalCrearRef = ref(null);
 
+const erroresCrear = ref({});
+const erroresEditar = ref({});
+
 const successMessage = ref("");
 const errorMessage = ref("");
 let feedbackTimeout = null;
@@ -93,6 +96,7 @@ const abrirModalEditar = async (equipo) => {
 
 const cerrarModalEditar = () => {
     showEditModal.value = false;
+    erroresEditar.value = {};
     equipoEditando.value = null;
 };
 
@@ -100,6 +104,7 @@ const guardarCambios = async (payload) => {
     if (!payload?.id) return;
 
     saving.value = true;
+    erroresEditar.value = {};
 
     try {
         const { data } = await axios.put(
@@ -115,11 +120,15 @@ const guardarCambios = async (payload) => {
         triggerMessage("success", "Equipo actualizado correctamente.");
         cerrarModalEditar();
     } catch (error) {
-        triggerMessage(
-            "error",
-            error.response?.data?.message ||
-                "No se pudo actualizar el equipo. Revisa los datos.",
-        );
+        if (error.response?.status === 422) {
+            erroresEditar.value = error.response.data.errors || {};
+        } else {
+            triggerMessage(
+                "error",
+                error.response?.data?.message ||
+                    "No se pudo actualizar el equipo. Revisa los datos.",
+            );
+        }
     } finally {
         saving.value = false;
     }
@@ -131,6 +140,7 @@ const abrirModalCrear = () => {
 
 const cerrarModalCrear = () => {
     showCreateModal.value = false;
+    erroresCrear.value = {};
     modalCrearRef.value?.resetForm();
 };
 
@@ -138,6 +148,7 @@ const crearEquipo = async (payload) => {
     if (!payload?.cod_informatica || !payload.tipo || !payload.estado) return;
 
     creating.value = true;
+    erroresCrear.value = {};
 
     try {
         const { data } = await axios.post(route("equipos.store"), payload);
@@ -150,10 +161,14 @@ const crearEquipo = async (payload) => {
         triggerMessage("success", "Equipo registrado correctamente.");
         cerrarModalCrear();
     } catch (error) {
-        const message =
-            error.response?.data?.message ||
-            "No se pudo registrar el equipo. Intenta nuevamente.";
-        triggerMessage("error", message);
+        if (error.response?.status === 422) {
+            erroresCrear.value = error.response.data.errors || {};
+        } else {
+            const message =
+                error.response?.data?.message ||
+                "No se pudo registrar el equipo. Intenta nuevamente.";
+            triggerMessage("error", message);
+        }
     } finally {
         creating.value = false;
     }
@@ -168,7 +183,8 @@ const filteredEquipos = computed(() => {
             !term ||
             equipo.cod_informatica?.toLowerCase().includes(term) ||
             equipo.tipo?.toLowerCase().includes(term) ||
-            equipo.persona?.nombre_completo?.toLowerCase().includes(term);
+            equipo.persona?.nombre_completo?.toLowerCase().includes(term) ||
+            equipo.persona?.area?.nombre?.toLowerCase().includes(term);
 
         const coincideEstado =
             estado === "todos" ||
@@ -289,11 +305,9 @@ const confirmarEliminacion = async () => {
                                 class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
                             >
                                 <option value="todos">Todos los estados</option>
-                                <option value="operativo">Operativo</option>
-                                <option value="mantenimiento">
-                                    Mantenimiento
-                                </option>
-                                <option value="baja">De baja</option>
+                                <option value="libre">Libre</option>
+                                <option value="en uso">En uso</option>
+                                <option value="de baja">De baja</option>
                             </select>
                         </div>
                     </div>
@@ -373,11 +387,14 @@ const confirmarEliminacion = async () => {
                                     <td class="px-6 py-4 text-sm text-gray-700">
                                         {{ equipo.estado || "Sin estado" }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700">
-                                        {{
-                                            equipo.persona?.nombre_completo ||
-                                            "No asignado"
-                                        }}
+                                    <td class="px-6 py-4">
+                                        <div v-if="equipo.persona" class="flex flex-col">
+                                            <span class="text-sm text-gray-700">{{ equipo.persona.nombre_completo }}</span>
+                                            <span v-if="equipo.persona.area" class="text-xs text-gray-500 mt-0.5">
+                                                {{ equipo.persona.area.nombre }}
+                                            </span>
+                                        </div>
+                                        <span v-else class="text-sm text-gray-700">No asignado</span>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500">
                                         {{
@@ -481,6 +498,7 @@ const confirmarEliminacion = async () => {
             :equipo="equipoEditando"
             :personas="personas"
             :loading="saving"
+            :errors="erroresEditar"
             @close="cerrarModalEditar"
             @save="guardarCambios"
         />
@@ -490,6 +508,7 @@ const confirmarEliminacion = async () => {
             :show="showCreateModal"
             :personas="personas"
             :loading="creating"
+            :errors="erroresCrear"
             @close="cerrarModalCrear"
             @save="crearEquipo"
         />

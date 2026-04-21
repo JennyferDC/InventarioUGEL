@@ -6,6 +6,7 @@ import { computed, ref, watch } from "vue";
 import ModalEliminar from "./Partials/ModalEliminar.vue";
 import ModalEditar from "./Partials/ModalEditar.vue";
 import ModalCrear from "./Partials/ModaCrear.vue";
+import ModalReportes from "./Partials/ModalReportes.vue";
 
 const props = defineProps({
     equipos: {
@@ -13,6 +14,10 @@ const props = defineProps({
         default: () => [],
     },
     personas: {
+        type: Array,
+        default: () => [],
+    },
+    areas: {
         type: Array,
         default: () => [],
     },
@@ -34,6 +39,7 @@ const filtroEstado = ref("todos");
 const showDeleteModal = ref(false);
 const showEditModal = ref(false);
 const showCreateModal = ref(false);
+const showReportesModal = ref(false);
 const equipoSeleccionado = ref(null);
 const equipoEditando = ref(null);
 const deleting = ref(false);
@@ -142,6 +148,14 @@ const cerrarModalCrear = () => {
     showCreateModal.value = false;
     erroresCrear.value = {};
     modalCrearRef.value?.resetForm();
+};
+
+const abrirModalReportes = () => {
+    showReportesModal.value = true;
+};
+
+const cerrarModalReportes = () => {
+    showReportesModal.value = false;
 };
 
 const crearEquipo = async (payload) => {
@@ -312,13 +326,27 @@ const confirmarEliminacion = async () => {
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
-                        @click="abrirModalCrear"
-                    >
-                        + Nuevo equipo
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-lg border border-ugel-azul bg-white px-4 py-2 text-ugel-azul font-semibold shadow-sm hover:bg-gray-50 transition-colors duration-150"
+                            @click="abrirModalReportes"
+                        >
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h1.5m1.5 0H15m-6 3h6m-6 3h6" />
+                            </svg>
+                            Generar reporte
+                        </button>
+
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                            @click="abrirModalCrear"
+                        >
+                            + Nuevo equipo
+                        </button>
+                    </div>
                 </div>
 
                 <div
@@ -511,6 +539,13 @@ const confirmarEliminacion = async () => {
             :errors="erroresCrear"
             @close="cerrarModalCrear"
             @save="crearEquipo"
+        />
+
+        <ModalReportes
+            :show="showReportesModal"
+            :equipos="equipos"
+            :areas="areas"
+            @close="cerrarModalReportes"
         />
     </AppLayout>
 </template>

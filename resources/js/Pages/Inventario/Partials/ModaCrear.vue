@@ -41,6 +41,7 @@ const form = reactive({
     cod_informatica: "",
     tipo: "",
     estado: "",
+    fecha_ingreso: "",
     fecha_disponible_uso: "",
     vida_util_anios: "",
     id_persona: "",
@@ -51,6 +52,7 @@ const resetForm = () => {
     form.cod_informatica = "";
     form.tipo = "";
     form.estado = "";
+    form.fecha_ingreso = "";
     form.fecha_disponible_uso = "";
     form.vida_util_anios = "";
     form.id_persona = "";
@@ -191,6 +193,7 @@ defineExpose({ resetForm });
                                     <option value="TECLADO">TECLADO</option>
                                     <option value="MOUSE">MOUSE</option>
                                     <option value="OTRO">OTRO</option>
+                                    <option value="MONITOR">MONITOR</option>
                                 </select>
                                 <p v-if="errors.tipo" class="mt-1 text-xs text-red-600">{{ errors.tipo[0] }}</p>
                             </div>
@@ -210,10 +213,25 @@ defineExpose({ resetForm });
                                 >
                                     <option value="">Seleccione estado</option>
                                     <option value="LIBRE">LIBRE</option>
-                                    <option value="DE BAJA">DE BAJA</option>
                                     <option value="EN USO">EN USO</option>
+                                    <option value="BAJA">BAJA</option>
                                 </select>
                                 <p v-if="errors.estado" class="mt-1 text-xs text-red-600">{{ errors.estado[0] }}</p>
+                            </div>
+
+                            <div>
+                                <label
+                                    for="nuevo_fecha_ingreso"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Fecha de ingreso</label
+                                >
+                                <input
+                                    id="nuevo_fecha_ingreso"
+                                    v-model="form.fecha_ingreso"
+                                    type="date"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    :disabled="loading"
+                                />
                             </div>
 
                             <div>

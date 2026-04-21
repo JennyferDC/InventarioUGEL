@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Area;
 use App\Models\Equipo;
 use App\Models\Persona;
 use Illuminate\Http\JsonResponse;
@@ -35,9 +36,12 @@ class EquipoController extends Controller
             ->orderBy('nombre_completo')
             ->get();
 
+        $areas = Area::select('id', 'nombre')->orderBy('nombre')->get();
+
         return Inertia::render('Inventario/Index', [
             'equipos' => $equipos,
             'personas' => $personas,
+            'areas' => $areas,
         ]);
     }
 
@@ -62,6 +66,7 @@ class EquipoController extends Controller
             'cod_informatica' => ['required', 'string', 'max:255', 'unique:equipos,cod_informatica'],
             'tipo' => ['required', 'string', 'max:255'],
             'estado' => ['required', 'string', 'max:255'],
+            'fecha_ingreso' => ['nullable', 'date'],
             'fecha_disponible_uso' => ['nullable', 'date'],
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
             'id_persona' => ['nullable', 'exists:personas,id'],
@@ -131,6 +136,7 @@ class EquipoController extends Controller
             'cod_informatica' => ['required', 'string', 'max:255', 'unique:equipos,cod_informatica,' . $equipo->id],
             'tipo' => ['required', 'string', 'max:255'],
             'estado' => ['required', 'string', 'max:255'],
+            'fecha_ingreso' => ['nullable', 'date'],
             'fecha_disponible_uso' => ['nullable', 'date'],
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
             'id_persona' => ['nullable', 'exists:personas,id'],

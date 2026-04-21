@@ -5,6 +5,7 @@ use App\Http\Controllers\ArchivoInventarioController;
 use App\Http\Controllers\CaracteristicaEquipoController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\PersonaController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -63,4 +64,7 @@ Route::middleware([
     Route::get('/archivos/{archivoInventario}', [ArchivoInventarioController::class, 'show'])->name('archivos.show');
     Route::put('/archivos/{archivoInventario}', [ArchivoInventarioController::class, 'update'])->name('archivos.update');
     Route::delete('/archivos/{archivoInventario}', [ArchivoInventarioController::class, 'destroy'])->name('archivos.destroy');
+
+    Route::post('/reportes/equipos/pdf', [ReporteController::class, 'equiposPdf'])->name('reportes.equipos.pdf');
+    Route::post('/reportes/equipos/excel', [ReporteController::class, 'equiposExcel'])->name('reportes.equipos.excel');
 });

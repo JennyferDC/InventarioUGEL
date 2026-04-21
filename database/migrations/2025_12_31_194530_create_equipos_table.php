@@ -19,24 +19,23 @@ return new class extends Migration
             $table->enum('tipo', [
                 'PC',
                 'LAPTOP',
-                'MONITOR',
+                'TODO EN UNO',
+                'COMPONENTE',
                 'TECLADO',
                 'MOUSE',
-                'IMPRESORA',
-                'OTRO'
+                'OTRO',
+                'MONITOR',
             ]); // tipo : enum
 
             $table->enum('estado', [
                 'LIBRE',
-                'ACTIVO',
-                'MANTENIMIENTO',
-                'DANADO',
-                'EXTRAVIADO',
+                'EN USO',
                 'BAJA'
             ]); // estado : enum
 
-            $table->date('fecha_disponible_uso'); // fecha_disponible_uso : date
-            $table->integer('vida_util_anios'); // vida_util_anios : int
+            $table->date('fecha_ingreso')->nullable(); // fecha_ingreso : date
+            $table->date('fecha_disponible_uso')->nullable(); // fecha_disponible_uso : date
+            $table->integer('vida_util_anios')->nullable(); // vida_util_anios : int
 
             // FK -> personas
             $table->foreignId('id_persona')

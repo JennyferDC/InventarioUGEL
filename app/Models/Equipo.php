@@ -15,6 +15,7 @@ class Equipo extends Model
         'cod_informatica',
         'tipo',
         'estado',
+        'fecha_ingreso',
         'fecha_disponible_uso',
         'vida_util_anios',
         'id_persona',

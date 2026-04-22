@@ -16,8 +16,9 @@ class PersonaController extends Controller
      */
     public function index(): Response
     {
-        $personas = Persona::with('area:id,nombre')
-            ->select('id', 'nombre_completo', 'id_area', 'created_at')
+        $personas = Persona::select('id', 'nombre_completo', 'id_area', 'created_at')
+            ->with('area:id,nombre')
+            ->withCount('equipos')
             ->orderBy('nombre_completo')
             ->get();
 

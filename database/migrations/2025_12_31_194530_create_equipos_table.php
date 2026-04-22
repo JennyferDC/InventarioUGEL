@@ -39,6 +39,7 @@ return new class extends Migration
 
             // FK -> personas
             $table->foreignId('id_persona')
+                  ->nullable()
                   ->constrained('personas')
                   ->onDelete('restrict');
 

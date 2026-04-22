@@ -314,6 +314,11 @@ const crearPersona = async (payload) => {
                                         Área
                                     </th>
                                     <th
+                                        class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                    >
+                                        Equipos asignados
+                                    </th>
+                                    <th
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
                                         Registrado
@@ -346,6 +351,11 @@ const crearPersona = async (payload) => {
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
                                         {{ persona.area?.nombre ?? "Sin área" }}
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center justify-center bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-full px-3 py-1 text-xs">
+                                            {{ persona.equipos_count ?? 0 }} {{ persona.equipos_count === 1 ? 'equipo' : 'equipos' }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500">
                                         {{

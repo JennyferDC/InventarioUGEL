@@ -14,7 +14,6 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
@@ -43,6 +42,7 @@ Route::middleware([
 
     Route::get('/inventario', [EquipoController::class, 'index'])->name('equipos.index');
     Route::post('/inventario', [EquipoController::class, 'store'])->name('equipos.store');
+    Route::get('/inventario/equipo/{cod_informatica}', [EquipoController::class, 'showByCodigo'])->name('equipos.showByCodigo');
     Route::get('/inventario/{equipo}', [EquipoController::class, 'show'])->name('equipos.show');
     Route::put('/inventario/{equipo}', [EquipoController::class, 'update'])->name('equipos.update');
     Route::delete('/inventario/{equipo}', [EquipoController::class, 'destroy'])->name('equipos.destroy');

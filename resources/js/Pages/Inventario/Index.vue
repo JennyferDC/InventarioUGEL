@@ -35,6 +35,9 @@ watch(
 
 const searchTerm = ref("");
 const filtroEstado = ref("todos");
+const filtroTipo = ref("todos");
+
+const TIPOS_EQUIPO = ["PC", "LAPTOP", "TODO EN UNO", "COMPONENTE", "TECLADO", "MOUSE", "OTRO", "MONITOR"];
 
 const showDeleteModal = ref(false);
 const showEditModal = ref(false);
@@ -129,11 +132,9 @@ const guardarCambios = async (payload) => {
         if (error.response?.status === 422) {
             erroresEditar.value = error.response.data.errors || {};
         } else {
-            triggerMessage(
-                "error",
-                error.response?.data?.message ||
-                    "No se pudo actualizar el equipo. Revisa los datos.",
-            );
+            erroresEditar.value = { 
+                global: error.response?.data?.message || "No se pudo actualizar el equipo. Ocurrió un error en el servidor." 
+            };
         }
     } finally {
         saving.value = false;
@@ -178,10 +179,9 @@ const crearEquipo = async (payload) => {
         if (error.response?.status === 422) {
             erroresCrear.value = error.response.data.errors || {};
         } else {
-            const message =
-                error.response?.data?.message ||
-                "No se pudo registrar el equipo. Intenta nuevamente.";
-            triggerMessage("error", message);
+            erroresCrear.value = { 
+                global: error.response?.data?.message || "No se pudo registrar el equipo. Ocurrió un error en el servidor." 
+            };
         }
     } finally {
         creating.value = false;
@@ -191,6 +191,7 @@ const crearEquipo = async (payload) => {
 const filteredEquipos = computed(() => {
     const term = searchTerm.value.trim().toLowerCase();
     const estado = filtroEstado.value.toLowerCase();
+    const tipoFiltro = filtroTipo.value.toLowerCase();
 
     return equipos.value.filter((equipo) => {
         const coincideBusqueda =
@@ -202,9 +203,14 @@ const filteredEquipos = computed(() => {
 
         const coincideEstado =
             estado === "todos" ||
-            (equipo.estado ?? "").toLowerCase() === estado;
+            (equipo.estado ?? "").toLowerCase() === estado || 
+            (estado === "de baja" && (equipo.estado ?? "").toLowerCase() === "baja");
 
-        return coincideBusqueda && coincideEstado;
+        const coincideTipo =
+            tipoFiltro === "todos" ||
+            (equipo.tipo ?? "").toLowerCase() === tipoFiltro;
+
+        return coincideBusqueda && coincideEstado && coincideTipo;
     });
 });
 
@@ -271,12 +277,8 @@ const confirmarEliminacion = async () => {
             </div>
 
             <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
-                <div
-                    class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
-                >
-                    <div
-                        class="flex flex-col gap-3 sm:flex-row sm:items-center"
-                    >
+                <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center flex-wrap">
                         <div class="w-full sm:w-72">
                             <label class="sr-only" for="search-equipo"
                                 >Buscar equipo</label
@@ -309,7 +311,23 @@ const confirmarEliminacion = async () => {
                             </div>
                         </div>
 
-                        <div class="w-full sm:w-52">
+                        <div class="w-full sm:w-48">
+                            <label class="sr-only" for="filtro-tipo"
+                                >Tipo</label
+                            >
+                            <select
+                                id="filtro-tipo"
+                                v-model="filtroTipo"
+                                class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
+                            >
+                                <option value="todos">Todos los tipos</option>
+                                <option v-for="tipo in TIPOS_EQUIPO" :key="tipo" :value="tipo.toLowerCase()">
+                                    {{ tipo }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="w-full sm:w-44">
                             <label class="sr-only" for="filtro-estado"
                                 >Estado</label
                             >
@@ -321,7 +339,7 @@ const confirmarEliminacion = async () => {
                                 <option value="todos">Todos los estados</option>
                                 <option value="libre">Libre</option>
                                 <option value="en uso">En uso</option>
-                                <option value="de baja">De baja</option>
+                                <option value="baja">De baja</option>
                             </select>
                         </div>
                     </div>
@@ -412,8 +430,15 @@ const confirmarEliminacion = async () => {
                                     >
                                         {{ equipo.tipo }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700">
-                                        {{ equipo.estado || "Sin estado" }}
+                                    <td class="px-6 py-4">
+                                        <span :class="[
+                                            'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full',
+                                            equipo.estado === 'LIBRE' ? 'bg-emerald-100 text-emerald-800' :
+                                            equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-800' :
+                                            equipo.estado === 'BAJA' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                        ]">
+                                            {{ equipo.estado === 'BAJA' ? 'DE BAJA' : (equipo.estado || 'Sin estado') }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div v-if="equipo.persona" class="flex flex-col">

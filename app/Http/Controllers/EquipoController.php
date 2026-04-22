@@ -45,6 +45,39 @@ class EquipoController extends Controller
         ]);
     }
 
+    public function showByCodigo($cod_informatica): Response
+    {
+        $equipo = Equipo::with([
+            'persona:id,nombre_completo,id_area', 
+            'persona.area:id,nombre', 
+            'caracteristicas:id,clave,valor,id_equipo'
+        ])
+        ->where('cod_informatica', $cod_informatica)
+        ->firstOrFail();
+
+        $otrosEquipos = [];
+        if ($equipo->id_persona) {
+            $otrosEquipos = Equipo::where('id_persona', $equipo->id_persona)
+                ->where('id', '!=', $equipo->id)
+                ->select('id', 'cod_informatica', 'tipo', 'estado')
+                ->get();
+        }
+
+        $personas = Persona::with('area:id,nombre')
+            ->select('id', 'nombre_completo', 'id_area')
+            ->orderBy('nombre_completo')
+            ->get();
+
+        $areas = Area::select('id', 'nombre')->orderBy('nombre')->get();
+
+        return Inertia::render('Inventario/Show', [
+            'equipo' => $equipo,
+            'otrosEquipos' => $otrosEquipos,
+            'personas' => $personas,
+            'areas' => $areas,
+        ]);
+    }
+
     /**
      * Crea un nuevo equipo.
      */

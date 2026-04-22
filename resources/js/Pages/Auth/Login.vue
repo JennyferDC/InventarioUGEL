@@ -34,7 +34,10 @@ const submit = () => {
 
     <AuthenticationCard>
         <template #logo>
-            <AuthenticationCardLogo />
+            <div class="flex flex-col items-center">
+                <AuthenticationCardLogo />
+                <h2 class="mt-4 text-center text-xl font-bold text-gray-800 tracking-tight">Inventario de Informática</h2>
+            </div>
         </template>
 
         <div v-if="status" class="mb-4 font-medium text-sm text-green-600">

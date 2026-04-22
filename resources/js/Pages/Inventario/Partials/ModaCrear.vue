@@ -147,8 +147,9 @@ defineExpose({ resetForm });
                     </div>
 
                     <div class="flex-1 overflow-y-auto px-5 py-5">
-                        <div v-if="errors && Object.keys(errors).length > 0 && !errors.cod_informatica && !errors.tipo && !errors.estado" class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200">
-                            Revisa los campos para corregir los errores.
+                        <div v-if="errors && Object.keys(errors).length > 0 && (!errors.cod_informatica && !errors.tipo && !errors.estado || errors.global)" class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200">
+                            <span v-if="errors.global">{{ errors.global }}</span>
+                            <span v-else>Revisa los campos para corregir los errores.</span>
                         </div>
                         <form
                             class="grid grid-cols-1 gap-4 md:grid-cols-2"
@@ -221,6 +222,23 @@ defineExpose({ resetForm });
 
                             <div>
                                 <label
+                                    for="nuevo_vida"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Vida útil (años)</label
+                                >
+                                <input
+                                    id="nuevo_vida"
+                                    v-model="form.vida_util_anios"
+                                    type="number"
+                                    min="0"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    placeholder="4"
+                                    :disabled="loading"
+                                />
+                            </div>
+
+                            <div>
+                                <label
                                     for="nuevo_fecha_ingreso"
                                     class="block text-sm font-medium text-gray-700"
                                     >Fecha de ingreso</label
@@ -249,24 +267,7 @@ defineExpose({ resetForm });
                                 />
                             </div>
 
-                            <div>
-                                <label
-                                    for="nuevo_vida"
-                                    class="block text-sm font-medium text-gray-700"
-                                    >Vida útil (años)</label
-                                >
-                                <input
-                                    id="nuevo_vida"
-                                    v-model="form.vida_util_anios"
-                                    type="number"
-                                    min="0"
-                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                                    placeholder="4"
-                                    :disabled="loading"
-                                />
-                            </div>
-
-                            <div>
+                            <div class="md:col-span-2">
                                 <label
                                     for="nuevo_persona"
                                     class="block text-sm font-medium text-gray-700"

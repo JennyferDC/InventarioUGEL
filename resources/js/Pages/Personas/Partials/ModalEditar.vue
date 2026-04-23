@@ -99,6 +99,40 @@ const handleSubmit = () => {
                     </select>
                 </div>
             </form>
+
+                <div v-if="persona?.equipos?.length" class="mt-6 pt-6 border-t border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center justify-between">
+                        <span>Equipos Asignados ({{ persona.equipos.length }})</span>
+                    </h3>
+                    <ul class="space-y-3">
+                        <li v-for="equipo in persona.equipos" :key="equipo.id" class="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <span class="flex size-8 items-center justify-center rounded-lg bg-ugel-azul/10 text-ugel-azul">
+                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">{{ equipo.cod_informatica }}</p>
+                                    <p class="text-xs text-gray-500">{{ equipo.tipo }}</p>
+                                </div>
+                            </div>
+                            <span :class="[
+                                'px-2 py-0.5 rounded-full text-xs font-semibold',
+                                equipo.estado === 'LIBRE' ? 'bg-green-100 text-green-800' :
+                                equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-800' :
+                                'bg-red-100 text-red-800'
+                            ]">
+                                {{ equipo.estado }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="persona && (!persona.equipos || persona.equipos.length === 0)" class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 bg-gray-50">
+                        Esta persona no tiene equipos asignados actualmente.
+                    </div>
+                </div>
         </template>
 
         <template #footer>

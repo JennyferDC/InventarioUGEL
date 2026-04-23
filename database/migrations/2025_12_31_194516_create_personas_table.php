@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('personas', function (Blueprint $table) {
             $table->id(); // id : int
             $table->string('nombre_completo'); // nombre_completo : varchar
+            $table->string('celular')->nullable(); // celular : varchar
+            $table->enum('estado', ['ACTIVO', 'INACTIVO'])->default('ACTIVO'); // estado : enum
 
             // FK -> areas
             $table->foreignId('id_area')

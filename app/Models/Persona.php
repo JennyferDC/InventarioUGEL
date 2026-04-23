@@ -13,6 +13,8 @@ class Persona extends Model
 
     protected $fillable = [
         'nombre_completo',
+        'celular',
+        'estado',
         'id_area',
     ];
 

@@ -16,7 +16,7 @@ class PersonaController extends Controller
      */
     public function index(): Response
     {
-        $personas = Persona::select('id', 'nombre_completo', 'id_area', 'created_at')
+        $personas = Persona::select('id', 'nombre_completo', 'celular', 'estado', 'id_area', 'created_at')
             ->with(['area:id,nombre', 'equipos'])
             ->withCount('equipos')
             ->orderBy('nombre_completo')
@@ -39,6 +39,8 @@ class PersonaController extends Controller
     {
         $data = $request->validate([
             'nombre_completo' => ['required', 'string', 'max:255'],
+            'celular' => ['nullable', 'string', 'max:20'],
+            'estado' => ['required', 'in:ACTIVO,INACTIVO'],
             'id_area' => ['required', 'integer', 'exists:areas,id'],
         ]);
 
@@ -67,6 +69,8 @@ class PersonaController extends Controller
     {
         $data = $request->validate([
             'nombre_completo' => ['required', 'string', 'max:255'],
+            'celular' => ['nullable', 'string', 'max:20'],
+            'estado' => ['required', 'in:ACTIVO,INACTIVO'],
             'id_area' => ['required', 'integer', 'exists:areas,id'],
         ]);
 

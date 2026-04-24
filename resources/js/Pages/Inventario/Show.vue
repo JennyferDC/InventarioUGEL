@@ -350,7 +350,7 @@ const downloadQr = () => {
                                     <div class="mb-4 flex items-start justify-between">
                                         <div>
                                             <h4 class="text-sm font-bold text-gray-900">Características / Detalles</h4>
-                                            <p class="text-[11px] text-gray-500 mt-0.5">Agrega modelo, RAM, procesador, etc. para que sea más entendible.</p>
+                                            <p class="text-[11px] text-gray-500 mt-0.5">Agrega detalles del equipo como color, modelo, RAM, procesador, etc.</p>
                                         </div>
                                         <button
                                             type="button"

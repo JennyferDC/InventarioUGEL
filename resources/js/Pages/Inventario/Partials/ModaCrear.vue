@@ -351,7 +351,7 @@ defineExpose({ resetForm });
                                             Características
                                         </div>
                                         <div class="text-xs text-gray-500 mt-1">
-                                            Agrega modelo, RAM, procesador, etc. para que sea más entendible.
+                                            Agrega detalles del equipo como color, modelo, RAM, procesador, etc.
                                         </div>
                                     </div>
                                     <button

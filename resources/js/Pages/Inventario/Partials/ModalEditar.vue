@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch } from "vue";
+import { reactive, watch, ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 
 const CARACTERISTICAS_POR_DEFECTO = [
@@ -54,6 +54,35 @@ const form = reactive({
     caracteristicas: [],
 });
 
+const searchPersona = ref("");
+const showDropdown = ref(false);
+
+const filteredPersonas = computed(() => {
+    const q = searchPersona.value.toLowerCase();
+    if (!q) return props.personas.slice(0, 50);
+    return props.personas.filter(p => {
+        const text = `${p.nombre_completo} ${p.area?.nombre || ''}`.toLowerCase();
+        return text.includes(q);
+    }).slice(0, 50);
+});
+
+const selectPersona = (persona) => {
+    if (persona) {
+        form.id_persona = persona.id;
+        searchPersona.value = `${persona.nombre_completo} - ${persona.area ? persona.area.nombre : ''}`;
+    } else {
+        form.id_persona = "";
+        searchPersona.value = "";
+    }
+    showDropdown.value = false;
+};
+
+const handleBlur = () => {
+    setTimeout(() => {
+        showDropdown.value = false;
+    }, 200);
+};
+
 watch(
     () => props.equipo,
     (value) => {
@@ -71,6 +100,15 @@ watch(
                   valor: item?.valor ?? "",
               }))
             : [];
+            
+        if (form.id_persona && props.personas.length) {
+            const persona = props.personas.find(p => p.id === form.id_persona);
+            if (persona) {
+                searchPersona.value = `${persona.nombre_completo} - ${persona.area ? persona.area.nombre : ''}`;
+            }
+        } else {
+            searchPersona.value = "";
+        }
     },
     { immediate: true },
 );
@@ -273,6 +311,7 @@ const quitarCaracteristica = (index) => {
                                     class="block text-sm font-medium text-gray-700"
                                     >Fecha de ingreso</label
                                 >
+                                <p class="text-[11px] text-gray-500 mb-1">Es cuando el área de informática recibe el equipo</p>
                                 <input
                                     id="equipo_fecha_ingreso"
                                     v-model="form.fecha_ingreso"
@@ -286,8 +325,9 @@ const quitarCaracteristica = (index) => {
                                 <label
                                     for="equipo_fecha"
                                     class="block text-sm font-medium text-gray-700"
-                                    >Fecha disponible</label
+                                    >Disponible desde</label
                                 >
+                                <p class="text-[11px] text-gray-500 mb-1">Es cuando se comienza a utilizar el equipo</p>
                                 <input
                                     id="equipo_fecha"
                                     v-model="form.fecha_disponible_uso"
@@ -297,27 +337,47 @@ const quitarCaracteristica = (index) => {
                                 />
                             </div>
 
-                            <div class="md:col-span-2">
+                            <div class="md:col-span-2 relative">
                                 <label
                                     for="equipo_persona"
                                     class="block text-sm font-medium text-gray-700"
                                     >Responsable</label
                                 >
-                                <select
-                                    id="equipo_persona"
-                                    v-model="form.id_persona"
-                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
-                                    :disabled="loading"
-                                >
-                                    <option value="">Sin asignar</option>
-                                    <option
-                                        v-for="persona in personas"
-                                        :key="persona.id"
-                                        :value="persona.id"
+                                <div class="relative mt-1">
+                                    <input
+                                        id="equipo_persona"
+                                        v-model="searchPersona"
+                                        type="text"
+                                        class="block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
+                                        placeholder="Buscar por nombre o área..."
+                                        :disabled="loading"
+                                        @focus="showDropdown = true"
+                                        @blur="handleBlur"
+                                    />
+                                    <div
+                                        v-if="showDropdown"
+                                        class="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
                                     >
-                                        {{ persona.nombre_completo }}{{ persona.area ? ` - ${persona.area.nombre}` : '' }}
-                                    </option>
-                                </select>
+                                        <div
+                                            class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            @click="selectPersona(null)"
+                                        >
+                                            Sin asignar
+                                        </div>
+                                        <div
+                                            v-for="persona in filteredPersonas"
+                                            :key="persona.id"
+                                            class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            @click="selectPersona(persona)"
+                                        >
+                                            <div class="font-medium">{{ persona.nombre_completo }}</div>
+                                            <div class="text-xs text-gray-500">{{ persona.area ? persona.area.nombre : 'Sin área' }}</div>
+                                        </div>
+                                        <div v-if="filteredPersonas.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                            No se encontraron resultados
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="md:col-span-2">
@@ -328,8 +388,8 @@ const quitarCaracteristica = (index) => {
                                         >
                                             Características
                                         </div>
-                                        <div class="text-xs text-gray-500">
-                                            Agrega modelo, RAM, procesador, etc.
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Agrega modelo, RAM, procesador, etc. para que sea más entendible.
                                         </div>
                                     </div>
                                     <button
@@ -362,7 +422,7 @@ const quitarCaracteristica = (index) => {
                                                 :for="`car_edit_clave_${index}`"
                                                 class="block text-xs font-semibold text-gray-600"
                                             >
-                                                Clave
+                                                Característica
                                             </label>
                                             <div class="relative mt-1">
                                                 <input
@@ -399,7 +459,7 @@ const quitarCaracteristica = (index) => {
                                                 :for="`car_edit_valor_${index}`"
                                                 class="block text-xs font-semibold text-gray-600"
                                             >
-                                                Valor
+                                                Detalle
                                             </label>
                                             <input
                                                 :id="`car_edit_valor_${index}`"

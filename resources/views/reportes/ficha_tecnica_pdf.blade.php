@@ -90,6 +90,7 @@
                 <th>Vida Útil Estimada</th>
                 <td>{{ $equipo->vida_util_anios ? $equipo->vida_util_anios . ' años' : 'No especificada' }}</td>
             </tr>
+            @if(!empty($filtros['incluir_datos_responsable']))
             <tr>
                 <th>Responsable Asignado</th>
                 <td>{{ $equipo->persona ? $equipo->persona->nombre_completo : 'Sin asignar' }}</td>
@@ -98,6 +99,13 @@
                 <th>Área del Responsable</th>
                 <td>{{ ($equipo->persona && $equipo->persona->area) ? $equipo->persona->area->nombre : '-' }}</td>
             </tr>
+            @if($equipo->persona && $equipo->persona->celular)
+            <tr>
+                <th>Celular del Responsable</th>
+                <td>{{ $equipo->persona->celular }}</td>
+            </tr>
+            @endif
+            @endif
         </tbody>
     </table>
 
@@ -116,6 +124,28 @@
             @endforelse
         </tbody>
     </table>
+    
+    @if(!empty($filtros['incluir_otros_equipos']) && count($otros_equipos) > 0)
+    <div class="section-title" style="margin-top: 20px;">Otros Equipos Asignados a la Persona</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($otros_equipos as $otro)
+            <tr>
+                <td>{{ $otro->cod_informatica }}</td>
+                <td>{{ $otro->tipo }}</td>
+                <td>{{ $otro->estado }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
     
     <div style="margin-top: 50px; text-align: center;">
         <p>______________________________________</p>

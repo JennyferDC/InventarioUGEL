@@ -22,6 +22,8 @@ class ReporteController extends Controller
             $query->where('id', $filtros['equipo_id'] ?? 0);
         } elseif ($tipo === 'historial_ingresos') {
             $query->whereBetween('fecha_ingreso', [$filtros['fecha_inicio'] ?? '1900-01-01', $filtros['fecha_fin'] ?? '2100-01-01']);
+        } elseif ($tipo === 'inventario_persona') {
+            $query->where('id_persona', $filtros['persona_id'] ?? 0);
         } elseif ($tipo === 'inventario_area') {
             $query->whereHas('persona', function ($q) use ($filtros) {
                 $q->whereIn('id_area', $filtros['areas'] ?? []);
@@ -46,13 +48,23 @@ class ReporteController extends Controller
         if ($request->tipo_reporte === 'ficha_tecnica') {
             $equipo = $equipos->first();
             if (!$equipo) return abort(404, 'Equipo no encontrado');
-            $pdf = Pdf::loadView('reportes.ficha_tecnica_pdf', compact('equipo'));
+            
+            $filtros = $request->filtros;
+            $otros_equipos = collect();
+            if (!empty($filtros['incluir_otros_equipos']) && $equipo->persona) {
+                $otros_equipos = Equipo::where('id_persona', $equipo->persona->id)
+                                        ->where('id', '!=', $equipo->id)
+                                        ->get();
+            }
+
+            $pdf = Pdf::loadView('reportes.ficha_tecnica_pdf', compact('equipo', 'filtros', 'otros_equipos'));
             return $pdf->download('ficha_tecnica_' . $equipo->cod_informatica . '.pdf');
         }
 
         $titulo = "Reporte General de Equipos";
         if ($request->tipo_reporte === 'historial_ingresos') $titulo = "Historial de Ingresos";
         if ($request->tipo_reporte === 'inventario_area') $titulo = "Inventario por Áreas";
+        if ($request->tipo_reporte === 'inventario_persona') $titulo = "Equipos Asignados al Responsable";
 
         $pdf = Pdf::loadView('reportes.equipos_pdf', compact('equipos', 'titulo'));
         return $pdf->download('reporte_' . date('Y_m_d_H_i_s') . '.pdf');

@@ -3,6 +3,8 @@ import { ref, watch, computed } from "vue";
 import { useForm, Link } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import QrcodeVue from "qrcode.vue";
+import ModalFichaTecnica from "./Partials/ModalFichaTecnica.vue";
+import axios from "axios";
 
 const props = defineProps({
     equipo: {
@@ -51,6 +53,64 @@ const form = useForm({
 });
 
 const showSuccess = ref(false);
+const showModalFicha = ref(false);
+const linkCopiado = ref(false);
+
+const copiarLink = () => {
+    navigator.clipboard.writeText(currentUrl.value);
+    linkCopiado.value = true;
+    setTimeout(() => {
+        linkCopiado.value = false;
+    }, 2000);
+};
+
+const downloadReporteAxios = async (tipo_reporte, filtros) => {
+    try {
+        const response = await axios.post(route('reportes.equipos.pdf'), {
+            tipo_reporte,
+            filtros
+        }, {
+            responseType: 'blob'
+        });
+        
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        
+        let filename = 'reporte.pdf';
+        const disposition = response.headers['content-disposition'];
+        if (disposition && disposition.indexOf('attachment') !== -1) {
+            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            const matches = filenameRegex.exec(disposition);
+            if (matches != null && matches[1]) { 
+                filename = matches[1].replace(/['"]/g, '');
+            }
+        }
+        
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error("Error downloading PDF", error);
+    }
+};
+
+const handleDownloadFicha = (opciones) => {
+    downloadReporteAxios('ficha_tecnica', {
+        equipo_id: form.id,
+        incluir_datos_responsable: opciones.incluir_datos_responsable ? 1 : 0,
+        incluir_otros_equipos: opciones.incluir_otros_equipos ? 1 : 0,
+    });
+};
+
+const handleDownloadPersona = () => {
+    if (!props.equipo.persona) return;
+    downloadReporteAxios('inventario_persona', {
+        persona_id: props.equipo.persona.id
+    });
+};
 
 const handleSubmit = () => {
     form.put(route("equipos.update", form.id), {
@@ -116,18 +176,30 @@ const downloadQr = () => {
                     </h2>
                 </div>
 
-                <button
-                    type="button"
-                    :disabled="form.processing || !form.isDirty"
-                    class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-ugel-guinda disabled:opacity-50 disabled:bg-gray-400 transition-all duration-200"
-                    @click="handleSubmit"
-                >
-                    <svg v-if="form.processing" class="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Guardar cambios
-                </button>
+                <div class="flex items-center gap-4">
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all duration-200"
+                        @click="showModalFicha = true"
+                    >
+                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Descargar ficha técnica
+                    </button>
+                    <button
+                        type="button"
+                        :disabled="form.processing || !form.isDirty"
+                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-ugel-guinda disabled:opacity-50 disabled:bg-gray-400 transition-all duration-200"
+                        @click="handleSubmit"
+                    >
+                        <svg v-if="form.processing" class="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Guardar cambios
+                    </button>
+                </div>
             </div>
         </template>
 
@@ -232,6 +304,7 @@ const downloadQr = () => {
                                     <!-- Fechas -->
                                     <div>
                                         <label for="fecha_ingreso" class="block text-sm font-medium text-gray-700">Fecha de ingreso</label>
+                                        <p class="text-[11px] text-gray-500 mb-1">Es cuando el área de informática recibe el equipo</p>
                                         <input
                                             id="fecha_ingreso"
                                             v-model="form.fecha_ingreso"
@@ -241,6 +314,7 @@ const downloadQr = () => {
                                     </div>
                                     <div>
                                         <label for="fecha_disp" class="block text-sm font-medium text-gray-700">Disponible desde</label>
+                                        <p class="text-[11px] text-gray-500 mb-1">Es cuando se comienza a utilizar el equipo</p>
                                         <input
                                             id="fecha_disp"
                                             v-model="form.fecha_disponible_uso"
@@ -273,8 +347,11 @@ const downloadQr = () => {
 
                                 <!-- Características -->
                                 <div class="mt-8 border-t border-gray-100 pt-6">
-                                    <div class="mb-4 flex items-center justify-between">
-                                        <h4 class="text-sm font-bold text-gray-900">Características / Detalles</h4>
+                                    <div class="mb-4 flex items-start justify-between">
+                                        <div>
+                                            <h4 class="text-sm font-bold text-gray-900">Características / Detalles</h4>
+                                            <p class="text-[11px] text-gray-500 mt-0.5">Agrega modelo, RAM, procesador, etc. para que sea más entendible.</p>
+                                        </div>
                                         <button
                                             type="button"
                                             class="inline-flex items-center gap-1 rounded-md bg-ugel-azul/10 px-2.5 py-1.5 text-xs font-semibold text-ugel-azul hover:bg-ugel-azul/20"
@@ -326,15 +403,7 @@ const downloadQr = () => {
                                     </div>
                                 </div>
 
-                                <div class="hidden sm:flex justify-end pt-4 border-t border-gray-100">
-                                    <button
-                                        type="submit"
-                                        :disabled="form.processing"
-                                        class="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-6 py-2.5 text-sm font-semibold text-gray-600 shadow-sm hover:bg-gray-200 disabled:opacity-50 transition"
-                                    >
-                                        Actualizar información
-                                    </button>
-                                </div>
+
                             </form>
                         </div>
                     </div>
@@ -351,8 +420,19 @@ const downloadQr = () => {
                             <div id="qr-container" class="bg-white p-4 rounded-xl shadow-inner border border-gray-100 inline-block">
                                 <qrcode-vue :value="currentUrl" :size="180" level="M" render-as="canvas" />
                             </div>
-                            <div class="mt-4 text-xs font-mono bg-gray-100 text-gray-600 px-3 py-1 rounded-md mb-6">
-                                {{ form.cod_informatica }}
+                            <div class="mt-4 flex items-center justify-center gap-2 mb-6">
+                                <div class="text-xs font-mono bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md">
+                                    {{ form.cod_informatica }}
+                                </div>
+                                <button
+                                    type="button"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-md transition border border-transparent"
+                                    :class="linkCopiado ? 'bg-green-100 text-green-700' : 'text-ugel-azul bg-ugel-azul/10 hover:bg-ugel-azul/20'"
+                                    @click="copiarLink"
+                                    title="Copiar enlace"
+                                >
+                                    {{ linkCopiado ? 'Enlace copiado' : 'Copiar enlace' }}
+                                </button>
                             </div>
 
                             <button
@@ -369,20 +449,50 @@ const downloadQr = () => {
 
                         <!-- Equipos del Responsable -->
                         <div v-if="equipo.persona" class="bg-white shadow-xl rounded-2xl overflow-hidden">
-                            <div class="border-b border-gray-100 px-6 py-4 bg-gray-50">
-                                <h3 class="text-sm font-bold text-gray-900">
-                                    Otros equipos asignados
-                                </h3>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Responsable: {{ equipo.persona.nombre_completo }}
-                                </p>
+                            <div class="border-b border-gray-100 px-6 py-4 bg-gray-50 flex items-start justify-between">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="text-sm font-bold text-gray-900">
+                                            {{ equipo.persona.nombre_completo }}
+                                        </h3>
+                                        <span :class="[
+                                            'px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide',
+                                            equipo.persona.estado === 'ACTIVO' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                        ]">
+                                            {{ equipo.persona.estado || 'ACTIVO' }}
+                                        </span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 flex flex-col gap-1">
+                                        <span v-if="equipo.persona.area" class="flex items-center gap-1.5">
+                                            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                            {{ equipo.persona.area.nombre }}
+                                        </span>
+                                        <span v-if="equipo.persona.celular" class="flex items-center gap-1.5">
+                                            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                            {{ equipo.persona.celular }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="p-1.5 text-ugel-azul hover:bg-ugel-azul/10 rounded-md transition border border-transparent hover:border-ugel-azul/20"
+                                    title="Descargar PDF de equipos"
+                                    @click="handleDownloadPersona"
+                                >
+                                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="px-6 py-3 bg-gray-50/50 border-b border-gray-100">
+                                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Otros dispositivos asignados</h4>
                             </div>
                             <div class="p-0">
                                 <ul v-if="otrosEquipos.length > 0" class="divide-y divide-gray-100">
-                                    <li v-for="otro in otrosEquipos" :key="otro.id" class="px-6 py-4 hover:bg-gray-50 transition">
-                                        <Link :href="route('equipos.showByCodigo', otro.cod_informatica)" class="flex justify-between items-center group">
+                                    <li v-for="otro in otrosEquipos" :key="otro.id" class="px-6 py-4 hover:bg-gray-50 transition cursor-pointer group/item">
+                                        <Link :href="route('equipos.showByCodigo', otro.cod_informatica)" class="flex justify-between items-center group/link w-full">
                                             <div>
-                                                <p class="text-sm font-semibold text-gray-800 group-hover:text-ugel-azul transition">{{ otro.cod_informatica }}</p>
+                                                <p class="text-sm font-semibold text-gray-800 group-hover/item:text-ugel-azul group-hover/item:underline transition">{{ otro.cod_informatica }}</p>
                                                 <p class="text-xs text-gray-500">{{ otro.tipo }}</p>
                                             </div>
                                             <span
@@ -405,5 +515,12 @@ const downloadQr = () => {
                 </div>
             </div>
         </div>
+        
+        <ModalFichaTecnica 
+            :show="showModalFicha" 
+            :equipo-id="equipo.id" 
+            @close="showModalFicha = false" 
+            @download="handleDownloadFicha" 
+        />
     </AppLayout>
 </template>

@@ -15,19 +15,19 @@ class PersonaSeeder extends Seeder
                 'nombre_completo' => 'Juan Pérez',
                 'celular' => '987654321',
                 'estado' => 'ACTIVO',
-                'id_area' => 1,
+                'id_oficina' => 1,
             ],
             [
                 'nombre_completo' => 'María López',
                 'celular' => '912345678',
                 'estado' => 'ACTIVO',
-                'id_area' => 2,
+                'id_oficina' => 2,
             ],
             [
                 'nombre_completo' => 'Carlos Ramírez',
                 'celular' => '998877665',
                 'estado' => 'INACTIVO',
-                'id_area' => 3,
+                'id_oficina' => 3,
             ],
         ]);
     }

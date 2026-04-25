@@ -15,15 +15,15 @@ class Persona extends Model
         'nombre_completo',
         'celular',
         'estado',
-        'id_area',
+        'id_oficina',
     ];
 
     /**
-     * Relación: Persona pertenece a un Área
+     * Relación: Persona pertenece a un Área o a una Oficina
      */
-    public function area()
+    public function oficina()
     {
-        return $this->belongsTo(Area::class, 'id_area');
+        return $this->belongsTo(Oficina::class, 'id_oficina');
     }
 
     /**

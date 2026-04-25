@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Persona;
-use App\Models\Area;
+use App\Models\Oficina;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,19 +16,19 @@ class PersonaController extends Controller
      */
     public function index(): Response
     {
-        $personas = Persona::select('id', 'nombre_completo', 'celular', 'estado', 'id_area', 'created_at')
-            ->with(['area:id,nombre', 'equipos'])
+        $personas = Persona::select('id', 'nombre_completo', 'celular', 'estado', 'id_oficina', 'created_at')
+            ->with(['oficina:id,nombre', 'equipos'])
             ->withCount('equipos')
             ->orderBy('nombre_completo')
             ->get();
 
-        $areas = Area::select('id', 'nombre')
+        $oficinas = Oficina::select('id', 'nombre')
             ->orderBy('nombre')
             ->get();
 
         return Inertia::render('Personas/Index', [
             'personas' => $personas,
-            'areas' => $areas,
+            'oficinas' => $oficinas,
         ]);
     }
 
@@ -41,14 +41,14 @@ class PersonaController extends Controller
             'nombre_completo' => ['required', 'string', 'max:255'],
             'celular' => ['nullable', 'string', 'max:20'],
             'estado' => ['required', 'in:ACTIVO,INACTIVO'],
-            'id_area' => ['required', 'integer', 'exists:areas,id'],
+            'id_oficina' => ['required', 'integer', 'exists:oficinas,id'],
         ]);
 
         $persona = Persona::create($data);
 
         return response()->json([
             'message' => 'Persona creada correctamente.',
-            'data' => $persona->load('area:id,nombre'),
+            'data' => $persona->load('oficina:id,nombre'),
         ], 201);
     }
 
@@ -58,7 +58,7 @@ class PersonaController extends Controller
     public function show(Persona $persona): JsonResponse
     {
         return response()->json([
-            'data' => $persona->load('area:id,nombre'),
+            'data' => $persona->load('oficina:id,nombre'),
         ]);
     }
 
@@ -71,14 +71,14 @@ class PersonaController extends Controller
             'nombre_completo' => ['required', 'string', 'max:255'],
             'celular' => ['nullable', 'string', 'max:20'],
             'estado' => ['required', 'in:ACTIVO,INACTIVO'],
-            'id_area' => ['required', 'integer', 'exists:areas,id'],
+            'id_oficina' => ['required', 'integer', 'exists:oficinas,id'],
         ]);
 
         $persona->update($data);
 
         return response()->json([
             'message' => 'Persona actualizada correctamente.',
-            'data' => $persona->fresh()->load('area:id,nombre'),
+            'data' => $persona->fresh()->load('oficina:id,nombre'),
         ]);
     }
 

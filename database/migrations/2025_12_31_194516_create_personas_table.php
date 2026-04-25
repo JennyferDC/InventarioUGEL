@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('celular')->nullable(); // celular : varchar
             $table->enum('estado', ['ACTIVO', 'INACTIVO'])->default('ACTIVO'); // estado : enum
 
-            // FK -> areas
-            $table->foreignId('id_area')
-                  ->constrained('areas')
+            // FK -> oficinas
+            $table->foreignId('id_oficina')
+                  ->constrained('oficinas')
                   ->onDelete('restrict');
 
             $table->timestamps();

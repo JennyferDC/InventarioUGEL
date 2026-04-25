@@ -4,6 +4,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ArchivoInventarioController;
 use App\Http\Controllers\CaracteristicaEquipoController;
 use App\Http\Controllers\EquipoController;
+use App\Http\Controllers\OficinaController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UsuarioController;
@@ -39,6 +40,13 @@ Route::middleware([
     Route::get('/personas/{persona}', [PersonaController::class, 'show'])->name('personas.show');
     Route::put('/personas/{persona}', [PersonaController::class, 'update'])->name('personas.update');
     Route::delete('/personas/{persona}', [PersonaController::class, 'destroy'])->name('personas.destroy');
+
+    Route::get('/oficinas', [OficinaController::class, 'index'])->name('oficinas.index');
+    Route::post('/oficinas', [OficinaController::class, 'store'])->name('oficinas.store');
+    Route::get('/oficinas/{oficina}', [OficinaController::class, 'show'])->name('oficinas.show');
+    Route::put('/oficinas/{oficina}', [OficinaController::class, 'update'])->name('oficinas.update');
+    Route::delete('/oficinas/{oficina}', [OficinaController::class, 'destroy'])->name('oficinas.destroy');
+
 
     Route::get('/inventario', [EquipoController::class, 'index'])->name('equipos.index');
     Route::post('/inventario', [EquipoController::class, 'store'])->name('equipos.store');

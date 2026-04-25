@@ -7,7 +7,7 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    areas: {
+    oficinas: {
         type: Array,
         default: () => [],
     },
@@ -21,12 +21,12 @@ const emit = defineEmits(["close", "save"]);
 
 const form = reactive({
     nombre_completo: "",
-    id_area: "",
+    id_oficina: "",
 });
 
 const resetForm = () => {
     form.nombre_completo = "";
-    form.id_area = "";
+    form.id_oficina = "";
 };
 
 const handleClose = () => {
@@ -37,7 +37,7 @@ const handleClose = () => {
 const handleSubmit = () => {
     emit("save", {
         nombre_completo: form.nombre_completo,
-        id_area: form.id_area,
+        id_oficina: form.id_oficina,
     });
 };
 
@@ -71,24 +71,24 @@ defineExpose({ resetForm });
 
                 <div>
                     <label
-                        for="persona_area"
+                        for="persona_oficina"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Área
+                        Oficina
                     </label>
                     <select
-                        id="persona_area"
-                        v-model="form.id_area"
+                        id="persona_oficina"
+                        v-model="form.id_oficina"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
                         :disabled="loading"
                     >
-                        <option value="" disabled>Selecciona un área</option>
+                        <option value="" disabled>Selecciona una oficina</option>
                         <option
-                            v-for="area in areas"
-                            :key="area.id"
-                            :value="area.id"
+                            v-for="oficina in oficinas"
+                            :key="oficina.id"
+                            :value="oficina.id"
                         >
-                            {{ area.nombre }}
+                            {{ oficina.nombre }}
                         </option>
                     </select>
                 </div>
@@ -110,7 +110,7 @@ defineExpose({ resetForm });
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
                 :disabled="
-                    loading || !form.nombre_completo.trim() || !form.id_area
+                    loading || !form.nombre_completo.trim() || !form.id_oficina
                 "
             >
                 <svg

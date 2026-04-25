@@ -11,7 +11,7 @@ const props = defineProps({
         type: Object,
         default: null,
     },
-    areas: {
+    oficinas: {
         type: Array,
         default: () => [],
     },
@@ -26,7 +26,7 @@ const emit = defineEmits(["close", "save"]);
 const form = reactive({
     id: null,
     nombre_completo: "",
-    id_area: "",
+    id_oficina: "",
 });
 
 watch(
@@ -34,7 +34,7 @@ watch(
     (value) => {
         form.id = value?.id ?? null;
         form.nombre_completo = value?.nombre_completo ?? "";
-        form.id_area = value?.id_area ?? "";
+        form.id_oficina = value?.id_oficina ?? "";
     },
     { immediate: true }
 );
@@ -45,7 +45,7 @@ const handleSubmit = () => {
     emit("save", {
         id: form.id,
         nombre_completo: form.nombre_completo,
-        id_area: form.id_area,
+        id_oficina: form.id_oficina,
     });
 };
 </script>
@@ -77,24 +77,24 @@ const handleSubmit = () => {
 
                 <div>
                     <label
-                        for="id_area"
+                        for="id_oficina"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Área
+                        Oficina
                     </label>
                     <select
-                        id="id_area"
-                        v-model="form.id_area"
+                        id="id_oficina"
+                        v-model="form.id_oficina"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
                         :disabled="loading"
                     >
-                        <option value="" disabled>Selecciona un área</option>
+                        <option value="" disabled>Selecciona una oficina</option>
                         <option
-                            v-for="area in areas"
-                            :key="area.id"
-                            :value="area.id"
+                            v-for="oficina in oficinas"
+                            :key="oficina.id"
+                            :value="oficina.id"
                         >
-                            {{ area.nombre }}
+                            {{ oficina.nombre }}
                         </option>
                     </select>
                 </div>
@@ -150,7 +150,7 @@ const handleSubmit = () => {
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
                 :disabled="
-                    loading || !form.nombre_completo.trim() || !form.id_area
+                    loading || !form.nombre_completo.trim() || !form.id_oficina
                 "
             >
                 <svg

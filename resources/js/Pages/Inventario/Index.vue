@@ -199,7 +199,7 @@ const filteredEquipos = computed(() => {
             equipo.cod_informatica?.toLowerCase().includes(term) ||
             equipo.tipo?.toLowerCase().includes(term) ||
             equipo.persona?.nombre_completo?.toLowerCase().includes(term) ||
-            equipo.persona?.area?.nombre?.toLowerCase().includes(term);
+            equipo.persona?.oficina?.area?.nombre?.toLowerCase().includes(term);
 
         const coincideEstado =
             estado === "todos" ||
@@ -443,8 +443,8 @@ const confirmarEliminacion = async () => {
                                     <td class="px-6 py-4">
                                         <div v-if="equipo.persona" class="flex flex-col">
                                             <span class="text-sm text-gray-700">{{ equipo.persona.nombre_completo }}</span>
-                                            <span v-if="equipo.persona.area" class="text-xs text-gray-500 mt-0.5">
-                                                {{ equipo.persona.area.nombre }}
+                                            <span v-if="equipo.persona.oficina?.area" class="text-xs text-gray-500 mt-0.5">
+                                                {{ equipo.persona.oficina.area.nombre }}
                                             </span>
                                         </div>
                                         <span v-else class="text-sm text-gray-700">No asignado</span>

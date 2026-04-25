@@ -180,5 +180,5 @@ const filteredOficinas = computed(() => {
                 
             </div>
         </section>
-    </AppLayout>
+                                  </AppLayout>
 </template>

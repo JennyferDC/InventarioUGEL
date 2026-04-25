@@ -13,7 +13,7 @@ class ReporteController extends Controller
         $tipo = $request->tipo_reporte;
         $filtros = $request->filtros;
         
-        $query = Equipo::with('persona.area', 'caracteristicas');
+        $query = Equipo::with('persona.oficina.area', 'caracteristicas');
 
         if ($tipo === 'inventario_general') {
             $query->whereIn('tipo', $filtros['tipos'] ?? [])
@@ -25,8 +25,8 @@ class ReporteController extends Controller
         } elseif ($tipo === 'inventario_persona') {
             $query->where('id_persona', $filtros['persona_id'] ?? 0);
         } elseif ($tipo === 'inventario_area') {
-            $query->whereHas('persona', function ($q) use ($filtros) {
-                $q->whereIn('id_area', $filtros['areas'] ?? []);
+            $query->whereHas('persona.oficina', function ($q) use ($filtros) {
+                $q->whereIn('area_id', $filtros['areas'] ?? []);
             });
         }
         
@@ -112,7 +112,7 @@ class ReporteController extends Controller
                     $equipo->fecha_ingreso ? date('d/m/Y', strtotime($equipo->fecha_ingreso)) : 'S/R',
                     $equipo->vida_util_anios ?? '-',
                     $equipo->persona ? $equipo->persona->nombre_completo : 'Sin asignar',
-                    ($equipo->persona && $equipo->persona->area) ? $equipo->persona->area->nombre : '-'
+                    ($equipo->persona && $equipo->persona->oficina && $equipo->persona->oficina->area) ? $equipo->persona->oficina->area->nombre : '-'
                 ];
                 fputcsv($file, $row, ',');
             }

@@ -44,7 +44,7 @@ const filteredPersonas = computed(() => {
     const q = searchPersona.value.toLowerCase();
     if (!q) return props.personas.slice(0, 50);
     return props.personas.filter(p => {
-        const text = `${p.nombre_completo} ${p.area?.nombre || ''}`.toLowerCase();
+        const text = `${p.nombre_completo} ${p.oficina?.area?.nombre || ''}`.toLowerCase();
         return text.includes(q);
     }).slice(0, 50);
 });
@@ -52,7 +52,7 @@ const filteredPersonas = computed(() => {
 const selectPersona = (persona) => {
     if (persona) {
         form.id_persona = persona.id;
-        searchPersona.value = `${persona.nombre_completo} - ${persona.area ? persona.area.nombre : ''}`;
+        searchPersona.value = `${persona.nombre_completo} - ${persona.oficina?.area ? persona.oficina.area.nombre : ''}`;
     } else {
         form.id_persona = "";
         searchPersona.value = "";
@@ -333,7 +333,7 @@ defineExpose({ resetForm });
                                             @click="selectPersona(persona)"
                                         >
                                             <div class="font-medium">{{ persona.nombre_completo }}</div>
-                                            <div class="text-xs text-gray-500">{{ persona.area ? persona.area.nombre : 'Sin área' }}</div>
+                                            <div class="text-xs text-gray-500">{{ persona.oficina?.area ? persona.oficina.area.nombre : 'Sin área' }}</div>
                                         </div>
                                         <div v-if="filteredPersonas.length === 0" class="px-4 py-2 text-sm text-gray-500">
                                             No se encontraron resultados

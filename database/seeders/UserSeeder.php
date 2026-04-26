@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Administrador del Sistema',
                 'email' => 'admin@sistema.com',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make('admin@sistema.com'),
                 'rol' => 'ADMIN',
                 'activo' => true,
                 'created_at' => now(),
@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Usuario Miembro',
                 'email' => 'miembro@sistema.com',
-                'password' => Hash::make('miembro123'),
+                'password' => Hash::make('miembro@sistema.com'),
                 'rol' => 'MIEMBRO',
                 'activo' => true,
                 'created_at' => now(),

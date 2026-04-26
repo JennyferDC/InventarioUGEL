@@ -12,18 +12,16 @@ class CronogramaMantenimiento extends Model
     protected $table = 'cronograma_mantenimientos';
 
     protected $fillable = [
-        'anio',
-        'fecha_inicio',
-        'fecha_fin',
-        'id_area',
+        'titulo',
+        'descripcion',
     ];
 
     /**
-     * Cronograma pertenece a un Área
+     * Cronograma tiene muchos items
      */
-    public function area()
+    public function items()
     {
-        return $this->belongsTo(Area::class, 'id_area');
+        return $this->hasMany(ItemCronograma::class, 'id_cronograma');
     }
 
     /**

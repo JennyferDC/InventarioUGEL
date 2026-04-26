@@ -110,25 +110,33 @@ const cerrarModalEliminar = () => {
     personaSeleccionada.value = null;
 };
 
+const abrirModalDarDeBaja = (persona) => {
+    cerrarModalEditar();
+    abrirModalEliminar(persona);
+};
+
 const confirmarEliminacion = async () => {
     if (!personaSeleccionada.value) return;
 
     deleting.value = true;
 
     try {
-        await axios.delete(
+        const { data } = await axios.delete(
             route("personas.destroy", personaSeleccionada.value.id)
         );
-        personas.value = personas.value.filter(
-            (persona) => persona.id !== personaSeleccionada.value.id
-        );
+        const updated = data?.data;
+        if (updated) {
+            personas.value = personas.value.map((persona) =>
+                persona.id === updated.id ? { ...persona, ...updated } : persona
+            );
+        }
         cerrarModalEliminar();
-        triggerMessage("success", "Persona eliminada correctamente.");
+        triggerMessage("success", "Estado de la cuenta actualizado correctamente.");
     } catch (error) {
         triggerMessage(
             "error",
             error.response?.data?.message ||
-                "No se pudo eliminar a la persona. Intenta nuevamente."
+                "No se pudo actualizar el estado de la persona. Intenta nuevamente."
         );
     } finally {
         deleting.value = false;
@@ -284,9 +292,9 @@ const crearPersona = async (payload) => {
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">#</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Nombre completo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Oficina</th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Equipos asignados</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Registrado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Oficina / Área</th>
+                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Estado</th>
+                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Equipos</th>
                                     <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Acciones</th>
                                 </tr>
                             </thead>
@@ -294,14 +302,22 @@ const crearPersona = async (payload) => {
                                 <tr v-for="persona in filteredPersonas" :key="persona.id" class="hover:bg-ugel-azul/5 transition">
                                     <td class="px-6 py-4 text-sm text-gray-600 font-semibold">#{{ persona.id }}</td>
                                     <td class="px-6 py-4 text-sm text-ugel-guinda font-semibold">{{ persona.nombre_completo }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-700">{{ persona.oficina?.nombre ?? "Sin oficina" }}</td>
+                                    <td class="px-6 py-4 text-sm">
+                                        <div class="font-medium text-gray-700">{{ persona.oficina?.nombre ?? "Sin oficina" }}</div>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-wide font-medium">{{ persona.oficina?.area?.nombre ?? "Sin área" }}</div>
+                                    </td>
                                     <td class="px-6 py-4 text-center">
-                                        <span class="inline-flex items-center justify-center bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-full px-3 py-1 text-xs">
-                                            {{ persona.equipos_count ?? 0 }} {{ persona.equipos_count === 1 ? 'equipo' : 'equipos' }}
+                                        <span 
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border"
+                                            :class="persona.estado === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'"
+                                        >
+                                            {{ persona.estado }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                        {{ new Date(persona.created_at).toLocaleDateString("es-PE", { year: "numeric", month: "short", day: "numeric" }) }}
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center justify-center bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-full px-3 py-1 text-xs">
+                                            {{ persona.equipos_count ?? 0 }} 
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-3">
@@ -312,15 +328,6 @@ const crearPersona = async (payload) => {
                                             >
                                                 <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652l-1.688 1.687m-2.651-2.651L6.312 17.513a4.5 4.5 0 00-1.053 1.682l-.795 2.385a.563.563 0 00.711.71l2.385-.794a4.5 4.5 0 001.682-1.054L19.513 7.125m-2.651-2.651l2.651 2.651" />
-                                                </svg>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-600 hover:text-white transition"
-                                                @click="abrirModalEliminar(persona)"
-                                            >
-                                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0115.916 21.75H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                                                 </svg>
                                             </button>
                                         </div>
@@ -355,7 +362,8 @@ const crearPersona = async (payload) => {
             :loading="saving"
             @close="cerrarModalEditar"
             @save="guardarCambios"
-        />
+            @toggle-status="abrirModalDarDeBaja"
+            />
 
         <ModalCrear
             ref="modalCrearRef"

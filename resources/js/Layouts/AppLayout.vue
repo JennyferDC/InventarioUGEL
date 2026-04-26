@@ -177,7 +177,7 @@ const logout = () => {
                     </nav>
 
                     <!-- Logout Button -->
-                    <div class="mt-auto px-3 ">
+                    <div class="mt-auto px-3 mt-2">
                         <form @submit.prevent="logout" class="w-full">
                             <button 
                                 type="submit" 

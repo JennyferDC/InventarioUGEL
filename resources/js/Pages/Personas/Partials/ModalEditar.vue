@@ -21,12 +21,13 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["close", "save"]);
+const emit = defineEmits(["close", "save", "toggle-status"]);
 
 const form = reactive({
     id: null,
     nombre_completo: "",
     id_oficina: "",
+    estado: "ACTIVO",
 });
 
 watch(
@@ -35,6 +36,7 @@ watch(
         form.id = value?.id ?? null;
         form.nombre_completo = value?.nombre_completo ?? "";
         form.id_oficina = value?.id_oficina ?? "";
+        form.estado = value?.estado ?? "ACTIVO";
     },
     { immediate: true }
 );
@@ -46,6 +48,7 @@ const handleSubmit = () => {
         id: form.id,
         nombre_completo: form.nombre_completo,
         id_oficina: form.id_oficina,
+        estado: form.estado,
     });
 };
 </script>
@@ -57,6 +60,27 @@ const handleSubmit = () => {
         </template>
 
         <template #content>
+            <div class="mb-4 flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-700">Estado de cuenta:</span>
+                    <span 
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border"
+                        :class="persona?.estado === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'"
+                    >
+                        {{ persona?.estado || 'ACTIVO' }}
+                    </span>
+                </div>
+                <button
+                    type="button"
+                    class="text-xs font-bold px-3 py-1.5 rounded-md transition-colors border"
+                    :class="persona?.estado === 'ACTIVO' ? 'text-red-600 bg-red-50 hover:bg-red-100 border-red-200' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'"
+                    @click="emit('toggle-status', persona)"
+                >
+                    <span v-if="persona?.estado === 'ACTIVO'">Desactivar cuenta</span>
+                    <span v-else>Activar cuenta</span>
+                </button>
+            </div>
+
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
                     <label
@@ -113,7 +137,9 @@ const handleSubmit = () => {
                                     </svg>
                                 </span>
                                 <div>
-                                    <p class="text-sm font-bold text-gray-800">{{ equipo.cod_informatica }}</p>
+                                    <a :href="route('equipos.show', equipo.id)" target="_blank" class="text-sm font-bold text-gray-800 hover:text-ugel-azul hover:underline">
+                                        {{ equipo.cod_informatica }}
+                                    </a>
                                     <p class="text-xs text-gray-500">{{ equipo.tipo }}</p>
                                 </div>
                             </div>

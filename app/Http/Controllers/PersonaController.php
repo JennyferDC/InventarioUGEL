@@ -17,7 +17,7 @@ class PersonaController extends Controller
     public function index(): Response
     {
         $personas = Persona::select('id', 'nombre_completo', 'celular', 'estado', 'id_oficina', 'created_at')
-            ->with(['oficina:id,nombre', 'equipos'])
+            ->with(['oficina.area', 'equipos'])
             ->withCount('equipos')
             ->orderBy('nombre_completo')
             ->get();
@@ -40,15 +40,17 @@ class PersonaController extends Controller
         $data = $request->validate([
             'nombre_completo' => ['required', 'string', 'max:255'],
             'celular' => ['nullable', 'string', 'max:20'],
-            'estado' => ['required', 'in:ACTIVO,INACTIVO'],
+            'estado' => ['nullable', 'in:ACTIVO,INACTIVO'],
             'id_oficina' => ['required', 'integer', 'exists:oficinas,id'],
         ]);
+
+        $data['estado'] = $data['estado'] ?? 'ACTIVO';
 
         $persona = Persona::create($data);
 
         return response()->json([
             'message' => 'Persona creada correctamente.',
-            'data' => $persona->load('oficina:id,nombre'),
+            'data' => $persona->load('oficina.area'),
         ], 201);
     }
 
@@ -58,7 +60,7 @@ class PersonaController extends Controller
     public function show(Persona $persona): JsonResponse
     {
         return response()->json([
-            'data' => $persona->load('oficina:id,nombre'),
+            'data' => $persona->load('oficina.area'),
         ]);
     }
 
@@ -78,7 +80,7 @@ class PersonaController extends Controller
 
         return response()->json([
             'message' => 'Persona actualizada correctamente.',
-            'data' => $persona->fresh()->load('oficina:id,nombre'),
+            'data' => $persona->fresh()->load('oficina.area'),
         ]);
     }
 
@@ -87,10 +89,18 @@ class PersonaController extends Controller
      */
     public function destroy(Persona $persona): JsonResponse
     {
-        $persona->delete();
+        $nuevoEstado = $persona->estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+
+        if ($nuevoEstado === 'INACTIVO') {
+            // Liberar equipos
+            $persona->equipos()->update(['id_persona' => null]);
+        }
+
+        $persona->update(['estado' => $nuevoEstado]);
 
         return response()->json([
-            'message' => 'Persona eliminada correctamente.',
+            'message' => 'Estado de la cuenta actualizado correctamente.',
+            'data' => $persona->fresh()->load('oficina.area'),
         ]);
     }
 }

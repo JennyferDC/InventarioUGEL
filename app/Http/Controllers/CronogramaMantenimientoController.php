@@ -30,7 +30,19 @@ class CronogramaMantenimientoController extends Controller
 
     public function store(Request $request)
     {
-        // TODO
+        $validated = $request->validate([
+            'titulo' => 'required|string|unique:cronograma_mantenimientos,titulo',
+            'descripcion' => 'nullable|string',
+        ], [
+            'titulo.unique' => 'Ya existe un plan de mantenimiento para este año.',
+        ]);
+
+        CronogramaMantenimiento::create($validated);
+
+        return redirect()->route('mantenimiento.index')->with('flash', [
+            'banner' => 'Plan de mantenimiento creado exitosamente.',
+            'bannerStyle' => 'success',
+        ]);
     }
 
     public function show($id)

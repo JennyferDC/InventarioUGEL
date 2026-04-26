@@ -187,7 +187,7 @@ const groupedItems = computed(() => {
 </script>
 
 <template>
-    <AppLayout :title="`${plan.titulo}`">
+    <AppLayout :title="`Plan anual de mantenimiento informático - ${plan.titulo}`">
         <template #header>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
@@ -197,7 +197,7 @@ const groupedItems = computed(() => {
                         </svg>
                     </Link>
                     <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
-                        {{ plan.titulo }}
+                        Plan anual de mantenimiento informático - {{ plan.titulo }}
                     </h2>
                 </div>
             </div>

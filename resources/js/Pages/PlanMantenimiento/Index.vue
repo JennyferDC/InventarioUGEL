@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
+import ModaCrear from "./Partials/ModaCrear.vue";
 
 const props = defineProps({
     planes: {
@@ -11,14 +12,40 @@ const props = defineProps({
 });
 
 const searchQuery = ref("");
+const showCreateModal = ref(false);
+const isCreating = ref(false);
+const createErrors = ref({});
 
 const filteredPlanes = computed(() => {
     return props.planes.filter(plan => {
-        const matchesSearch = plan.titulo.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+        const fullTitle = `Plan anual de mantenimiento informático - ${plan.titulo}`;
+        const matchesSearch = fullTitle.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
                               (plan.descripcion && plan.descripcion.toLowerCase().includes(searchQuery.value.toLowerCase()));
         return matchesSearch;
     });
 });
+
+const openCreateModal = () => {
+    showCreateModal.value = true;
+};
+
+const handleSavePlan = (data) => {
+    isCreating.value = true;
+    createErrors.value = {};
+    
+    router.post(route('mantenimiento.store'), data, {
+        onSuccess: () => {
+            showCreateModal.value = false;
+        },
+        onError: (err) => {
+            createErrors.value = err;
+        },
+        onFinish: () => {
+            isCreating.value = false;
+        },
+        preserveScroll: true
+    });
+};
 </script>
 
 <template>
@@ -51,7 +78,10 @@ const filteredPlanes = computed(() => {
                         />
                     </div>
                     
-                    <button class="bg-ugel-azul hover:bg-ugel-guinda text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+                    <button 
+                        @click="openCreateModal"
+                        class="bg-ugel-azul hover:bg-ugel-guinda text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                    >
                         <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
@@ -84,8 +114,8 @@ const filteredPlanes = computed(() => {
                                 </span>
                             </div>
                             
-                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-ugel-azul transition-colors line-clamp-2 leading-tight">
-                                {{ plan.titulo }}
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-ugel-azul transition-colors line-clamp-3 leading-tight">
+                                Plan anual de mantenimiento informático - {{ plan.titulo }}
                             </h3>
                             
                             <p class="text-sm text-gray-500 line-clamp-3 mb-4 flex-1">
@@ -137,5 +167,13 @@ const filteredPlanes = computed(() => {
                 
             </div>
         </section>
+
+        <ModaCrear 
+            :show="showCreateModal"
+            :loading="isCreating"
+            :errors="createErrors"
+            @close="showCreateModal = false"
+            @save="handleSavePlan"
+        />
     </AppLayout>
 </template>

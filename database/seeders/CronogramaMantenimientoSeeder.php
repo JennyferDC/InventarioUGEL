@@ -14,12 +14,12 @@ class CronogramaMantenimientoSeeder extends Seeder
     public function run(): void
     {
         CronogramaMantenimiento::create([
-            'titulo' => 'Plan de Mantenimiento Anual 2026',
+            'titulo' => '2026',
             'descripcion' => 'Cronograma general de mantenimiento preventivo, predictivo y correctivo para todas las oficinas en el año 2026.'
         ]);
         
         CronogramaMantenimiento::create([
-            'titulo' => 'Plan de Mantenimiento Anual 2027',
+            'titulo' => '2027',
             'descripcion' => 'Cronograma general de mantenimiento preventivo, predictivo y correctivo para todas las oficinas en el año 2027.'
         ]);
     }

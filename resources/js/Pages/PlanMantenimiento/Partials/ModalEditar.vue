@@ -1,6 +1,8 @@
 <script setup>
 import DialogModal from "@/Components/DialogModal.vue";
-import { reactive, watch } from "vue";
+import InputLabel from "@/Components/InputLabel.vue";
+import InputError from "@/Components/InputError.vue";
+import { reactive, watch, computed } from "vue";
 
 const props = defineProps({
     show: {
@@ -15,21 +17,34 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    errors: {
+        type: Object,
+        default: () => ({}),
+    }
 });
 
 const emit = defineEmits(["close", "save"]);
 
+const currentYear = new Date().getFullYear();
+// Incluimos un rango razonable de años para la edición
+const years = computed(() => {
+    const base = props.plan?.titulo ? parseInt(props.plan.titulo) : currentYear;
+    return [base - 1, base, base + 1, base + 2];
+});
+
 const form = reactive({
     id: null,
-    titulo: "",
+    anio: currentYear,
     descripcion: "",
 });
+
+const prefix = "Plan anual de mantenimiento informático";
 
 watch(
     () => props.plan,
     (value) => {
         form.id = value?.id ?? null;
-        form.titulo = value?.titulo ?? "";
+        form.anio = value?.titulo ? parseInt(value.titulo) : currentYear;
         form.descripcion = value?.descripcion ?? "";
     },
     { immediate: true }
@@ -37,42 +52,44 @@ watch(
 
 const handleSubmit = () => {
     if (!form.id) return;
-    emit("save", { ...form });
+    emit("save", { 
+        id: form.id,
+        titulo: form.anio.toString(),
+        descripcion: form.descripcion
+    });
 };
 </script>
 
 <template>
     <DialogModal :show="show" @close="emit('close')" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda">Editar Plan de Mantenimiento</span>
+            <span class="text-ugel-guinda font-semibold">Editar Plan de Mantenimiento</span>
         </template>
 
         <template #content>
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
-                    <label
-                        for="titulo"
-                        class="block text-sm font-medium text-gray-700"
-                    >
-                        Título
-                    </label>
-                    <input
-                        id="titulo"
-                        v-model="form.titulo"
-                        type="text"
-                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Título del plan"
-                        :disabled="loading"
-                    />
+                    <InputLabel value="Título del Plan" />
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="flex-1 bg-gray-50 border border-gray-300 text-gray-500 text-sm rounded-lg px-3 py-2 select-none truncate">
+                            {{ prefix }}
+                        </div>
+                        <span class="text-gray-400 font-bold">-</span>
+                        <select
+                            v-model="form.anio"
+                            class="w-32 rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                            :disabled="loading"
+                        >
+                            <option v-for="year in years" :key="year" :value="year">
+                                {{ year }}
+                            </option>
+                        </select>
+                    </div>
+                    <InputError :message="errors.titulo" class="mt-2" />
                 </div>
 
                 <div>
-                    <label
-                        for="descripcion"
-                        class="block text-sm font-medium text-gray-700"
-                    >
-                        Descripción
-                    </label>
+                    <InputLabel for="descripcion" value="Descripción" />
                     <textarea
                         id="descripcion"
                         v-model="form.descripcion"
@@ -81,6 +98,7 @@ const handleSubmit = () => {
                         placeholder="Describe el plan de mantenimiento"
                         :disabled="loading"
                     />
+                    <InputError :message="errors.descripcion" class="mt-2" />
                 </div>
             </form>
         </template>
@@ -98,7 +116,7 @@ const handleSubmit = () => {
                 type="button"
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
-                :disabled="loading || !form.titulo.trim()"
+                :disabled="loading"
             >
                 <svg
                     v-if="loading"

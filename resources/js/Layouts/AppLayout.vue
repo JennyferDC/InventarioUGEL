@@ -22,15 +22,21 @@ const navigationGroups = computed(() => [
         name: "Principal",
         items: [
             {
+                name: "Dashboard",
+                href: route("dashboard"),
+                active: route().current("dashboard"),
+                icon: "dashboard",
+            },
+            {
                 name: "Inventario",
                 href: route("equipos.index"),
-                active: route().current("equipos.*") || route().current("dashboard"),
+                active: route().current("equipos.*"),
                 icon: "inventory",
             },
             {
-                name: "Mantenimiento",
-                href: "#",
-                active: false,
+                name: "Plan de mantenimiento",
+                href: route("mantenimiento.index"),
+                active: route().current("mantenimiento.*"),
                 icon: "maintenance",
             },
         ],
@@ -157,7 +163,8 @@ const logout = () => {
                                     class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition"
                                     :class="item.active ? 'bg-white/20' : 'bg-transparent'"
                                 >
-                                    <svg v-if="item.icon === 'inventory'" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10m0-10L4 7v10l8 4"/></svg>
+                                    <svg v-if="item.icon === 'dashboard'" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                                    <svg v-else-if="item.icon === 'inventory'" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10m0-10L4 7v10l8 4"/></svg>
                                     <svg v-else-if="item.icon === 'areas'" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0119.5 21h-15a2.25 2.25 0 01-2.25-2.25V5.25A2.25 2.25 0 014.5 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h3m-3 3h3m-3 3h3m3-6h3m-3 3h3m-3 3h3"/></svg>
                                     <svg v-else-if="item.icon === 'offices'" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                                     <svg v-else-if="item.icon === 'people'" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128C16.75 18.671 18 17.621 18 16v-1c0-1.657-2.239-3-5-3s-5 1.343-5 3v1c0 1.621 1.25 2.671 3 3.128"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 11a3 3 0 100-6 3 3 0 000 6z"/></svg>

@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             PersonaSeeder::class,
             EquipoSeeder::class,
             UserSeeder::class,
+            CronogramaMantenimientoSeeder::class,
+            ItemCronogramaSeeder::class,
         ]);
     }
 }

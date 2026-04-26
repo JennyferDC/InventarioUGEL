@@ -61,6 +61,11 @@ Route::middleware([
     Route::put('/miembros/{usuario}', [UsuarioController::class, 'update'])->name('miembros.update');
     Route::delete('/miembros/{usuario}', [UsuarioController::class, 'destroy'])->name('miembros.destroy');
 
+    Route::get('/mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'index'])->name('mantenimiento.index');
+    Route::post('/mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'store'])->name('mantenimiento.store');
+    Route::put('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'update'])->name('mantenimiento.update');
+    Route::delete('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'destroy'])->name('mantenimiento.destroy');
+
     Route::get('/api/caracteristicas', [CaracteristicaEquipoController::class, 'index'])->name('api.caracteristicas.index');
     Route::post('/api/caracteristicas', [CaracteristicaEquipoController::class, 'store'])->name('api.caracteristicas.store');
     Route::get('/api/caracteristicas/{caracteristicaEquipo}', [CaracteristicaEquipoController::class, 'show'])->name('api.caracteristicas.show');

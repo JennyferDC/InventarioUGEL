@@ -7,7 +7,7 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    area: {
+    plan: {
         type: Object,
         default: null,
     },
@@ -21,15 +21,15 @@ const emit = defineEmits(["close", "save"]);
 
 const form = reactive({
     id: null,
-    nombre: "",
+    titulo: "",
     descripcion: "",
 });
 
 watch(
-    () => props.area,
+    () => props.plan,
     (value) => {
         form.id = value?.id ?? null;
-        form.nombre = value?.nombre ?? "";
+        form.titulo = value?.titulo ?? "";
         form.descripcion = value?.descripcion ?? "";
     },
     { immediate: true }
@@ -44,24 +44,24 @@ const handleSubmit = () => {
 <template>
     <DialogModal :show="show" @close="emit('close')" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda">Editar área</span>
+            <span class="text-ugel-guinda">Editar Plan de Mantenimiento</span>
         </template>
 
         <template #content>
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
                     <label
-                        for="nombre"
+                        for="titulo"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Nombre
+                        Título
                     </label>
                     <input
-                        id="nombre"
-                        v-model="form.nombre"
+                        id="titulo"
+                        v-model="form.titulo"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Nombre del área"
+                        placeholder="Título del plan"
                         :disabled="loading"
                     />
                 </div>
@@ -78,7 +78,7 @@ const handleSubmit = () => {
                         v-model="form.descripcion"
                         rows="3"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Describe las funciones principales"
+                        placeholder="Describe el plan de mantenimiento"
                         :disabled="loading"
                     />
                 </div>
@@ -98,7 +98,7 @@ const handleSubmit = () => {
                 type="button"
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
-                :disabled="loading || !form.nombre.trim()"
+                :disabled="loading || !form.titulo.trim()"
             >
                 <svg
                     v-if="loading"

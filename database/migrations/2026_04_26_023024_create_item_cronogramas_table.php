@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->string('actividad');
-            $table->enum('estado', ['Pendiente', 'Cancelado', 'Completado'])->default('Pendiente');
+            $table->enum('estado', ['Pendiente', 'Cancelado', 'Completado'])->default('Pendiente')->nullable();;
             $table->timestamps();
         });
     }

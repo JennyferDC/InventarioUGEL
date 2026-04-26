@@ -42,7 +42,7 @@ const navigationGroups = computed(() => [
         ],
     },
     {
-        name: "Organización",
+        name: "Organización UGEL",
         items: [
             {
                 name: "Áreas",
@@ -65,7 +65,7 @@ const navigationGroups = computed(() => [
         ],
     },
     {
-        name: "Sistema",
+        name: "Informática",
         items: [
             {
                 name: "Miembros",

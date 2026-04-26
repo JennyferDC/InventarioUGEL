@@ -1,17 +1,64 @@
 <script setup>
 import { ref, computed } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
+import ModalAgregarActividad from "./Partials/Actividades/ModalAgregarActividad.vue";
+import ModalEditarActividad from "./Partials/Actividades/ModalEditarActividad.vue";
+import ModalEditar from "./Partials/ModalEditar.vue";
 
 const props = defineProps({
     plan: {
         type: Object,
         required: true,
     },
+    oficinas: {
+        type: Array,
+        required: true,
+    }
 });
 
 const searchQuery = ref("");
 const showUpcomingOnly = ref(false);
+
+const isAddModalOpen = ref(false);
+const isEditModalOpen = ref(false);
+const selectedItem = ref(null);
+
+const isEditPlanModalOpen = ref(false);
+const isUpdatingPlan = ref(false);
+
+const openEditPlanModal = () => {
+    isEditPlanModalOpen.value = true;
+};
+
+const handleUpdatePlan = (data) => {
+    isUpdatingPlan.value = true;
+    router.put(route('mantenimiento.update', data.id), data, {
+        onSuccess: () => {
+            isEditPlanModalOpen.value = false;
+        },
+        onError: () => {
+            if (!router.page.props.jetstream) router.page.props.jetstream = { flash: {} };
+            router.page.props.jetstream.flash = {
+                bannerStyle: 'danger',
+                banner: 'Ocurrió un error al actualizar el plan.',
+            };
+        },
+        onFinish: () => {
+            isUpdatingPlan.value = false;
+        },
+        preserveScroll: true
+    });
+};
+
+const openAddModal = () => {
+    isAddModalOpen.value = true;
+};
+
+const openEditModal = (item) => {
+    selectedItem.value = item;
+    isEditModalOpen.value = true;
+};
 
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -39,19 +86,19 @@ const getStatusColor = (item) => {
     
     if (now >= start && now <= end) {
         // En curso
-        return 'bg-red-500';
+        return 'bg-red-400 animate-pulse';
     } else if (now > end) {
-        // Ya pasó
-        return 'bg-green-500';
+        // Ya pasó (más oscuro)
+        return 'bg-green-600';
     } else {
         const diffTime = start - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays <= 7 && diffDays > 0) {
             // Próximo
-            return 'bg-orange-500';
+            return 'bg-orange-400';
         } else {
             // Falta mucho
-            return 'bg-green-500';
+            return 'bg-green-400';
         }
     }
 };
@@ -125,12 +172,22 @@ const groupedItems = computed(() => {
         }
         groups[areaName].push(item);
     });
+
+    // Ordenar por fecha dentro de cada área (más reciente primero)
+    Object.keys(groups).forEach(areaName => {
+        groups[areaName].sort((a, b) => {
+            const dateA = new Date(a.fecha_inicio + 'T00:00:00');
+            const dateB = new Date(b.fecha_inicio + 'T00:00:00');
+            return dateB - dateA;
+        });
+    });
+
     return groups;
 });
 </script>
 
 <template>
-    <AppLayout :title="`Plan: ${plan.titulo}`">
+    <AppLayout :title="`${plan.titulo}`">
         <template #header>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
@@ -150,9 +207,20 @@ const groupedItems = computed(() => {
             <div class="max-w-7xl mx-auto px-6 lg:px-8 space-y-6">
                 
                 <!-- Info Plan -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start group">
                     <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Detalles del Plan</h3>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-bold text-gray-900">Detalles del Plan</h3>
+                            <button 
+                                @click="openEditPlanModal"
+                                class="text-ugel-azul hover:text-ugel-guinda p-1.5 rounded-md hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                title="Editar Plan"
+                            >
+                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+                        </div>
                         <p class="text-gray-600">{{ plan.descripcion || 'Sin descripción detallada para este plan de mantenimiento.' }}</p>
                     </div>
                     <div class="flex gap-4 flex-wrap items-start">
@@ -177,15 +245,15 @@ const groupedItems = computed(() => {
 
                 <!-- Lista de Items -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-bold text-lg text-gray-900">Cronograma por Áreas y Oficinas</h3>
+                            <h3 class="font-bold text-lg text-gray-900">Cronograma</h3>
                             <span class="bg-ugel-azul/10 text-ugel-azul text-xs font-bold px-3 py-1 rounded-full border border-ugel-azul/20">
                                 {{ plan.items.length }} Oficinas
                             </span>
                         </div>
                         
-                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
                             <!-- Buscador -->
                             <div class="w-full sm:w-64 relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
@@ -215,10 +283,42 @@ const groupedItems = computed(() => {
                                 </svg>
                                 {{ showUpcomingOnly ? 'Ver todas' : 'Actividades próximas' }}
                             </button>
+
+                            <!-- Agregar actividad -->
+                            <button 
+                                @click="openAddModal"
+                                class="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 border bg-ugel-azul text-white hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="planStatus.text === 'Finalizado'"
+                                :title="planStatus.text === 'Finalizado' ? 'El plan ya finalizó' : ''"
+                            >
+                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Agregar actividad
+                            </button>
                         </div>
                     </div>
                     
                     <div class="overflow-x-auto">
+                        <div class="px-6 py-4 bg-white border-b border-gray-100 flex flex-wrap gap-10 text-xs font-medium text-gray-600 justify-center">
+                            <div class="flex items-center gap-1.5">
+                                <div class="size-3 rounded-full bg-red-400 animate-pulse ring-2 ring-white shadow-sm"></div>
+                                <span>En curso</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="size-3 rounded-full bg-orange-400 ring-2 ring-white shadow-sm"></div>
+                                <span>Próximo (7 días o menos)</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="size-3 rounded-full bg-green-400 ring-2 ring-white shadow-sm"></div>
+                                <span>A tiempo (Más de 7 días)</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="size-3 rounded-full bg-green-600 ring-2 ring-white shadow-sm"></div>
+                                <span>Finalizado</span>
+                            </div>
+                        </div>
+
                         <template v-if="Object.keys(groupedItems).length > 0">
                             <div v-for="(itemsInArea, areaName) in groupedItems" :key="areaName" class="mb-2">
                                 <!-- Cabecera del Área -->
@@ -239,6 +339,7 @@ const groupedItems = computed(() => {
                                             <th class="px-6 py-3 font-semibold">Fecha Inicio</th>
                                             <th class="px-6 py-3 font-semibold">Fecha Fin</th>
                                             <th class="px-6 py-3 font-semibold text-center w-24">Días</th>
+                                            <th class="px-6 py-3 font-semibold text-center w-16">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 bg-white">
@@ -248,7 +349,7 @@ const groupedItems = computed(() => {
                                                     <div 
                                                         class="size-3.5 rounded-full shadow-sm ring-2 ring-white" 
                                                         :class="getStatusColor(item)" 
-                                                        :title="getStatusColor(item) === 'bg-red-500' ? 'En curso' : (getStatusColor(item) === 'bg-orange-500' ? 'Próximo' : (getStatusColor(item) === 'bg-green-500' ? 'A tiempo / Finalizado' : 'Sin fecha'))"
+                                                        :title="getStatusColor(item) === 'bg-red-500' ? 'En curso' : (getStatusColor(item) === 'bg-orange-500' ? 'Próximo' : (getStatusColor(item) === 'bg-green-700' ? 'Finalizado' : 'A tiempo'))"
                                                     ></div>
                                                 </div>
                                             </td>
@@ -268,6 +369,17 @@ const groupedItems = computed(() => {
                                                 <span class="inline-flex items-center justify-center bg-gray-100 text-gray-800 font-bold px-2.5 py-1 rounded-md text-xs border border-gray-200">
                                                     {{ getDays(item.fecha_inicio, item.fecha_fin) }}
                                                 </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-center">
+                                                <button 
+                                                    @click="openEditModal(item)"
+                                                    class="text-ugel-azul hover:text-ugel-guinda p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                                                    title="Editar actividad"
+                                                >
+                                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
+                                                </button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -289,5 +401,27 @@ const groupedItems = computed(() => {
                 </div>
             </div>
         </section>
+
+        <ModalAgregarActividad
+            :show="isAddModalOpen"
+            :planId="plan.id"
+            :oficinas="oficinas"
+            @close="isAddModalOpen = false"
+        />
+
+        <ModalEditarActividad
+            :show="isEditModalOpen"
+            :item="selectedItem"
+            :oficinas="oficinas"
+            @close="isEditModalOpen = false"
+        />
+
+        <ModalEditar
+            :show="isEditPlanModalOpen"
+            :plan="plan"
+            :loading="isUpdatingPlan"
+            @close="isEditPlanModalOpen = false"
+            @save="handleUpdatePlan"
+        />
     </AppLayout>
 </template>

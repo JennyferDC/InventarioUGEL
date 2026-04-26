@@ -35,7 +35,11 @@ class CronogramaMantenimientoController extends Controller
 
     public function show($id)
     {
-        // TODO
+        $plan = CronogramaMantenimiento::with('items.oficina.area')->findOrFail($id);
+        
+        return Inertia::render('PlanMantenimiento/Show', [
+            'plan' => $plan
+        ]);
     }
 
     public function update(Request $request, $id)

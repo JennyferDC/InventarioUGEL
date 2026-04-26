@@ -63,6 +63,7 @@ Route::middleware([
 
     Route::get('/mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'index'])->name('mantenimiento.index');
     Route::post('/mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'store'])->name('mantenimiento.store');
+    Route::get('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'show'])->name('mantenimiento.show');
     Route::put('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'update'])->name('mantenimiento.update');
     Route::delete('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'destroy'])->name('mantenimiento.destroy');
 

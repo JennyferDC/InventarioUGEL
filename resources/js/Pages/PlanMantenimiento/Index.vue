@@ -28,18 +28,12 @@ const filteredPlanes = computed(() => {
                 <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
                     Planes de Mantenimiento
                 </h2>
-                <button class="bg-ugel-azul hover:bg-ugel-guinda text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2">
-                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Nuevo plan
-                </button>
             </div>
         </template>
 
         <section class="py-10 space-y-6">
             <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
-                <!-- Buscador -->
+                <!-- Buscador y Botón -->
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div class="w-full sm:w-72 relative">
                         <label class="sr-only" for="search-plan">Buscar plan</label>
@@ -56,14 +50,22 @@ const filteredPlanes = computed(() => {
                             class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul transition-shadow"
                         />
                     </div>
+                    
+                    <button class="bg-ugel-azul hover:bg-ugel-guinda text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+                        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Nuevo plan
+                    </button>
                 </div>
 
                 <!-- Grid de Planes -->
                 <div v-if="filteredPlanes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
-                    <div 
+                    <Link 
                         v-for="plan in filteredPlanes" 
                         :key="plan.id"
-                        class="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
+                        :href="route('mantenimiento.show', plan.id)"
+                        class="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative block"
                     >
                         <div class="h-1.5 w-full bg-gradient-to-r from-ugel-azul to-ugel-guinda opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         
@@ -74,11 +76,12 @@ const filteredPlanes = computed(() => {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <button class="text-ugel-azul hover:text-ugel-guinda p-2 rounded-md hover:bg-gray-50 transition-colors" title="Editar plan">
-                                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                <span class="text-ugel-azul group-hover:text-ugel-guinda text-xs font-bold px-2 py-1 rounded-md transition-colors flex items-center gap-1">
+                                    Ver plan
+                                    <svg class="size-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                     </svg>
-                                </button>
+                                </span>
                             </div>
                             
                             <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-ugel-azul transition-colors line-clamp-2 leading-tight">
@@ -113,7 +116,7 @@ const filteredPlanes = computed(() => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
                 
                 <!-- Empty state -->

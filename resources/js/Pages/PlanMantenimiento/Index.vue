@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import ModaCrear from "./Partials/ModaCrear.vue";

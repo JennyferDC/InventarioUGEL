@@ -26,10 +26,18 @@ const props = defineProps({
 const emit = defineEmits(["close", "save"]);
 
 const currentYear = new Date().getFullYear();
-// Incluimos un rango razonable de años para la edición
+
+// Solo permitimos el año actual o el siguiente, a menos que el plan ya tenga un año anterior
 const years = computed(() => {
-    const base = props.plan?.titulo ? parseInt(props.plan.titulo) : currentYear;
-    return [base - 1, base, base + 1, base + 2];
+    const list = [currentYear, currentYear + 1];
+    const planYear = props.plan?.titulo ? parseInt(props.plan.titulo) : null;
+    
+    if (planYear && !list.includes(planYear)) {
+        list.push(planYear);
+        list.sort((a, b) => a - b);
+    }
+    
+    return list;
 });
 
 const form = reactive({
@@ -106,7 +114,7 @@ const handleSubmit = () => {
         <template #footer>
             <button
                 type="button"
-                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+                class="me-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-70"
                 @click="emit('close')"
                 :disabled="loading"
             >

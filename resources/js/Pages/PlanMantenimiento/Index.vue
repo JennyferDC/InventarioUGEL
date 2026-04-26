@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
-import { Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import ModaCrear from "./Partials/ModaCrear.vue";
+import FeedbackBanner from "@/Components/FeedbackBanner.vue";
 
 const props = defineProps({
     planes: {
@@ -11,10 +12,58 @@ const props = defineProps({
     },
 });
 
+const page = usePage();
 const searchQuery = ref("");
 const showCreateModal = ref(false);
 const isCreating = ref(false);
 const createErrors = ref({});
+
+// Feedback messages logic
+const successMessage = ref("");
+const errorMessage = ref("");
+let feedbackTimeout = null;
+
+const showSuccess = computed(() => Boolean(successMessage.value));
+const showError = computed(() => Boolean(errorMessage.value));
+
+const clearFeedbackTimeout = () => {
+    if (feedbackTimeout) {
+        clearTimeout(feedbackTimeout);
+        feedbackTimeout = null;
+    }
+};
+
+const triggerMessage = (type, message) => {
+    clearFeedbackTimeout();
+
+    if (type === "success") {
+        successMessage.value = message;
+        errorMessage.value = "";
+    } else {
+        errorMessage.value = message;
+        successMessage.value = "";
+    }
+
+    feedbackTimeout = setTimeout(() => {
+        successMessage.value = "";
+        errorMessage.value = "";
+    }, 4000);
+};
+
+// Escuchar flash messages de Inertia
+watch(
+    () => page.props,
+    (props) => {
+        const flash = props.flash || props.jetstream?.flash;
+        if (flash?.banner) {
+            triggerMessage(
+                flash.bannerStyle === 'danger' || flash.bannerStyle === 'error' ? 'error' : 'success', 
+                flash.banner
+            );
+        }
+    },
+    { deep: true, immediate: true }
+);
 
 const filteredPlanes = computed(() => {
     return props.planes.filter(plan => {
@@ -59,6 +108,19 @@ const handleSavePlan = (data) => {
         </template>
 
         <section class="py-10 space-y-6">
+            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-2">
+                <FeedbackBanner
+                    :show="showSuccess"
+                    :message="successMessage"
+                    type="success"
+                />
+                <FeedbackBanner
+                    :show="showError"
+                    :message="errorMessage"
+                    type="error"
+                />
+            </div>
+
             <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
                 <!-- Buscador y Botón -->
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

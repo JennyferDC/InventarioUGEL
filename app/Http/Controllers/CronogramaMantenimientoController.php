@@ -61,14 +61,16 @@ class CronogramaMantenimientoController extends Controller
         $plan = CronogramaMantenimiento::findOrFail($id);
 
         $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
+            'titulo' => 'required|string|unique:cronograma_mantenimientos,titulo,' . $id,
             'descripcion' => 'nullable|string',
+        ], [
+            'titulo.unique' => 'Ya existe un plan de mantenimiento para este año.',
         ]);
 
         $plan->update($validated);
 
         return redirect()->back()->with('flash', [
-            'banner' => 'Plan actualizado exitosamente.',
+            'banner' => 'Plan de mantenimiento actualizado exitosamente.',
             'bannerStyle' => 'success',
         ]);
     }

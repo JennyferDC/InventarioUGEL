@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
-import { Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import ModalAgregarActividad from "./Partials/Actividades/ModalAgregarActividad.vue";
 import ModalEditarActividad from "./Partials/Actividades/ModalEditarActividad.vue";
 import ModalEditar from "./Partials/ModalEditar.vue";
+import FeedbackBanner from "@/Components/FeedbackBanner.vue";
 
 const props = defineProps({
     plan: {
@@ -17,6 +18,7 @@ const props = defineProps({
     }
 });
 
+const page = usePage();
 const searchQuery = ref("");
 const showUpcomingOnly = ref(false);
 
@@ -26,23 +28,72 @@ const selectedItem = ref(null);
 
 const isEditPlanModalOpen = ref(false);
 const isUpdatingPlan = ref(false);
+const editPlanErrors = ref({});
+
+// Feedback messages logic
+const successMessage = ref("");
+const errorMessage = ref("");
+let feedbackTimeout = null;
+
+const showSuccess = computed(() => Boolean(successMessage.value));
+const showError = computed(() => Boolean(errorMessage.value));
+
+const clearFeedbackTimeout = () => {
+    if (feedbackTimeout) {
+        clearTimeout(feedbackTimeout);
+        feedbackTimeout = null;
+    }
+};
+
+const triggerMessage = (type, message) => {
+    clearFeedbackTimeout();
+
+    if (type === "success") {
+        successMessage.value = message;
+        errorMessage.value = "";
+    } else {
+        errorMessage.value = message;
+        successMessage.value = "";
+    }
+
+    feedbackTimeout = setTimeout(() => {
+        successMessage.value = "";
+        errorMessage.value = "";
+    }, 4000);
+};
+
+// Escuchar flash messages de Inertia (para actividades y actualizaciones)
+watch(
+    () => page.props,
+    (props) => {
+        const flash = props.flash || props.jetstream?.flash;
+        if (flash?.banner) {
+            triggerMessage(
+                flash.bannerStyle === 'danger' || flash.bannerStyle === 'error' ? 'error' : 'success', 
+                flash.banner
+            );
+        }
+    },
+    { deep: true, immediate: true }
+);
 
 const openEditPlanModal = () => {
+    editPlanErrors.value = {};
     isEditPlanModalOpen.value = true;
 };
 
 const handleUpdatePlan = (data) => {
     isUpdatingPlan.value = true;
+    editPlanErrors.value = {};
+    
     router.put(route('mantenimiento.update', data.id), data, {
         onSuccess: () => {
             isEditPlanModalOpen.value = false;
+            triggerMessage("success", "Plan de mantenimiento actualizado correctamente.");
         },
-        onError: () => {
-            if (!router.page.props.jetstream) router.page.props.jetstream = { flash: {} };
-            router.page.props.jetstream.flash = {
-                bannerStyle: 'danger',
-                banner: 'Ocurrió un error al actualizar el plan.',
-            };
+        onError: (err) => {
+            editPlanErrors.value = err;
+            if (err.global) triggerMessage("error", err.global);
         },
         onFinish: () => {
             isUpdatingPlan.value = false;
@@ -204,6 +255,19 @@ const groupedItems = computed(() => {
         </template>
 
         <section class="py-10 space-y-6">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8 space-y-2">
+                <FeedbackBanner
+                    :show="showSuccess"
+                    :message="successMessage"
+                    type="success"
+                />
+                <FeedbackBanner
+                    :show="showError"
+                    :message="errorMessage"
+                    type="error"
+                />
+            </div>
+
             <div class="max-w-7xl mx-auto px-6 lg:px-8 space-y-6">
                 
                 <!-- Info Plan -->
@@ -420,6 +484,7 @@ const groupedItems = computed(() => {
             :show="isEditPlanModalOpen"
             :plan="plan"
             :loading="isUpdatingPlan"
+            :errors="editPlanErrors"
             @close="isEditPlanModalOpen = false"
             @save="handleUpdatePlan"
         />

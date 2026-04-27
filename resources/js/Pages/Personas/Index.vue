@@ -292,6 +292,7 @@ const crearPersona = async (payload) => {
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">#</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Nombre completo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Celular</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Oficina / Área</th>
                                     <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Estado</th>
                                     <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Equipos</th>
@@ -302,6 +303,7 @@ const crearPersona = async (payload) => {
                                 <tr v-for="persona in filteredPersonas" :key="persona.id" class="hover:bg-ugel-azul/5 transition">
                                     <td class="px-6 py-4 text-sm text-gray-600 font-semibold">#{{ persona.id }}</td>
                                     <td class="px-6 py-4 text-sm text-ugel-guinda font-semibold">{{ persona.nombre_completo }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">{{ persona.celular || '-' }}</td>
                                     <td class="px-6 py-4 text-sm">
                                         <div class="font-medium text-gray-700">{{ persona.oficina?.nombre ?? "Sin oficina" }}</div>
                                         <div class="text-[10px] text-gray-500 uppercase tracking-wide font-medium">{{ persona.oficina?.area?.nombre ?? "Sin área" }}</div>

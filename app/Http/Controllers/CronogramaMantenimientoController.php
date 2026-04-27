@@ -48,11 +48,23 @@ class CronogramaMantenimientoController extends Controller
     public function show($id)
     {
         $plan = CronogramaMantenimiento::with('items.oficina.area')->findOrFail($id);
-        $oficinas = \App\Models\Oficina::orderBy('nombre')->get();
+        $oficinas = \App\Models\Oficina::with('area')->orderBy('nombre')->get();
         
         return Inertia::render('PlanMantenimiento/Show', [
             'plan' => $plan,
             'oficinas' => $oficinas
+        ]);
+    }
+
+    public function publicShow()
+    {
+        $year = date('Y');
+        $plan = CronogramaMantenimiento::with('items.oficina.area')
+            ->where('titulo', 'like', "%{$year}%")
+            ->firstOrFail();
+        
+        return Inertia::render('PlanMantenimiento/Public', [
+            'plan' => $plan,
         ]);
     }
 

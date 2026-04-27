@@ -32,11 +32,15 @@ const form = useForm({
 const searchOficina = ref("");
 const showDropdown = ref(false);
 
+const normalizeText = (text) => {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
+
 const filteredOficinas = computed(() => {
-    const q = searchOficina.value.toLowerCase();
+    const q = normalizeText(searchOficina.value);
     if (!q) return props.oficinas.slice(0, 50);
     return props.oficinas.filter(o => {
-        const text = `${o.nombre} ${o.area?.nombre || ''}`.toLowerCase();
+        const text = normalizeText(`${o.nombre} ${o.area?.nombre || ''}`);
         return text.includes(q);
     }).slice(0, 50);
 });
@@ -44,7 +48,7 @@ const filteredOficinas = computed(() => {
 const selectOficina = (oficina) => {
     if (oficina) {
         form.id_oficinas = oficina.id;
-        searchOficina.value = `${oficina.nombre} - ${oficina.area?.nombre || 'Sin área'}`;
+        searchOficina.value = oficina.nombre;
     } else {
         form.id_oficinas = "";
         searchOficina.value = "";
@@ -70,7 +74,7 @@ watch(
             
             const selectedOficina = props.oficinas.find(o => o.id === props.item.id_oficinas);
             if (selectedOficina) {
-                searchOficina.value = `${selectedOficina.nombre} - ${selectedOficina.area?.nombre || 'Sin área'}`;
+                searchOficina.value = selectedOficina.nombre;
             } else {
                 searchOficina.value = "";
             }

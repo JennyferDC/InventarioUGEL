@@ -22,7 +22,8 @@ class PersonaController extends Controller
             ->orderBy('nombre_completo')
             ->get();
 
-        $oficinas = Oficina::select('id', 'nombre')
+        $oficinas = Oficina::with('area:id,nombre')
+            ->select('id', 'nombre', 'area_id')
             ->orderBy('nombre')
             ->get();
 

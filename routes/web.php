@@ -20,6 +20,8 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/cronograma-mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'publicShow'])->name('mantenimiento.public');
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),

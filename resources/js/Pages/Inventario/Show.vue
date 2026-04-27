@@ -56,6 +56,48 @@ const showSuccess = ref(false);
 const showModalFicha = ref(false);
 const linkCopiado = ref(false);
 
+const searchPersona = ref("");
+const showPersonaDropdown = ref(false);
+
+const normalizeText = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+const filteredPersonas = computed(() => {
+    const q = normalizeText(searchPersona.value);
+    if (!q) return props.personas.slice(0, 50);
+    return props.personas.filter(p => {
+        const text = normalizeText(`${p.nombre_completo} ${p.oficina?.nombre || ''} ${p.oficina?.area?.nombre || ''}`);
+        return text.includes(q);
+    }).slice(0, 50);
+});
+
+const selectPersona = (p) => {
+    if (p) {
+        form.id_persona = p.id;
+        searchPersona.value = p.nombre_completo;
+    } else {
+        form.id_persona = "";
+        searchPersona.value = "";
+    }
+    showPersonaDropdown.value = false;
+};
+
+const handlePersonaBlur = () => {
+    setTimeout(() => {
+        showPersonaDropdown.value = false;
+    }, 200);
+};
+
+watch(() => form.id_persona, (val) => {
+    if (val) {
+        const p = props.personas.find(x => x.id === val);
+        if (p) {
+            searchPersona.value = p.nombre_completo;
+        }
+    } else {
+        searchPersona.value = "";
+    }
+}, { immediate: true });
+
 const copiarLink = () => {
     navigator.clipboard.writeText(currentUrl.value);
     linkCopiado.value = true;
@@ -324,24 +366,40 @@ const downloadQr = () => {
                                     </div>
 
                                     <!-- Responsable -->
-                                    <div class="md:col-span-2">
-                                        <label for="id_persona" class="block text-sm font-medium text-gray-700">Responsable (Persona asignada)</label>
-                                        <select
-                                            id="id_persona"
-                                            v-model="form.id_persona"
-                                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                    <div class="md:col-span-2 relative">
+                                        <label for="search_persona" class="block text-sm font-medium text-gray-700 mb-1">Responsable (Persona asignada)</label>
+                                        <input
+                                            id="search_persona"
+                                            v-model="searchPersona"
+                                            type="text"
+                                            class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                            placeholder="Buscar persona por nombre..."
+                                            @focus="showPersonaDropdown = true"
+                                            @blur="handlePersonaBlur"
+                                        />
+                                        <div
+                                            v-if="showPersonaDropdown"
+                                            class="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
                                         >
-                                            <option value="">Sin asignar</option>
-                                            <optgroup v-for="area in areas" :key="area.id" :label="area.nombre">
-                                                <option
-                                                    v-for="persona in personas.filter((p) => p.oficina?.area_id === area.id)"
-                                                    :key="persona.id"
-                                                    :value="persona.id"
-                                                >
-                                                    {{ persona.nombre_completo }}
-                                                </option>
-                                            </optgroup>
-                                        </select>
+                                            <div
+                                                class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                @click="selectPersona(null)"
+                                            >
+                                                -- Sin asignar --
+                                            </div>
+                                            <div
+                                                v-for="p in filteredPersonas"
+                                                :key="p.id"
+                                                class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                @click="selectPersona(p)"
+                                            >
+                                                <div class="font-medium">{{ p.nombre_completo }}</div>
+                                                <div class="text-xs text-gray-500" v-if="p.oficina">{{ p.oficina.nombre }} {{ p.oficina.area ? ' - ' + p.oficina.area.nombre : '' }}</div>
+                                            </div>
+                                            <div v-if="filteredPersonas.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                                No se encontraron resultados
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -462,7 +520,7 @@ const downloadQr = () => {
                                             {{ equipo.persona.estado || 'ACTIVO' }}
                                         </span>
                                     </div>
-                                    <div class="text-xs text-gray-500 flex flex-col gap-1">
+                                    <div class="text-xs text-gray-500 flex flex-wrap items-center gap-3 mt-1">
                                         <span v-if="equipo.persona.oficina?.area" class="flex items-center gap-1.5">
                                             <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                                             {{ equipo.persona.oficina.area.nombre }}

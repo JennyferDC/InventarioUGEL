@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import axios from "axios";
 
 const props = defineProps({
@@ -124,6 +124,49 @@ const toggleSelectAllAreas = () => {
         form.inventario_area.areas = props.areas.map(a => a.id);
     }
 };
+
+const searchEquipo = ref("");
+const showEquipoDropdown = ref(false);
+
+const normalizeText = (text) => {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
+
+const filteredEquipos = computed(() => {
+    const q = normalizeText(searchEquipo.value);
+    if (!q) return props.equipos.slice(0, 50);
+    return props.equipos.filter(eq => {
+        const text = normalizeText(`${eq.cod_informatica} ${eq.tipo} ${eq.persona?.nombre_completo || ''}`);
+        return text.includes(q);
+    }).slice(0, 50);
+});
+
+const selectEquipo = (eq) => {
+    if (eq) {
+        form.ficha_tecnica.equipo_id = eq.id;
+        searchEquipo.value = `${eq.cod_informatica} - ${eq.tipo} ${eq.persona ? '('+eq.persona.nombre_completo+')' : ''}`;
+    } else {
+        form.ficha_tecnica.equipo_id = "";
+        searchEquipo.value = "";
+    }
+    showEquipoDropdown.value = false;
+};
+
+const handleEquipoBlur = () => {
+    setTimeout(() => {
+        showEquipoDropdown.value = false;
+    }, 200);
+};
+
+watch(
+    () => props.show,
+    (isOpen) => {
+        if (isOpen) {
+            searchEquipo.value = "";
+            form.ficha_tecnica.equipo_id = "";
+        }
+    }
+);
 
 const esFormularioValido = computed(() => {
     if (form.tipoReporte === 'inventario_general') {
@@ -259,12 +302,40 @@ const esFormularioValido = computed(() => {
                     <div v-if="form.tipoReporte === 'ficha_tecnica'" class="space-y-4 border border-ugel-azul/10 rounded-lg p-4 bg-gray-50 flex-1">
                         <div>
                             <label for="eq_id" class="block text-sm font-semibold text-gray-700">Seleccione un equipo:</label>
-                            <select id="eq_id" v-model="form.ficha_tecnica.equipo_id" class="mt-1 block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-ugel-azul focus:ring focus:ring-ugel-azul focus:ring-opacity-50">
-                                <option value="">-- Seleccionar --</option>
-                                <option v-for="eq in props.equipos" :key="eq.id" :value="eq.id">
-                                    {{ eq.cod_informatica }} - {{ eq.tipo }} {{ eq.persona ? '('+eq.persona.nombre_completo+')' : '' }}
-                                </option>
-                            </select>
+                            <div class="relative mt-1">
+                                <input
+                                    id="eq_id"
+                                    v-model="searchEquipo"
+                                    type="text"
+                                    class="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-ugel-azul focus:ring-ugel-azul focus:ring-opacity-50"
+                                    placeholder="Buscar por código, tipo o persona..."
+                                    @focus="showEquipoDropdown = true"
+                                    @blur="handleEquipoBlur"
+                                />
+                                <div
+                                    v-if="showEquipoDropdown"
+                                    class="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+                                >
+                                    <div
+                                        class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        @click="selectEquipo(null)"
+                                    >
+                                        -- Seleccionar --
+                                    </div>
+                                    <div
+                                        v-for="eq in filteredEquipos"
+                                        :key="eq.id"
+                                        class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        @click="selectEquipo(eq)"
+                                    >
+                                        <div class="font-medium">{{ eq.cod_informatica }} - {{ eq.tipo }}</div>
+                                        <div class="text-xs text-gray-500" v-if="eq.persona">{{ eq.persona.nombre_completo }}</div>
+                                    </div>
+                                    <div v-if="filteredEquipos.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                        No se encontraron resultados
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     

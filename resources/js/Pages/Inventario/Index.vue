@@ -3,6 +3,7 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import FeedbackBanner from "@/Components/FeedbackBanner.vue";
 import axios from "axios";
 import { computed, ref, watch } from "vue";
+import { Link } from "@inertiajs/vue3";
 import ModalEliminar from "./Partials/ModalEliminar.vue";
 import ModalEditar from "./Partials/ModalEditar.vue";
 import ModalCrear from "./Partials/ModaCrear.vue";
@@ -475,27 +476,16 @@ const confirmarEliminacion = async () => {
                                         <div
                                             class="flex items-center justify-center gap-3"
                                         >
-                                            <button
-                                                type="button"
+                                            <Link
+                                                :href="route('equipos.showByCodigo', equipo.cod_informatica)"
                                                 class="inline-flex items-center rounded-full border border-ugel-azul/40 p-2 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
-                                                @click="
-                                                    abrirModalEditar(equipo)
-                                                "
+                                                title="Ver Detalles"
                                             >
-                                                <svg
-                                                    class="size-5"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="1.5"
-                                                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652l-1.688 1.687m-2.651-2.651L6.312 17.513a4.5 4.5 0 00-1.053 1.682l-.795 2.385a.563.563 0 00.711.71l2.385-.794a4.5 4.5 0 001.682-1.054L19.513 7.125m-2.651-2.651l2.651 2.651"
-                                                    />
+                                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                 </svg>
-                                            </button>
+                                            </Link>
                                             <button
                                                 type="button"
                                                 class="inline-flex items-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-600 hover:text-white transition"

@@ -72,6 +72,14 @@ watch(
                 flash.bannerStyle === 'danger' || flash.bannerStyle === 'error' ? 'error' : 'success', 
                 flash.banner
             );
+            
+            // Eliminar el flash para que el banner morado de Jetstream no se muestre
+            if (props.jetstream && props.jetstream.flash) {
+                props.jetstream.flash = { bannerStyle: null, banner: null };
+            }
+            if (props.flash) {
+                props.flash = { bannerStyle: null, banner: null };
+            }
         }
     },
     { deep: true, immediate: true }
@@ -174,7 +182,7 @@ const planStatus = computed(() => {
     const end = new Date(planEndDate.value + 'T00:00:00');
     
     if (now > end) return { text: 'Finalizado', color: 'bg-gray-100 text-gray-800 border-gray-200' };
-    if (now < start) return { text: 'Pendiente', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+    if (now < start) return { text: 'Pendiente', color: 'bg-blue-100 text-blue-800 border-blue-200' };
     return { text: 'En curso', color: 'bg-green-100 text-green-800 border-green-200' };
 });
 
@@ -274,10 +282,10 @@ const groupedItems = computed(() => {
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start group">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-2">
-                            <h3 class="text-xl font-bold text-gray-900">Detalles del Plan</h3>
+                            <h3 class="text-xl font-bold text-gray-900">Detalles del plan</h3>
                             <button 
                                 @click="openEditPlanModal"
-                                class="text-ugel-azul hover:text-ugel-guinda p-1.5 rounded-md hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                class="text-ugel-azul hover:text-ugel-guinda p-1.5 rounded-md hover:bg-gray-100 transition-colors opacity-100 focus:opacity-100"
                                 title="Editar Plan"
                             >
                                 <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

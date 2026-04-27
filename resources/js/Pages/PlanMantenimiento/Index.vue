@@ -60,10 +60,41 @@ watch(
                 flash.bannerStyle === 'danger' || flash.bannerStyle === 'error' ? 'error' : 'success', 
                 flash.banner
             );
+            
+            // Eliminar el flash para que el banner morado de Jetstream no se muestre
+            if (props.jetstream && props.jetstream.flash) {
+                props.jetstream.flash = { bannerStyle: null, banner: null };
+            }
+            if (props.flash) {
+                props.flash = { bannerStyle: null, banner: null };
+            }
         }
     },
     { deep: true, immediate: true }
 );
+
+const getPlanStatus = (plan) => {
+    if (!plan.fecha_inicio || !plan.fecha_fin) return { text: 'Sin Fechas', color: 'bg-gray-100 text-gray-800 border-gray-200' };
+    
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    
+    const start = new Date(plan.fecha_inicio + 'T00:00:00');
+    const end = new Date(plan.fecha_fin + 'T00:00:00');
+    
+    if (now > end) return { text: 'Finalizado', color: 'bg-gray-100 text-gray-800 border-gray-200' };
+    if (now < start) return { text: 'Pendiente', color: 'bg-blue-100 text-blue-800 border-blue-200' };
+    return { text: 'En curso', color: 'bg-green-100 text-green-800 border-green-200' };
+};
+
+const currentPlan = computed(() => {
+    if (!props.planes || props.planes.length === 0) return null;
+    const enCurso = props.planes.find(p => getPlanStatus(p).text === 'En curso');
+    if (enCurso) return enCurso;
+    const pendiente = props.planes.find(p => getPlanStatus(p).text === 'Pendiente');
+    if (pendiente) return pendiente;
+    return props.planes[props.planes.length - 1];
+});
 
 const filteredPlanes = computed(() => {
     return props.planes.filter(plan => {
@@ -140,15 +171,30 @@ const handleSavePlan = (data) => {
                         />
                     </div>
                     
-                    <button 
-                        @click="openCreateModal"
-                        class="bg-ugel-azul hover:bg-ugel-guinda text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-                    >
-                        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Nuevo plan
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <a 
+                            v-if="currentPlan"
+                            :href="route('mantenimiento.public')"
+                            target="_blank"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                        >
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Vista pública
+                        </a>
+
+                        <button 
+                            @click="openCreateModal"
+                            class="bg-ugel-azul hover:bg-ugel-guinda text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                        >
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Nuevo plan
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Grid de Planes -->
@@ -168,11 +214,11 @@ const handleSavePlan = (data) => {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <span class="text-ugel-azul group-hover:text-ugel-guinda text-xs font-bold px-2 py-1 rounded-md transition-colors flex items-center gap-1">
-                                    Ver plan
-                                    <svg class="size-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
+                                <span 
+                                    class="text-xs font-bold px-2 py-1 rounded-md transition-colors flex items-center gap-1 border"
+                                    :class="getPlanStatus(plan).color"
+                                >
+                                    {{ getPlanStatus(plan).text }}
                                 </span>
                             </div>
                             

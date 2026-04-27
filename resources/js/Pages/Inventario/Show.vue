@@ -93,8 +93,14 @@ watch(() => form.id_persona, (val) => {
         if (p) {
             searchPersona.value = p.nombre_completo;
         }
+        if (form.estado !== "BAJA") {
+            form.estado = "EN USO";
+        }
     } else {
         searchPersona.value = "";
+        if (form.estado !== "BAJA") {
+            form.estado = "LIBRE";
+        }
     }
 }, { immediate: true });
 
@@ -164,6 +170,15 @@ const handleSubmit = () => {
             }, 3000);
         },
     });
+};
+
+const darDeBaja = () => {
+    form.estado = "BAJA";
+    form.id_persona = ""; // Liberar equipo
+};
+
+const restaurarEquipo = () => {
+    form.estado = form.id_persona ? "EN USO" : "LIBRE";
 };
 
 const agregarCaracteristica = () => {
@@ -318,17 +333,36 @@ const downloadQr = () => {
 
                                     <!-- Estado -->
                                     <div>
-                                        <label for="equipo_estado" class="block text-sm font-medium text-gray-700">Estado <span class="text-red-500">*</span></label>
-                                        <select
-                                            id="equipo_estado"
-                                            v-model="form.estado"
-                                            required
-                                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
-                                        >
-                                            <option value="" disabled>Seleccione estado</option>
-                                            <option v-for="e in ESTADOS_EQUIPO" :key="e" :value="e">{{ e }}</option>
-                                        </select>
-                                        <div v-if="form.errors.estado" class="mt-1 text-xs text-red-500">{{ form.errors.estado }}</div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label class="block text-sm font-medium text-gray-700">Estado <span class="text-red-500">*</span></label>
+                                            <button 
+                                                type="button" 
+                                                v-if="form.estado !== 'BAJA'"
+                                                @click="darDeBaja"
+                                                class="text-xs text-red-600 hover:text-red-800 font-semibold"
+                                            >
+                                                Dar de baja
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                v-else
+                                                @click="restaurarEquipo"
+                                                class="text-xs text-green-600 hover:text-green-800 font-semibold"
+                                            >
+                                                Restaurar equipo
+                                            </button>
+                                        </div>
+                                        <div class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm flex items-center">
+                                            <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold border', 
+                                                form.estado === 'LIBRE' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                form.estado === 'EN USO' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                                'bg-red-100 text-red-700 border-red-200']">
+                                                {{ form.estado }}
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] text-gray-500 mt-1 leading-tight">
+                                            El estado se actualiza automáticamente al asignar o quitar un responsable.
+                                        </p>
                                     </div>
 
                                     <!-- Vida útil -->
@@ -367,15 +401,16 @@ const downloadQr = () => {
 
                                     <!-- Responsable -->
                                     <div class="md:col-span-2 relative">
-                                        <label for="search_persona" class="block text-sm font-medium text-gray-700 mb-1">Responsable (Persona asignada)</label>
+                                        <label for="search_persona" class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
                                         <input
                                             id="search_persona"
                                             v-model="searchPersona"
                                             type="text"
-                                            class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                            class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul disabled:bg-gray-100 disabled:text-gray-400 cursor-text"
                                             placeholder="Buscar persona por nombre..."
                                             @focus="showPersonaDropdown = true"
                                             @blur="handlePersonaBlur"
+                                            :disabled="form.estado === 'BAJA'"
                                         />
                                         <div
                                             v-if="showPersonaDropdown"

@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, computed } from "vue";
+import { reactive, ref, computed, watch } from "vue";
 
 const CARACTERISTICAS_POR_DEFECTO = [
     "COMPUTADORA",
@@ -69,7 +69,7 @@ const handleBlur = () => {
 const form = reactive({
     cod_informatica: "",
     tipo: "",
-    estado: "",
+    estado: "LIBRE",
     fecha_ingreso: "",
     fecha_disponible_uso: "",
     vida_util_anios: "",
@@ -80,7 +80,7 @@ const form = reactive({
 const resetForm = () => {
     form.cod_informatica = "";
     form.tipo = "";
-    form.estado = "";
+    form.estado = "LIBRE";
     form.fecha_ingreso = "";
     form.fecha_disponible_uso = "";
     form.vida_util_anios = "";
@@ -104,6 +104,28 @@ const handleSubmit = () => {
         caracteristicas,
     });
 };
+
+const darDeBaja = () => {
+    form.estado = "BAJA";
+    form.id_persona = "";
+    searchPersona.value = "";
+};
+
+const restaurarEquipo = () => {
+    form.estado = form.id_persona ? "EN USO" : "LIBRE";
+};
+
+watch(() => form.id_persona, (val) => {
+    if (val) {
+        if (form.estado !== "BAJA") {
+            form.estado = "EN USO";
+        }
+    } else {
+        if (form.estado !== "BAJA") {
+            form.estado = "LIBRE";
+        }
+    }
+});
 
 const agregarCaracteristica = () => {
     form.caracteristicas.push({ clave: "", valor: "" });
@@ -230,24 +252,38 @@ defineExpose({ resetForm });
                             </div>
 
                             <div>
-                                <label
-                                    for="nuevo_estado"
-                                    class="block text-sm font-medium text-gray-700"
-                                    >Estado <span class="text-red-500">*</span></label
-                                >
-                                <select
-                                    id="nuevo_estado"
-                                    v-model="form.estado"
-                                    class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:ring-ugel-azul transition-colors"
-                                    :class="errors.estado ? 'border-red-500 focus:border-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul'"
-                                    :disabled="loading"
-                                >
-                                    <option value="">Seleccione estado</option>
-                                    <option value="LIBRE">LIBRE</option>
-                                    <option value="EN USO">EN USO</option>
-                                    <option value="BAJA">BAJA</option>
-                                </select>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-sm font-medium text-gray-700">Estado <span class="text-red-500">*</span></label>
+                                    <button 
+                                        type="button" 
+                                        v-if="form.estado !== 'BAJA'"
+                                        @click="darDeBaja"
+                                        class="text-xs text-red-600 hover:text-red-800 font-semibold"
+                                    >
+                                        Dar de baja
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        v-else
+                                        @click="restaurarEquipo"
+                                        class="text-xs text-green-600 hover:text-green-800 font-semibold"
+                                    >
+                                        Restaurar equipo
+                                    </button>
+                                </div>
+                                <div class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm flex items-center transition-colors"
+                                     :class="errors.estado ? 'border-red-500 focus:border-red-500 bg-red-50' : 'border-ugel-azul/40 bg-gray-50'">
+                                    <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold border', 
+                                        form.estado === 'LIBRE' ? 'bg-green-100 text-green-700 border-green-200' :
+                                        form.estado === 'EN USO' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                        'bg-red-100 text-red-700 border-red-200']">
+                                        {{ form.estado }}
+                                    </span>
+                                </div>
                                 <p v-if="errors.estado" class="mt-1 text-xs text-red-600">{{ errors.estado[0] }}</p>
+                                <p v-else class="text-[11px] text-gray-500 mt-1 leading-tight">
+                                    El estado se actualiza automáticamente al asignar o quitar un responsable.
+                                </p>
                             </div>
 
                             <div>
@@ -310,9 +346,10 @@ defineExpose({ resetForm });
                                         id="nuevo_persona"
                                         v-model="searchPersona"
                                         type="text"
-                                        class="block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
+                                        class="block w-full rounded-lg border px-3 py-2 text-sm text-gray-700 transition-colors disabled:bg-gray-100 disabled:text-gray-400 cursor-text"
+                                        :class="errors.id_persona ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul focus:ring-ugel-azul'"
                                         placeholder="Buscar por nombre o área..."
-                                        :disabled="loading"
+                                        :disabled="loading || form.estado === 'BAJA'"
                                         @focus="showDropdown = true"
                                         @blur="handleBlur"
                                     />

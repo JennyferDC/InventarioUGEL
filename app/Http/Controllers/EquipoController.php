@@ -203,10 +203,7 @@ class EquipoController extends Controller
         });
 
         if ($request->header('X-Inertia')) {
-            return redirect()->back()->with('flash', [
-                'banner' => 'Equipo actualizado exitosamente.',
-                'bannerStyle' => 'success',
-            ]);
+            return redirect()->back();
         }
 
         return response()->json([

@@ -1,7 +1,11 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { Head, Link } from "@inertiajs/vue3";
+import axios from "axios";
+import ModalCrear from "./Partials/ModaCrear.vue";
+import ModalEditar from "./Partials/ModalEditar.vue";
+import FeedbackBanner from "@/Components/FeedbackBanner.vue";
 
 const props = defineProps({
     oficinas: {
@@ -14,9 +18,129 @@ const props = defineProps({
     },
 });
 
-const activeArea = ref("todos");
+const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+const areaParam = urlParams ? urlParams.get('area') : null;
+const activeArea = ref(areaParam ? parseInt(areaParam) : "todos");
 const searchQuery = ref("");
 const isDropdownOpen = ref(false);
+
+const oficinasList = ref([...props.oficinas]);
+
+watch(
+    () => props.oficinas,
+    (value) => {
+        oficinasList.value = [...value];
+    },
+    { deep: true }
+);
+
+const showCreateModal = ref(false);
+const showEditModal = ref(false);
+const oficinaEditando = ref(null);
+const creating = ref(false);
+const saving = ref(false);
+const modalCrearRef = ref(null);
+
+const successMessage = ref("");
+const errorMessage = ref("");
+let feedbackTimeout = null;
+
+const showSuccess = computed(() => Boolean(successMessage.value));
+const showError = computed(() => Boolean(errorMessage.value));
+
+const clearFeedbackTimeout = () => {
+    if (feedbackTimeout) {
+        clearTimeout(feedbackTimeout);
+        feedbackTimeout = null;
+    }
+};
+
+const triggerMessage = (type, message) => {
+    clearFeedbackTimeout();
+    if (type === "success") {
+        successMessage.value = message;
+        errorMessage.value = "";
+    } else {
+        errorMessage.value = message;
+        successMessage.value = "";
+    }
+
+    feedbackTimeout = setTimeout(() => {
+        successMessage.value = "";
+        errorMessage.value = "";
+    }, 4000);
+};
+
+const abrirModalCrear = () => {
+    showCreateModal.value = true;
+};
+
+const cerrarModalCrear = () => {
+    showCreateModal.value = false;
+    modalCrearRef.value?.resetForm();
+};
+
+const crearOficina = async (payload) => {
+    if (!payload?.nombre || !payload?.area_id) return;
+
+    creating.value = true;
+    try {
+        const { data } = await axios.post(route("oficinas.store"), payload);
+        if (data?.data) {
+            oficinasList.value = [...oficinasList.value, data.data].sort((a, b) =>
+                a.nombre.localeCompare(b.nombre)
+            );
+        }
+        triggerMessage("success", "Oficina creada correctamente.");
+        cerrarModalCrear();
+    } catch (error) {
+        const message =
+            error.response?.data?.message ||
+            "No se pudo crear la oficina. Intenta nuevamente.";
+        triggerMessage("error", message);
+    } finally {
+        creating.value = false;
+    }
+};
+
+const abrirModalEditar = (oficina) => {
+    oficinaEditando.value = { ...oficina };
+    showEditModal.value = true;
+};
+
+const cerrarModalEditar = () => {
+    showEditModal.value = false;
+    oficinaEditando.value = null;
+};
+
+const guardarCambios = async (payload) => {
+    if (!payload?.id) return;
+
+    saving.value = true;
+
+    try {
+        const { data } = await axios.put(
+            route("oficinas.update", payload.id),
+            payload
+        );
+
+        const updated = data?.data ?? payload;
+
+        oficinasList.value = oficinasList.value.map((oficina) =>
+            oficina.id === payload.id ? { ...oficina, ...updated } : oficina
+        );
+        triggerMessage("success", "Oficina actualizada correctamente.");
+        cerrarModalEditar();
+    } catch (error) {
+        triggerMessage(
+            "error",
+            error.response?.data?.message ||
+                "No se pudo actualizar la oficina. Revisa los datos e intenta otra vez."
+        );
+    } finally {
+        saving.value = false;
+    }
+};
 
 const selectArea = (areaId) => {
     activeArea.value = areaId;
@@ -35,7 +159,7 @@ const getCountForArea = (areaId) => {
 };
 
 const filteredOficinas = computed(() => {
-    return props.oficinas.filter(oficina => {
+    return oficinasList.value.filter(oficina => {
         const matchesArea = activeArea.value === "todos" || oficina.area_id === activeArea.value;
         const matchesSearch = oficina.nombre.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
                               (oficina.descripcion && oficina.descripcion.toLowerCase().includes(searchQuery.value.toLowerCase()));
@@ -53,6 +177,19 @@ const filteredOficinas = computed(() => {
         </template>
 
         <section class="py-10 space-y-6">
+            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-2">
+                <FeedbackBanner
+                    :show="showSuccess"
+                    :message="successMessage"
+                    type="success"
+                />
+                <FeedbackBanner
+                    :show="showError"
+                    :message="errorMessage"
+                    type="error"
+                />
+            </div>
+
             <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
                 <!-- Filtros y Buscador (Misma estructura que Personas/Index.vue) -->
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -123,6 +260,14 @@ const filteredOficinas = computed(() => {
                         </div>
 
                     </div>
+
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150 w-full lg:w-auto flex-shrink-0"
+                        @click="abrirModalCrear"
+                    >
+                        + Nueva oficina
+                    </button>
                 </div>
 
                 <!-- Grid de Oficinas -->
@@ -130,7 +275,8 @@ const filteredOficinas = computed(() => {
                     <div 
                         v-for="oficina in filteredOficinas" 
                         :key="oficina.id"
-                        class="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
+                        @click="abrirModalEditar(oficina)"
+                        class="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative cursor-pointer"
                     >
                         <div class="h-1.5 w-full bg-gradient-to-r from-ugel-azul to-ugel-guinda opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         
@@ -142,7 +288,11 @@ const filteredOficinas = computed(() => {
                                     </svg>
                                 </div>
                                 <!-- Botón Personas -->
-                                <Link :href="route('personas.index', { oficina: oficina.id })" class="text-ugel-azul hover:text-ugel-guinda text-xs font-bold px-2 py-1 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-1">
+                                <Link 
+                                    :href="route('personas.index', { oficina: oficina.id })" 
+                                    @click.stop
+                                    class="text-ugel-azul hover:text-ugel-guinda text-xs font-bold px-2 py-1 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-1 z-20 relative"
+                                >
                                     Ver personal
                                     <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -180,5 +330,23 @@ const filteredOficinas = computed(() => {
                 
             </div>
         </section>
-                                  </AppLayout>
+
+        <ModalEditar
+            :show="showEditModal"
+            :oficina="oficinaEditando"
+            :areas="areas"
+            :loading="saving"
+            @close="cerrarModalEditar"
+            @save="guardarCambios"
+        />
+
+        <ModalCrear
+            ref="modalCrearRef"
+            :show="showCreateModal"
+            :areas="areas"
+            :loading="creating"
+            @close="cerrarModalCrear"
+            @save="crearOficina"
+        />
+    </AppLayout>
 </template>

@@ -51,7 +51,7 @@ class PersonaController extends Controller
 
         return response()->json([
             'message' => 'Persona creada correctamente.',
-            'data' => $persona->load('oficina.area'),
+            'data' => $persona->fresh()->load('oficina.area')->loadCount('equipos'),
         ], 201);
     }
 
@@ -81,7 +81,7 @@ class PersonaController extends Controller
 
         return response()->json([
             'message' => 'Persona actualizada correctamente.',
-            'data' => $persona->fresh()->load('oficina.area'),
+            'data' => $persona->fresh()->load('oficina.area')->loadCount('equipos'),
         ]);
     }
 
@@ -94,14 +94,17 @@ class PersonaController extends Controller
 
         if ($nuevoEstado === 'INACTIVO') {
             // Liberar equipos
-            $persona->equipos()->update(['id_persona' => null]);
+            $persona->equipos()->update([
+                'id_persona' => null,
+                'estado' => 'LIBRE'
+            ]);
         }
 
         $persona->update(['estado' => $nuevoEstado]);
 
         return response()->json([
             'message' => 'Estado de la cuenta actualizado correctamente.',
-            'data' => $persona->fresh()->load('oficina.area'),
+            'data' => $persona->fresh()->load('oficina.area')->loadCount('equipos'),
         ]);
     }
 }

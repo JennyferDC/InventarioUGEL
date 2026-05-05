@@ -51,36 +51,44 @@ const handleSubmit = () => {
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
                     <label
-                        for="nombre"
+                        for="area_nombre_editar"
                         class="block text-sm font-medium text-gray-700"
                     >
                         Nombre
                     </label>
                     <input
-                        id="nombre"
+                        id="area_nombre_editar"
                         v-model="form.nombre"
                         type="text"
+                        maxlength="255"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                         placeholder="Nombre del área"
                         :disabled="loading"
                     />
+                    <div class="text-right mt-1">
+                        <span class="text-xs text-gray-500">{{ (form.nombre || '').length }}/255</span>
+                    </div>
                 </div>
 
                 <div>
                     <label
-                        for="descripcion"
+                        for="area_descripcion_editar"
                         class="block text-sm font-medium text-gray-700"
                     >
                         Descripción
                     </label>
                     <textarea
-                        id="descripcion"
+                        id="area_descripcion_editar"
                         v-model="form.descripcion"
                         rows="3"
+                        maxlength="255"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                         placeholder="Describe las funciones principales"
                         :disabled="loading"
-                    />
+                    ></textarea>
+                    <div class="text-right mt-1">
+                        <span class="text-xs text-gray-500">{{ (form.descripcion || '').length }}/255</span>
+                    </div>
                 </div>
             </form>
         </template>

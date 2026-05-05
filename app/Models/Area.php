@@ -36,6 +36,14 @@ class Area extends Model
     }
 
     /**
+     * Relación: Area tiene muchas Oficinas
+     */
+    public function oficinas()
+    {
+        return $this->hasMany(Oficina::class, 'area_id');
+    }
+
+    /**
      * Relación: Area tiene muchos Cronogramas de Mantenimiento
      */
     public function cronogramasMantenimiento()

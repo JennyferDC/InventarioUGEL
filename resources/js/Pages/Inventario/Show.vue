@@ -62,9 +62,10 @@ const showPersonaDropdown = ref(false);
 const normalizeText = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 const filteredPersonas = computed(() => {
+    const activePersonas = props.personas.filter(p => p.estado === 'ACTIVO' || !p.estado);
     const q = normalizeText(searchPersona.value);
-    if (!q) return props.personas.slice(0, 50);
-    return props.personas.filter(p => {
+    if (!q) return activePersonas.slice(0, 50);
+    return activePersonas.filter(p => {
         const text = normalizeText(`${p.nombre_completo} ${p.oficina?.nombre || ''} ${p.oficina?.area?.nombre || ''}`);
         return text.includes(q);
     }).slice(0, 50);
@@ -406,6 +407,7 @@ const downloadQr = () => {
                                             id="search_persona"
                                             v-model="searchPersona"
                                             type="text"
+                                            autocomplete="off"
                                             class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul disabled:bg-gray-100 disabled:text-gray-400 cursor-text"
                                             placeholder="Buscar persona por nombre..."
                                             @focus="showPersonaDropdown = true"
@@ -425,11 +427,14 @@ const downloadQr = () => {
                                             <div
                                                 v-for="p in filteredPersonas"
                                                 :key="p.id"
-                                                class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
                                                 @click="selectPersona(p)"
                                             >
-                                                <div class="font-medium">{{ p.nombre_completo }}</div>
-                                                <div class="text-xs text-gray-500" v-if="p.oficina">{{ p.oficina.nombre }} {{ p.oficina.area ? ' - ' + p.oficina.area.nombre : '' }}</div>
+                                                <div>
+                                                    <div class="font-medium">{{ p.nombre_completo }}</div>
+                                                    <div class="text-xs text-gray-500" v-if="p.oficina">{{ p.oficina.nombre }} {{ p.oficina.area ? ' - ' + p.oficina.area.nombre : '' }}</div>
+                                                </div>
+                                                <div class="size-2 rounded-full bg-green-500 shrink-0" title="Activo"></div>
                                             </div>
                                             <div v-if="filteredPersonas.length === 0" class="px-4 py-2 text-sm text-gray-500">
                                                 No se encontraron resultados

@@ -40,11 +40,14 @@ const emit = defineEmits(["close", "save"]);
 const searchPersona = ref("");
 const showDropdown = ref(false);
 
+const normalizeText = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 const filteredPersonas = computed(() => {
-    const q = searchPersona.value.toLowerCase();
-    if (!q) return props.personas.slice(0, 50);
-    return props.personas.filter(p => {
-        const text = `${p.nombre_completo} ${p.oficina?.area?.nombre || ''}`.toLowerCase();
+    const activePersonas = props.personas.filter(p => p.estado === 'ACTIVO' || !p.estado);
+    const q = normalizeText(searchPersona.value);
+    if (!q) return activePersonas.slice(0, 50);
+    return activePersonas.filter(p => {
+        const text = normalizeText(`${p.nombre_completo} ${p.oficina?.nombre || ''} ${p.oficina?.area?.nombre || ''}`);
         return text.includes(q);
     }).slice(0, 50);
 });
@@ -52,7 +55,7 @@ const filteredPersonas = computed(() => {
 const selectPersona = (persona) => {
     if (persona) {
         form.id_persona = persona.id;
-        searchPersona.value = `${persona.nombre_completo} - ${persona.oficina?.area ? persona.oficina.area.nombre : ''}`;
+        searchPersona.value = persona.nombre_completo;
     } else {
         form.id_persona = "";
         searchPersona.value = "";
@@ -70,7 +73,7 @@ const form = reactive({
     cod_informatica: "",
     tipo: "",
     estado: "LIBRE",
-    fecha_ingreso: "",
+    fecha_ingreso: new Date().toISOString().split('T')[0],
     fecha_disponible_uso: "",
     vida_util_anios: "",
     id_persona: "",
@@ -81,7 +84,7 @@ const resetForm = () => {
     form.cod_informatica = "";
     form.tipo = "";
     form.estado = "LIBRE";
-    form.fecha_ingreso = "";
+    form.fecha_ingreso = new Date().toISOString().split('T')[0];
     form.fecha_disponible_uso = "";
     form.vida_util_anios = "";
     form.id_persona = "";
@@ -346,6 +349,7 @@ defineExpose({ resetForm });
                                         id="nuevo_persona"
                                         v-model="searchPersona"
                                         type="text"
+                                        autocomplete="off"
                                         class="block w-full rounded-lg border px-3 py-2 text-sm text-gray-700 transition-colors disabled:bg-gray-100 disabled:text-gray-400 cursor-text"
                                         :class="errors.id_persona ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul focus:ring-ugel-azul'"
                                         placeholder="Buscar por nombre o área..."
@@ -361,16 +365,19 @@ defineExpose({ resetForm });
                                             class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                             @click="selectPersona(null)"
                                         >
-                                            Sin asignar
+                                            -- Sin asignar --
                                         </div>
                                         <div
                                             v-for="persona in filteredPersonas"
                                             :key="persona.id"
-                                            class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
                                             @click="selectPersona(persona)"
                                         >
-                                            <div class="font-medium">{{ persona.nombre_completo }}</div>
-                                            <div class="text-xs text-gray-500">{{ persona.oficina?.area ? persona.oficina.area.nombre : 'Sin área' }}</div>
+                                            <div>
+                                                <div class="font-medium">{{ persona.nombre_completo }}</div>
+                                                <div class="text-xs text-gray-500" v-if="persona.oficina">{{ persona.oficina.nombre }} {{ persona.oficina.area ? ' - ' + persona.oficina.area.nombre : '' }}</div>
+                                            </div>
+                                            <div class="size-2 rounded-full bg-green-500 shrink-0" title="Activo"></div>
                                         </div>
                                         <div v-if="filteredPersonas.length === 0" class="px-4 py-2 text-sm text-gray-500">
                                             No se encontraron resultados

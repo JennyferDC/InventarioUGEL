@@ -16,6 +16,7 @@ class AreaController extends Controller
     public function index(): Response
     {
         $areas = Area::select('id', 'nombre', 'descripcion')
+            ->withCount('oficinas')
             ->orderBy('nombre')
             ->get();
 
@@ -38,7 +39,7 @@ class AreaController extends Controller
 
         return response()->json([
             'message' => 'Área creada correctamente.',
-            'data' => $area,
+            'data' => $area->fresh()->loadCount('oficinas'),
         ], 201);
     }
 
@@ -66,7 +67,7 @@ class AreaController extends Controller
 
         return response()->json([
             'message' => 'Área actualizada correctamente.',
-            'data' => $area->fresh(),
+            'data' => $area->fresh()->loadCount('oficinas'),
         ]);
     }
 

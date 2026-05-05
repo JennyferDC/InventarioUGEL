@@ -11,6 +11,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    areas: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const emit = defineEmits(["close", "save"]);
@@ -18,11 +22,13 @@ const emit = defineEmits(["close", "save"]);
 const form = reactive({
     nombre: "",
     descripcion: "",
+    area_id: "",
 });
 
 const resetForm = () => {
     form.nombre = "";
     form.descripcion = "";
+    form.area_id = "";
 };
 
 const handleClose = () => {
@@ -34,6 +40,7 @@ const handleSubmit = () => {
     emit("save", {
         nombre: form.nombre,
         descripcion: form.descripcion,
+        area_id: form.area_id,
     });
 };
 
@@ -43,7 +50,7 @@ defineExpose({ resetForm });
 <template>
     <DialogModal :show="show" @close="handleClose" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda font-semibold">Nueva área</span>
+            <span class="text-ugel-guinda font-semibold">Nueva oficina</span>
         </template>
 
         <template #content>
@@ -77,9 +84,29 @@ defineExpose({ resetForm });
                         v-model="form.descripcion"
                         rows="3"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Funciones principales del área"
+                        placeholder="Funciones principales de la oficina"
                         :disabled="loading"
                     />
+                </div>
+
+                <div>
+                    <label
+                        for="area_id"
+                        class="block text-sm font-medium text-gray-700"
+                    >
+                        Área a la que pertenece
+                    </label>
+                    <select
+                        id="area_id"
+                        v-model="form.area_id"
+                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                        :disabled="loading"
+                    >
+                        <option value="" disabled>Seleccione un área</option>
+                        <option v-for="area in areas" :key="area.id" :value="area.id">
+                            {{ area.nombre }}
+                        </option>
+                    </select>
                 </div>
             </form>
         </template>
@@ -98,7 +125,7 @@ defineExpose({ resetForm });
                 type="button"
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
-                :disabled="loading || !form.nombre.trim()"
+                :disabled="loading || !form.nombre.trim() || !form.area_id"
             >
                 <svg
                     v-if="loading"
@@ -121,7 +148,7 @@ defineExpose({ resetForm });
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                 </svg>
-                Crear área
+                Crear oficina
             </button>
         </template>
     </DialogModal>

@@ -19,7 +19,10 @@ class EquipoSeeder extends Seeder
         $estados = ['LIBRE', 'EN USO', 'BAJA'];
         $caracteristicasNombres = ['Marca', 'Modelo', 'Serie', 'Color', 'Procesador', 'RAM', 'Almacenamiento', 'Pantalla'];
 
-        $personasIds = [1, 2, 3];
+        $personasIds = Persona::where('estado', 'ACTIVO')->pluck('id')->toArray();
+        if (empty($personasIds)) {
+            $personasIds = [1, 2, 3];
+        }
         $count = 1;
 
         foreach ($personasIds as $personaId) {
@@ -30,14 +33,17 @@ class EquipoSeeder extends Seeder
                 $cod_informatica = strtoupper(substr($tipo, 0, 3)) . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
                 $count++;
 
+                $estado = $estados[array_rand($estados)];
+                $id_persona = ($estado === 'EN USO') ? $personaId : null;
+
                 $equipo = Equipo::create([
                     'cod_informatica' => $cod_informatica,
                     'tipo' => $tipo,
-                    'estado' => $estados[array_rand($estados)],
+                    'estado' => $estado,
                     'fecha_ingreso' => $faker->dateTimeBetween('-2 years', 'now'),
                     'fecha_disponible_uso' => clone $faker->dateTimeBetween('-1 years', 'now'),
                     'vida_util_anios' => rand(3, 7),
-                    'id_persona' => $personaId,
+                    'id_persona' => $id_persona,
                 ]);
 
                 $numCaracteristicas = rand(3, 7);

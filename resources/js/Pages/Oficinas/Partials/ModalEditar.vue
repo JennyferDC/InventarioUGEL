@@ -7,13 +7,17 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    area: {
+    oficina: {
         type: Object,
         default: null,
     },
     loading: {
         type: Boolean,
         default: false,
+    },
+    areas: {
+        type: Array,
+        default: () => [],
     },
 });
 
@@ -23,14 +27,16 @@ const form = reactive({
     id: null,
     nombre: "",
     descripcion: "",
+    area_id: "",
 });
 
 watch(
-    () => props.area,
+    () => props.oficina,
     (value) => {
         form.id = value?.id ?? null;
         form.nombre = value?.nombre ?? "";
         form.descripcion = value?.descripcion ?? "";
+        form.area_id = value?.area_id ?? "";
     },
     { immediate: true }
 );
@@ -44,7 +50,7 @@ const handleSubmit = () => {
 <template>
     <DialogModal :show="show" @close="emit('close')" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda">Editar área</span>
+            <span class="text-ugel-guinda">Editar oficina</span>
         </template>
 
         <template #content>
@@ -82,6 +88,26 @@ const handleSubmit = () => {
                         :disabled="loading"
                     />
                 </div>
+
+                <div>
+                    <label
+                        for="area_id"
+                        class="block text-sm font-medium text-gray-700"
+                    >
+                        Área a la que pertenece
+                    </label>
+                    <select
+                        id="area_id"
+                        v-model="form.area_id"
+                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                        :disabled="loading"
+                    >
+                        <option value="" disabled>Seleccione un área</option>
+                        <option v-for="area in areas" :key="area.id" :value="area.id">
+                            {{ area.nombre }}
+                        </option>
+                    </select>
+                </div>
             </form>
         </template>
 
@@ -98,7 +124,7 @@ const handleSubmit = () => {
                 type="button"
                 class="inline-flex items-center rounded-lg bg-ugel-azul px-4 py-2 text-sm font-semibold text-white shadow hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="handleSubmit"
-                :disabled="loading || !form.nombre.trim()"
+                :disabled="loading || !form.nombre.trim() || !form.area_id"
             >
                 <svg
                     v-if="loading"

@@ -31,6 +31,69 @@ watch(
 
 const searchTerm = ref("");
 const filtroOficina = ref("todos");
+const isOficinaDropdownOpen = ref(false);
+const searchSelectOficina = ref("");
+
+const filteredSelectOficinas = computed(() => {
+    if (!searchSelectOficina.value) return props.oficinas;
+    const q = searchSelectOficina.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return props.oficinas.filter(o => {
+        const text = `${o.nombre} ${o.area?.nombre || ''}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return text.includes(q);
+    });
+});
+
+const getOficinaName = computed(() => {
+    if (filtroOficina.value === "todos") return "Todas las oficinas";
+    const oficina = props.oficinas.find(o => o.id === filtroOficina.value);
+    return oficina ? oficina.nombre : "Todas las oficinas";
+});
+
+const selectOficina = (oficinaId) => {
+    filtroOficina.value = oficinaId;
+    isOficinaDropdownOpen.value = false;
+    searchSelectOficina.value = "";
+};
+
+const sortConfig = ref({
+    key: null,
+    direction: null
+});
+
+const setSort = (key) => {
+    if (sortConfig.value.key === key) {
+        if (sortConfig.value.direction === 'asc') {
+            sortConfig.value.direction = 'desc';
+        } else if (sortConfig.value.direction === 'desc') {
+            sortConfig.value.key = null;
+            sortConfig.value.direction = null;
+        }
+    } else {
+        sortConfig.value.key = key;
+        sortConfig.value.direction = 'asc';
+    }
+};
+
+const getSortIcon = (key) => {
+    const isSorted = sortConfig.value.key === key;
+    const baseClasses = "size-3.5 transition-all duration-200";
+    
+    if (!isSorted) {
+        return `<svg class="${baseClasses} text-ugel-azul/30 hover:text-ugel-azul/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                </svg>`;
+    }
+    
+    if (sortConfig.value.direction === 'asc') {
+        return `<svg class="${baseClasses} text-ugel-azul font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                </svg>`;
+    }
+    
+    return `<svg class="${baseClasses} text-ugel-azul font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>`;
+};
 
 onMounted(() => {
     // Leer el parámetro 'oficina' de la URL si existe
@@ -85,7 +148,7 @@ const filteredPersonas = computed(() => {
     const term = searchTerm.value.trim().toLowerCase();
     const oficinaId = filtroOficina.value;
 
-    return personas.value.filter((persona) => {
+    let result = personas.value.filter((persona) => {
         const coincideBusqueda =
             !term ||
             persona.nombre_completo?.toLowerCase().includes(term) ||
@@ -96,6 +159,34 @@ const filteredPersonas = computed(() => {
 
         return coincideBusqueda && coincideOficina;
     });
+
+    if (sortConfig.value.key) {
+        result.sort((a, b) => {
+            let valA, valB;
+            if (sortConfig.value.key === 'estado') {
+                valA = a.estado || '';
+                valB = b.estado || '';
+            } else if (sortConfig.value.key === 'equipos') {
+                valA = a.equipos_count || 0;
+                valB = b.equipos_count || 0;
+            } else if (sortConfig.value.key === 'oficinas') {
+                valA = a.oficina?.nombre || '';
+                valB = b.oficina?.nombre || '';
+            }
+
+            if (valA < valB) return sortConfig.value.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.value.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    } else {
+        result.sort((a, b) => {
+            if (a.estado === 'ACTIVO' && b.estado === 'INACTIVO') return -1;
+            if (a.estado === 'INACTIVO' && b.estado === 'ACTIVO') return 1;
+            return b.id - a.id;
+        });
+    }
+
+    return result;
 });
 
 const hayPersonas = computed(() => filteredPersonas.value.length > 0);
@@ -257,22 +348,66 @@ const crearPersona = async (payload) => {
                             />
                         </div>
 
-                        <div class="w-full sm:w-72">
-                            <label class="sr-only" for="filtro-oficina">Filtrar por oficina</label>
-                            <select
-                                id="filtro-oficina"
-                                v-model="filtroOficina"
-                                class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
-                            >
-                                <option value="todos">Todas las oficinas</option>
-                                <option
-                                    v-for="oficina in oficinas"
-                                    :key="oficina.id"
-                                    :value="oficina.id"
+                        <!-- Select Personalizado de Oficinas -->
+                        <div class="relative w-full sm:w-72">
+                            <!-- Overlay para cerrar clickeando fuera -->
+                            <div v-if="isOficinaDropdownOpen" @click="isOficinaDropdownOpen = false" class="fixed inset-0 z-10"></div>
+                            
+                            <div class="relative z-20">
+                                <button 
+                                    @click="isOficinaDropdownOpen = !isOficinaDropdownOpen"
+                                    type="button" 
+                                    class="w-full flex items-center justify-between rounded-lg border border-ugel-azul/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul transition-all"
                                 >
-                                    {{ oficina.nombre }}
-                                </option>
-                            </select>
+                                    <span class="truncate">{{ getOficinaName }}</span>
+                                    <svg class="size-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <div 
+                                    v-if="isOficinaDropdownOpen"
+                                    class="absolute mt-1 max-h-60 w-full overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col"
+                                >
+                                    <div class="p-2 border-b border-gray-100 bg-gray-50/50 sticky top-0 z-10">
+                                        <input 
+                                            type="text" 
+                                            v-model="searchSelectOficina" 
+                                            placeholder="Buscar oficina..." 
+                                            class="w-full rounded-md border border-ugel-azul/30 px-3 py-1.5 text-sm focus:border-ugel-azul focus:ring-ugel-azul shadow-sm"
+                                            autofocus
+                                        >
+                                    </div>
+                                    <ul class="overflow-y-auto py-1">
+                                    <li 
+                                        v-if="!searchSelectOficina"
+                                        @click="selectOficina('todos')"
+                                        class="cursor-pointer select-none relative py-2 px-3 hover:bg-ugel-azul/5 transition-colors"
+                                        :class="filtroOficina === 'todos' ? 'bg-ugel-azul/10 text-ugel-azul font-bold' : 'text-gray-900'"
+                                    >
+                                        <span class="block truncate">Todas las oficinas</span>
+                                    </li>
+                                    <li 
+                                        v-if="filteredSelectOficinas.length === 0"
+                                        class="py-3 px-3 text-gray-500 text-center text-xs"
+                                    >
+                                        No se encontraron resultados
+                                    </li>
+                                    <li 
+                                        v-for="oficina in filteredSelectOficinas" 
+                                        :key="oficina.id"
+                                        @click="selectOficina(oficina.id)"
+                                        class="cursor-pointer select-none relative py-2 px-3 hover:bg-ugel-azul/5 flex flex-col transition-colors"
+                                        :class="filtroOficina === oficina.id ? 'bg-ugel-azul/10 text-ugel-azul' : 'text-gray-900'"
+                                    >
+                                        <span class="block font-medium truncate" :class="filtroOficina === oficina.id ? 'font-bold' : ''">{{ oficina.nombre }}</span>
+                                        <span class="block text-[10px] text-gray-500 uppercase tracking-wide truncate mt-0.5" v-if="oficina.area">
+                                            {{ oficina.area.nombre }}
+                                        </span>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -293,9 +428,24 @@ const crearPersona = async (payload) => {
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">#</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Nombre completo</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Celular</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Oficina / Área</th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Estado</th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Equipos</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors" @click="setSort('oficinas')">
+                                        <div class="flex items-center gap-1">
+                                            Oficina / Área
+                                            <span v-html="getSortIcon('oficinas')"></span>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors" @click="setSort('estado')">
+                                        <div class="flex items-center justify-center gap-1">
+                                            Estado
+                                            <span v-html="getSortIcon('estado')"></span>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors" @click="setSort('equipos')">
+                                        <div class="flex items-center justify-center gap-1">
+                                            Equipos
+                                            <span v-html="getSortIcon('equipos')"></span>
+                                        </div>
+                                    </th>
                                     <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Acciones</th>
                                 </tr>
                             </thead>
@@ -329,7 +479,8 @@ const crearPersona = async (payload) => {
                                                 @click="abrirModalEditar(persona)"
                                             >
                                                 <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652l-1.688 1.687m-2.651-2.651L6.312 17.513a4.5 4.5 0 00-1.053 1.682l-.795 2.385a.563.563 0 00.711.71l2.385-.794a4.5 4.5 0 001.682-1.054L19.513 7.125m-2.651-2.651l2.651 2.651" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 </svg>
                                             </button>
                                         </div>

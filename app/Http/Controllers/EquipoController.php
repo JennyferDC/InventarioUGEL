@@ -32,7 +32,7 @@ class EquipoController extends Controller
             ->get();
 
         $personas = Persona::with('oficina:id,nombre,area_id', 'oficina.area:id,nombre')
-            ->select('id', 'nombre_completo', 'id_oficina')
+            ->select('id', 'nombre_completo', 'id_oficina', 'estado')
             ->orderBy('nombre_completo')
             ->get();
 
@@ -64,7 +64,7 @@ class EquipoController extends Controller
         }
 
         $personas = Persona::with('oficina:id,nombre,area_id', 'oficina.area:id,nombre')
-            ->select('id', 'nombre_completo', 'id_oficina')
+            ->select('id', 'nombre_completo', 'id_oficina', 'estado')
             ->orderBy('nombre_completo')
             ->get();
 

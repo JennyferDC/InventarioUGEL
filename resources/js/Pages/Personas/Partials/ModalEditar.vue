@@ -102,7 +102,8 @@ const handleSubmit = () => {
         </template>
 
         <template #content>
-            <div class="mb-4 flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
+            <div class="max-h-[calc(100vh-16rem)] overflow-y-auto pr-2 scroll-light">
+                <div class="mb-4 flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
                 <div class="flex items-center gap-2">
                     <span class="text-sm font-semibold text-gray-700">Estado de cuenta:</span>
                     <span 
@@ -153,12 +154,12 @@ const handleSubmit = () => {
                         v-model="form.celular"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Ej. 999999999"
+                        placeholder="Ej. 987654321"
                         :disabled="loading"
                     />
                 </div>
 
-                <div class="relative">
+                <div class="relative transition-all duration-300" :class="showOficinaDropdown ? 'pb-64' : 'pb-0'">
                     <label
                         for="search_oficina_editar"
                         class="block text-sm font-medium text-gray-700 mb-1"
@@ -205,37 +206,38 @@ const handleSubmit = () => {
                     <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center justify-between">
                         <span>Equipos Asignados ({{ persona.equipos.length }})</span>
                     </h3>
-                    <ul class="space-y-3">
-                        <li v-for="equipo in persona.equipos" :key="equipo.id" class="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                    <div class="space-y-3">
+                        <a :href="route('equipos.showByCodigo', equipo.cod_informatica)" target="_blank" v-for="equipo in persona.equipos" :key="equipo.id" class="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 hover:shadow-md hover:border-ugel-azul/30 transition-all cursor-pointer group">
                             <div class="flex items-center gap-3">
-                                <span class="flex size-8 items-center justify-center rounded-lg bg-ugel-azul/10 text-ugel-azul">
+                                <span class="flex size-8 items-center justify-center rounded-lg bg-ugel-azul/10 text-ugel-azul group-hover:bg-ugel-azul group-hover:text-white transition-colors">
                                     <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
                                 </span>
                                 <div>
-                                    <a :href="route('equipos.show', equipo.id)" target="_blank" class="text-sm font-bold text-gray-800 hover:text-ugel-azul hover:underline">
+                                    <span class="text-sm font-bold text-gray-800 group-hover:text-ugel-azul transition-colors block">
                                         {{ equipo.cod_informatica }}
-                                    </a>
+                                    </span>
                                     <p class="text-xs text-gray-500">{{ equipo.tipo }}</p>
                                 </div>
                             </div>
                             <span :class="[
-                                'px-2 py-0.5 rounded-full text-xs font-semibold',
-                                equipo.estado === 'LIBRE' ? 'bg-green-100 text-green-800' :
-                                equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-800' :
-                                'bg-red-100 text-red-800'
+                                'px-2 py-0.5 rounded-full text-xs font-semibold transition-colors',
+                                equipo.estado === 'LIBRE' ? 'bg-green-100 text-green-800 group-hover:bg-green-200' :
+                                equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-800 group-hover:bg-blue-200' :
+                                'bg-red-100 text-red-800 group-hover:bg-red-200'
                             ]">
                                 {{ equipo.estado }}
                             </span>
-                        </li>
-                    </ul>
+                        </a>
+                    </div>
                 </div>
                 <div v-else-if="persona && (!persona.equipos || persona.equipos.length === 0)" class="mt-6 pt-6 border-t border-gray-200">
                     <div class="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 bg-gray-50">
                         Esta persona no tiene equipos asignados actualmente.
                     </div>
                 </div>
+            </div>
         </template>
 
         <template #footer>
@@ -282,3 +284,19 @@ const handleSubmit = () => {
         </template>
     </DialogModal>
 </template>
+
+<style scoped>
+.scroll-light::-webkit-scrollbar {
+    width: 6px;
+}
+.scroll-light::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scroll-light::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+.scroll-light::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+</style>

@@ -26,7 +26,7 @@ class PersonaSeeder extends Seeder
             [
                 'nombre_completo' => 'Carlos Ramírez',
                 'celular' => '998877665',
-                'estado' => 'INACTIVO',
+                'estado' => 'ACTIVO',
                 'id_oficina' => 3,
             ],
         ]);

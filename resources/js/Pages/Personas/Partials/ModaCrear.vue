@@ -116,12 +116,12 @@ defineExpose({ resetForm });
                         v-model="form.celular"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Ej. 999999999"
+                        placeholder="Ej. 987654321"
                         :disabled="loading"
                     />
                 </div>
 
-                <div class="relative">
+                <div class="relative transition-all duration-300" :class="showOficinaDropdown ? 'pb-64' : 'pb-0'">
                     <label
                         for="search_oficina"
                         class="block text-sm font-medium text-gray-700 mb-1"

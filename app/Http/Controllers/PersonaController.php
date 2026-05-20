@@ -45,6 +45,10 @@ class PersonaController extends Controller
             'cargo' => ['nullable', 'string', 'max:255'],
             'estado' => ['nullable', 'in:ACTIVO,INACTIVO'],
             'id_oficina' => ['required', 'integer', 'exists:oficinas,id'],
+        ], [
+            'nombre_completo.required' => 'El nombre completo es obligatorio.',
+            'id_oficina.required' => 'La oficina es obligatoria.',
+            'id_oficina.exists' => 'La oficina seleccionada no es válida.',
         ]);
 
         $data['estado'] = $data['estado'] ?? 'ACTIVO';
@@ -79,6 +83,10 @@ class PersonaController extends Controller
             'cargo' => ['nullable', 'string', 'max:255'],
             'estado' => ['required', 'in:ACTIVO,INACTIVO'],
             'id_oficina' => ['required', 'integer', 'exists:oficinas,id'],
+        ], [
+            'nombre_completo.required' => 'El nombre completo es obligatorio.',
+            'id_oficina.required' => 'La oficina es obligatoria.',
+            'id_oficina.exists' => 'La oficina seleccionada no es válida.',
         ]);
 
         $persona->update($data);

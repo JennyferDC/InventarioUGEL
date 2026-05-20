@@ -247,6 +247,16 @@ const cerrarModalEditar = () => {
 const guardarCambios = async (payload) => {
     if (!payload?.id) return;
 
+    if (!payload.nombre_completo || !payload.nombre_completo.trim()) {
+        triggerMessage("error", "El nombre completo es obligatorio.");
+        return;
+    }
+
+    if (!payload.id_oficina) {
+        triggerMessage("error", "La oficina es obligatoria.");
+        return;
+    }
+
     saving.value = true;
 
     try {
@@ -283,7 +293,15 @@ const cerrarModalCrear = () => {
 };
 
 const crearPersona = async (payload) => {
-    if (!payload?.nombre_completo || !payload.id_oficina) return;
+    if (!payload?.nombre_completo || !payload.nombre_completo.trim()) {
+        triggerMessage("error", "El nombre completo es obligatorio.");
+        return;
+    }
+
+    if (!payload?.id_oficina) {
+        triggerMessage("error", "La oficina es obligatoria.");
+        return;
+    }
 
     creating.value = true;
 

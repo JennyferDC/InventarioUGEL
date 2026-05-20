@@ -1,6 +1,6 @@
 <script setup>
-import DialogModal from "@/Components/DialogModal.vue";
-import { reactive, ref, computed } from "vue";
+import DialogDrawer from "@/Components/DialogDrawer.vue";
+import { reactive, ref, computed, watch, nextTick, onUnmounted } from "vue";
 
 const props = defineProps({
     show: {
@@ -31,6 +31,7 @@ const searchOficina = ref("");
 const showOficinaDropdown = ref(false);
 const inputRef = ref(null);
 const dropdownStyle = ref({});
+const teleportTarget = ref("body");
 
 const updateDropdownPosition = () => {
     if (!inputRef.value) return;
@@ -38,23 +39,34 @@ const updateDropdownPosition = () => {
     
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    const dropdownHeight = 192; // max-h-48 is 192px
     
-    let top = rect.bottom + window.scrollY;
+    let maxHeight = 240;
     
-    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-        top = rect.top + window.scrollY - dropdownHeight - 4;
+    if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+        maxHeight = Math.min(240, spaceAbove - 10);
+        const bottom = window.innerHeight - rect.top + 4;
+        dropdownStyle.value = {
+            position: 'fixed',
+            bottom: `${bottom}px`,
+            top: 'auto',
+            left: `${rect.left}px`,
+            width: `${rect.width}px`,
+            maxHeight: `${maxHeight}px`,
+            zIndex: '9999',
+        };
     } else {
-        top = rect.bottom + window.scrollY + 4;
+        maxHeight = Math.min(240, spaceBelow - 10);
+        const top = rect.bottom + 4;
+        dropdownStyle.value = {
+            position: 'fixed',
+            top: `${top}px`,
+            bottom: 'auto',
+            left: `${rect.left}px`,
+            width: `${rect.width}px`,
+            maxHeight: `${maxHeight}px`,
+            zIndex: '9999',
+        };
     }
-    
-    dropdownStyle.value = {
-        position: 'absolute',
-        top: `${top}px`,
-        left: `${rect.left + window.scrollX}px`,
-        width: `${rect.width}px`,
-        zIndex: '9999',
-    };
 };
 
 const handleResize = () => {
@@ -65,6 +77,10 @@ const handleResize = () => {
 
 watch(showOficinaDropdown, (newVal) => {
     if (newVal) {
+        if (inputRef.value) {
+            const dialog = inputRef.value.closest('dialog');
+            teleportTarget.value = dialog || 'body';
+        }
         nextTick(() => {
             updateDropdownPosition();
         });
@@ -146,148 +162,159 @@ defineExpose({ resetForm });
 </script>
 
 <template>
-    <DialogModal :show="show" @close="handleClose" max-width="xl">
+    <DialogDrawer :show="show" @close="handleClose" max-width="xl" @scroll="handleScroll">
         <template #title>
             <span class="text-ugel-guinda font-semibold">Nueva persona</span>
         </template>
 
         <template #content>
-            <div class="max-h-[calc(100vh-14rem)] overflow-y-auto pr-2 scroll-light" @scroll="handleScroll">
-                <form class="space-y-4" @submit.prevent="handleSubmit">
-                    <div>
+            <form class="space-y-4" @submit.prevent="handleSubmit">
+                <div>
+                    <label
+                        for="persona_nombre"
+                        class="block text-sm font-medium text-gray-700"
+                    >
+                        Nombre completo <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        id="persona_nombre"
+                        v-model="form.nombre_completo"
+                        type="text"
+                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                        placeholder="Nombre y apellidos"
+                        :disabled="loading"
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="md:col-span-3">
                         <label
-                            for="persona_nombre"
+                            for="persona_correo"
                             class="block text-sm font-medium text-gray-700"
                         >
-                            Nombre completo
+                            Correo electrónico
                         </label>
                         <input
-                            id="persona_nombre"
-                            v-model="form.nombre_completo"
-                            type="text"
+                            id="persona_correo"
+                            v-model="form.correo"
+                            type="email"
                             class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                            placeholder="Nombre y apellidos"
+                            placeholder="Ej. correo@ejemplo.com"
                             :disabled="loading"
                         />
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label
-                                for="persona_celular"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Celular
-                            </label>
-                            <input
-                                id="persona_celular"
-                                v-model="form.celular"
-                                type="text"
-                                class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                                placeholder="Ej. 987654321"
-                                :disabled="loading"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                for="persona_correo"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Correo electrónico
-                            </label>
-                            <input
-                                id="persona_correo"
-                                v-model="form.correo"
-                                type="email"
-                                class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                                placeholder="Ej. correo@ejemplo.com"
-                                :disabled="loading"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
+                    <div class="md:col-span-2">
                         <label
-                            for="persona_cargo"
+                            for="persona_celular"
                             class="block text-sm font-medium text-gray-700"
                         >
-                            Cargo / Especialidad
+                            Celular
                         </label>
                         <input
-                            id="persona_cargo"
-                            v-model="form.cargo"
+                            id="persona_celular"
+                            v-model="form.celular"
                             type="text"
                             class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                            placeholder="Ej. Especialista en Soporte"
+                            placeholder="Ej. 987654321"
                             :disabled="loading"
                         />
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="persona_cargo"
+                        class="block text-sm font-medium text-gray-700"
+                    >
+                        Cargo / Especialidad
+                    </label>
+                    <input
+                        id="persona_cargo"
+                        v-model="form.cargo"
+                        type="text"
+                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                        placeholder="Ej. Especialista en Soporte"
+                        :disabled="loading"
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="md:col-span-3">
+                        <label
+                            for="search_oficina"
+                            class="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                            Oficina <span class="text-red-500">*</span>
+                        </label>
                         <div class="relative">
-                            <label
-                                for="search_oficina"
-                                class="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Oficina
-                            </label>
                             <input
                                 id="search_oficina"
                                 ref="inputRef"
                                 v-model="searchOficina"
                                 type="text"
-                                class="block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                class="block w-full rounded-lg border border-ugel-azul/40 pl-3 pr-10 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
                                 placeholder="Buscar oficina por nombre o área..."
                                 @focus="showOficinaDropdown = true"
                                 @blur="handleOficinaBlur"
                                 :disabled="loading"
                                 autocomplete="off"
                             />
-                            
-                            <Teleport to="body">
+                            <!-- Clear Button -->
+                            <button
+                                v-if="searchOficina || form.id_oficina"
+                                type="button"
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                                @click="selectOficina(null)"
+                            >
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <Teleport :to="teleportTarget">
+                            <div
+                                v-if="showOficinaDropdown"
+                                :style="dropdownStyle"
+                                class="overflow-y-auto rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-10 scroll-light"
+                            >
                                 <div
-                                    v-if="showOficinaDropdown"
-                                    :style="dropdownStyle"
-                                    class="overflow-y-auto rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-10 scroll-light"
+                                    class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    @mousedown.prevent
+                                    @click="selectOficina(null)"
                                 >
-                                    <div
-                                        class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        @mousedown.prevent
-                                        @click="selectOficina(null)"
-                                    >
-                                        -- Sin asignar --
-                                    </div>
-                                    <div
-                                        v-for="o in filteredOficinas"
-                                        :key="o.id"
-                                        class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        @mousedown.prevent
-                                        @click="selectOficina(o)"
-                                    >
-                                        <div class="font-medium">{{ o.nombre }}</div>
-                                        <div class="text-xs text-gray-500" v-if="o.area">{{ o.area.nombre }}</div>
-                                    </div>
-                                    <div v-if="filteredOficinas.length === 0" class="px-4 py-2 text-sm text-gray-500">
-                                        No se encontraron resultados
-                                    </div>
+                                    -- Sin asignar --
                                 </div>
-                            </Teleport>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Área
-                            </label>
-                            <input
-                                type="text"
-                                :value="selectedArea"
-                                disabled
-                                class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
-                            />
-                        </div>
+                                <div
+                                    v-for="o in filteredOficinas"
+                                    :key="o.id"
+                                    class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    @mousedown.prevent
+                                    @click="selectOficina(o)"
+                                >
+                                    <div class="font-medium">{{ o.nombre }}</div>
+                                    <div class="text-xs text-gray-500" v-if="o.area">{{ o.area.nombre }}</div>
+                                </div>
+                                <div v-if="filteredOficinas.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                    No se encontraron resultados
+                                </div>
+                            </div>
+                        </Teleport>
                     </div>
-                </form>
-            </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Área
+                        </label>
+                        <input
+                            type="text"
+                            :value="selectedArea"
+                            disabled
+                            class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
+                        />
+                    </div>
+                </div>
+            </form>
         </template>
 
         <template #footer>
@@ -332,7 +359,7 @@ defineExpose({ resetForm });
                 Crear persona
             </button>
         </template>
-    </DialogModal>
+    </DialogDrawer>
 </template>
 
 <style scoped>

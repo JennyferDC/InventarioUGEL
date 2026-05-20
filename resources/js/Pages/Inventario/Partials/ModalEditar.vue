@@ -96,6 +96,10 @@ const form = reactive({
     vida_util_anios: "",
     id_persona: "",
     caracteristicas: [],
+    observacion_tecnica: "",
+    categoria: "equipo",
+    ip: "",
+    clasificacion: "",
 });
 
 const searchPersona = ref("");
@@ -138,6 +142,10 @@ watch(
         form.fecha_disponible_uso = value?.fecha_disponible_uso ?? "";
         form.vida_util_anios = value?.vida_util_anios ?? "";
         form.id_persona = value?.id_persona ?? "";
+        form.observacion_tecnica = value?.observacion_tecnica ?? "";
+        form.categoria = value?.categoria ?? "equipo";
+        form.ip = value?.ip ?? "";
+        form.clasificacion = value?.clasificacion ?? "";
         form.caracteristicas = Array.isArray(value?.caracteristicas)
             ? value.caracteristicas.map((item) => ({
                   clave: item?.clave ?? "",
@@ -157,6 +165,18 @@ watch(
     { immediate: true },
 );
 
+watch(() => form.tipo, (newTipo) => {
+    if (!['PC', 'LAPTOP', 'TODO EN UNO'].includes(newTipo)) {
+        form.ip = "";
+    }
+});
+
+watch(() => form.estado, (newEstado) => {
+    if (newEstado !== 'BAJA') {
+        form.observacion_tecnica = "";
+    }
+});
+
 const handleSubmit = () => {
     if (!form.id) return;
 
@@ -174,6 +194,10 @@ const handleSubmit = () => {
         vida_util_anios: form.vida_util_anios,
         id_persona: form.id_persona,
         caracteristicas,
+        observacion_tecnica: form.observacion_tecnica,
+        categoria: form.categoria,
+        ip: form.ip,
+        clasificacion: form.clasificacion,
     });
 };
 
@@ -379,6 +403,57 @@ const quitarCaracteristica = (index) => {
                                     class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                                     :disabled="loading"
                                 />
+                            </div>
+
+                            <div>
+                                <label
+                                    for="editar_clasificacion"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Clasificación</label
+                                >
+                                <select
+                                    id="editar_clasificacion"
+                                    v-model="form.clasificacion"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    :disabled="loading"
+                                >
+                                    <option value="">Seleccione clasificación</option>
+                                    <option value="bueno">Bueno</option>
+                                    <option value="regular">Regular</option>
+                                    <option value="malo">Malo</option>
+                                </select>
+                            </div>
+
+                            <div v-if="['PC', 'LAPTOP', 'TODO EN UNO'].includes(form.tipo)">
+                                <label
+                                    for="editar_ip"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Dirección IP</label
+                                >
+                                <input
+                                    id="editar_ip"
+                                    v-model="form.ip"
+                                    type="text"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    placeholder="192.168.1.XX"
+                                    :disabled="loading"
+                                />
+                            </div>
+
+                            <div v-if="form.estado === 'BAJA'" class="md:col-span-2">
+                                <label
+                                    for="editar_observacion_tecnica"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Observación técnica de baja</label
+                                >
+                                <textarea
+                                    id="editar_observacion_tecnica"
+                                    v-model="form.observacion_tecnica"
+                                    rows="3"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    placeholder="Describa el motivo o estado técnico para dar de baja el equipo..."
+                                    :disabled="loading"
+                                ></textarea>
                             </div>
 
                             <div class="md:col-span-2 relative">

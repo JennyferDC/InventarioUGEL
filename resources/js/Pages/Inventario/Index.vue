@@ -46,6 +46,7 @@ watch(
 const searchTerm = ref("");
 const filtroEstado = ref("todos");
 const filtroTipo = ref("todos");
+const filtroCategoria = ref("equipo");
 
 const TIPOS_EQUIPO = ["PC", "LAPTOP", "TODO EN UNO", "COMPONENTE", "TECLADO", "MOUSE", "OTRO", "MONITOR"];
 
@@ -208,26 +209,41 @@ const filteredEquipos = computed(() => {
     const term = searchTerm.value.trim().toLowerCase();
     const estado = filtroEstado.value.toLowerCase();
     const tipoFiltro = filtroTipo.value.toLowerCase();
+    const catFiltro = filtroCategoria.value.toLowerCase();
 
-    return equipos.value.filter((equipo) => {
-        const coincideBusqueda =
-            !term ||
-            equipo.cod_informatica?.toLowerCase().includes(term) ||
-            equipo.tipo?.toLowerCase().includes(term) ||
-            equipo.persona?.nombre_completo?.toLowerCase().includes(term) ||
-            equipo.persona?.oficina?.area?.nombre?.toLowerCase().includes(term);
+    return equipos.value
+        .filter((equipo) => {
+            const coincideBusqueda =
+                !term ||
+                equipo.cod_informatica?.toLowerCase().includes(term) ||
+                equipo.tipo?.toLowerCase().includes(term) ||
+                equipo.persona?.nombre_completo?.toLowerCase().includes(term) ||
+                equipo.persona?.oficina?.area?.nombre?.toLowerCase().includes(term);
 
-        const coincideEstado =
-            estado === "todos" ||
-            (equipo.estado ?? "").toLowerCase() === estado || 
-            (estado === "de baja" && (equipo.estado ?? "").toLowerCase() === "baja");
+            const coincideEstado =
+                estado === "todos" ||
+                (equipo.estado ?? "").toLowerCase() === estado || 
+                (estado === "de baja" && (equipo.estado ?? "").toLowerCase() === "baja");
 
-        const coincideTipo =
-            tipoFiltro === "todos" ||
-            (equipo.tipo ?? "").toLowerCase() === tipoFiltro;
+            const coincideTipo =
+                tipoFiltro === "todos" ||
+                (equipo.tipo ?? "").toLowerCase() === tipoFiltro;
 
-        return coincideBusqueda && coincideEstado && coincideTipo;
-    });
+            const coincideCategoria =
+                (equipo.categoria || "equipo").toLowerCase() === catFiltro;
+
+            return coincideBusqueda && coincideEstado && coincideTipo && coincideCategoria;
+        })
+        .sort((a, b) => {
+            const ordenEstados = {
+                'EN USO': 1,
+                'LIBRE': 2,
+                'BAJA': 3
+            };
+            const valA = ordenEstados[(a.estado || '').toUpperCase()] || 99;
+            const valB = ordenEstados[(b.estado || '').toUpperCase()] || 99;
+            return valA - valB;
+        });
 });
 
 const hayEquipos = computed(() => filteredEquipos.value.length > 0);
@@ -293,6 +309,55 @@ const confirmarEliminacion = async () => {
             </div>
 
             <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
+                <!-- Selector de Categoría Premium -->
+                <div class="bg-gray-100/80 backdrop-blur p-1 rounded-xl flex items-center gap-1 w-full max-w-md border border-gray-200">
+                    <button
+                        type="button"
+                        @click="filtroCategoria = 'equipo'"
+                        :class="[
+                            'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200',
+                            filtroCategoria === 'equipo' 
+                                ? 'bg-white text-ugel-guinda shadow-sm' 
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                        ]"
+                    >
+                        <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Equipos
+                    </button>
+                    <button
+                        type="button"
+                        @click="filtroCategoria = 'componente'"
+                        :class="[
+                            'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200',
+                            filtroCategoria === 'componente' 
+                                ? 'bg-white text-ugel-guinda shadow-sm' 
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                        ]"
+                    >
+                        <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                        </svg>
+                        Componentes
+                    </button>
+                    <button
+                        type="button"
+                        @click="filtroCategoria = 'programa'"
+                        :class="[
+                            'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200',
+                            filtroCategoria === 'programa' 
+                                ? 'bg-white text-ugel-guinda shadow-sm' 
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                        ]"
+                    >
+                        <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                        Programas
+                    </button>
+                </div>
+
                 <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                     <div class="flex flex-col gap-3 md:flex-row md:items-center flex-wrap">
                         <div class="w-full sm:w-72">
@@ -418,7 +483,7 @@ const confirmarEliminacion = async () => {
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
-                                        Vida útil (años)
+                                        Vida útil
                                     </th>
                                     <th
                                         class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul"
@@ -439,19 +504,29 @@ const confirmarEliminacion = async () => {
                                     <td
                                         class="px-6 py-4 text-sm text-gray-700 font-semibold"
                                     >
-                                        {{ equipo.cod_informatica }}
+                                        <div class="flex flex-col">
+                                            <span>{{ equipo.cod_informatica }}</span>
+                                            <span v-if="equipo.ip" class="text-[11px] font-mono text-gray-500 mt-0.5" title="Dirección IP">
+                                                {{ equipo.ip }}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td
                                         class="px-6 py-4 text-sm text-ugel-guinda"
                                     >
-                                        {{ equipo.tipo }}
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-semibold">{{ equipo.tipo }}</span>
+                                            <span v-if="equipo.clasificacion" class="size-5 inline-flex items-center justify-center rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500 border border-gray-200 shrink-0" :title="'Clasificación: ' + equipo.clasificacion">
+                                                {{ equipo.clasificacion.charAt(0).toUpperCase() }}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <span :class="[
-                                            'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                            equipo.estado === 'LIBRE' ? 'bg-emerald-100 text-emerald-800' :
-                                            equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-800' :
-                                            equipo.estado === 'BAJA' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                            'px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full border',
+                                            equipo.estado === 'LIBRE' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
+                                            equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                            equipo.estado === 'BAJA' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-gray-100 text-gray-800 border-gray-200'
                                         ]">
                                             {{ equipo.estado === 'BAJA' ? 'DE BAJA' : (equipo.estado || 'Sin estado') }}
                                         </span>
@@ -483,8 +558,9 @@ const confirmarEliminacion = async () => {
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500">
                                         {{
-                                            equipo.vida_util_anios ??
-                                            "No definido"
+                                            equipo.vida_util_anios
+                                                ? `${equipo.vida_util_anios} años`
+                                                : "No definido"
                                         }}
                                     </td>
                                     <td class="px-6 py-4">

@@ -8,6 +8,7 @@ use App\Http\Controllers\OficinaController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\AIController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -95,4 +96,6 @@ Route::middleware([
 
     Route::post('/reportes/equipos/pdf', [ReporteController::class, 'equiposPdf'])->name('reportes.equipos.pdf');
     Route::post('/reportes/equipos/excel', [ReporteController::class, 'equiposExcel'])->name('reportes.equipos.excel');
+
+    Route::post('/api/ai/mejorar-observacion', [AIController::class, 'mejorarObservacionTecnica'])->name('api.ai.mejorar-observacion');
 });

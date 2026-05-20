@@ -122,6 +122,10 @@ const form = reactive({
     vida_util_anios: "",
     id_persona: "",
     caracteristicas: [],
+    observacion_tecnica: "",
+    categoria: "equipo",
+    ip: "",
+    clasificacion: "",
 });
 
 const resetForm = () => {
@@ -133,6 +137,10 @@ const resetForm = () => {
     form.vida_util_anios = "";
     form.id_persona = "";
     form.caracteristicas = [];
+    form.observacion_tecnica = "";
+    form.categoria = "equipo";
+    form.ip = "";
+    form.clasificacion = "";
     searchPersona.value = "";
 };
 
@@ -160,7 +168,14 @@ const darDeBaja = () => {
 
 const restaurarEquipo = () => {
     form.estado = form.id_persona ? "EN USO" : "LIBRE";
+    form.observacion_tecnica = "";
 };
+
+watch(() => form.tipo, (newTipo) => {
+    if (!['PC', 'LAPTOP', 'TODO EN UNO'].includes(newTipo)) {
+        form.ip = "";
+    }
+});
 
 watch(() => form.id_persona, (val) => {
     if (val) {
@@ -380,6 +395,57 @@ defineExpose({ resetForm });
                                     class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                                     :disabled="loading"
                                 />
+                            </div>
+
+                            <div>
+                                <label
+                                    for="nuevo_clasificacion"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Clasificación</label
+                                >
+                                <select
+                                    id="nuevo_clasificacion"
+                                    v-model="form.clasificacion"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    :disabled="loading"
+                                >
+                                    <option value="">Seleccione clasificación</option>
+                                    <option value="bueno">Bueno</option>
+                                    <option value="regular">Regular</option>
+                                    <option value="malo">Malo</option>
+                                </select>
+                            </div>
+
+                            <div v-if="['PC', 'LAPTOP', 'TODO EN UNO'].includes(form.tipo)">
+                                <label
+                                    for="nuevo_ip"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Dirección IP</label
+                                >
+                                <input
+                                    id="nuevo_ip"
+                                    v-model="form.ip"
+                                    type="text"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    placeholder="192.168.1.XX"
+                                    :disabled="loading"
+                                />
+                            </div>
+
+                            <div v-if="form.estado === 'BAJA'" class="md:col-span-2">
+                                <label
+                                    for="nuevo_observacion_tecnica"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Observación técnica de baja</label
+                                >
+                                <textarea
+                                    id="nuevo_observacion_tecnica"
+                                    v-model="form.observacion_tecnica"
+                                    rows="3"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    placeholder="Describa el motivo o estado técnico para dar de baja el equipo..."
+                                    :disabled="loading"
+                                ></textarea>
                             </div>
 
                             <div class="md:col-span-2 relative">

@@ -19,6 +19,10 @@ class Equipo extends Model
         'fecha_disponible_uso',
         'vida_util_anios',
         'id_persona',
+        'observacion_tecnica',
+        'categoria',
+        'ip',
+        'clasificacion',
     ];
 
     /**

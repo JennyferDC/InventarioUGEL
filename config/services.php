@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'ai' => [
+        'default' => env('AI_DRIVER', 'mock'),
+        'drivers' => [
+            'gemini' => [
+                'key' => env('GEMINI_API_KEY'),
+                'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+            ],
+        ],
+    ],
+
 ];

@@ -37,6 +37,11 @@ return new class extends Migration
             $table->date('fecha_disponible_uso')->nullable(); // fecha_disponible_uso : date
             $table->integer('vida_util_anios')->nullable(); // vida_util_anios : int
 
+            $table->text('observacion_tecnica')->nullable();
+            $table->enum('categoria', ['equipo', 'componente', 'programa'])->default('equipo')->nullable();
+            $table->string('ip')->nullable();
+            $table->enum('clasificacion', ['bueno', 'regular', 'malo'])->nullable();
+
             // FK -> personas
             $table->foreignId('id_persona')
                   ->nullable()

@@ -29,7 +29,15 @@ class EquipoSeeder extends Seeder
             $numEquipos = rand(4, 6);
 
             for ($i = 0; $i < $numEquipos; $i++) {
-                $tipo = $tipos[array_rand($tipos)];
+                $categoria = $faker->randomElement(['equipo', 'componente', 'programa']);
+                if ($categoria === 'componente') {
+                    $tipo = $faker->randomElement(['COMPONENTE', 'TECLADO', 'MOUSE', 'MONITOR']);
+                } elseif ($categoria === 'programa') {
+                    $tipo = 'OTRO';
+                } else {
+                    $tipo = $faker->randomElement(['PC', 'LAPTOP', 'TODO EN UNO', 'OTRO']);
+                }
+
                 $cod_informatica = strtoupper(substr($tipo, 0, 3)) . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
                 $count++;
 
@@ -44,6 +52,10 @@ class EquipoSeeder extends Seeder
                     'fecha_disponible_uso' => clone $faker->dateTimeBetween('-1 years', 'now'),
                     'vida_util_anios' => rand(3, 7),
                     'id_persona' => $id_persona,
+                    'observacion_tecnica' => ($estado === 'BAJA') ? $faker->sentence(8) : null,
+                    'categoria' => $categoria,
+                    'ip' => in_array($tipo, ['PC', 'LAPTOP', 'TODO EN UNO']) ? $faker->ipv4 : null,
+                    'clasificacion' => $faker->randomElement(['bueno', 'regular', 'malo']),
                 ]);
 
                 $numCaracteristicas = rand(3, 7);

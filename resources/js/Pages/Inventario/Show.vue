@@ -4,6 +4,7 @@ import { useForm, Link } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import QrcodeVue from "qrcode.vue";
 import ModalFichaTecnica from "./Partials/ModalFichaTecnica.vue";
+import PersonaCrearModal from "@/Pages/Personas/Partials/ModaCrear.vue";
 import axios from "axios";
 
 const props = defineProps({
@@ -47,6 +48,10 @@ const form = useForm({
     fecha_disponible_uso: props.equipo.fecha_disponible_uso,
     vida_util_anios: props.equipo.vida_util_anios,
     id_persona: props.equipo.id_persona ?? "",
+    observacion_tecnica: props.equipo.observacion_tecnica ?? "",
+    categoria: props.equipo.categoria ?? "equipo",
+    ip: props.equipo.ip ?? "",
+    clasificacion: props.equipo.clasificacion ?? "",
     caracteristicas: Array.isArray(props.equipo.caracteristicas)
         ? props.equipo.caracteristicas.map((c) => ({ ...c }))
         : [],
@@ -59,10 +64,62 @@ const linkCopiado = ref(false);
 const searchPersona = ref("");
 const showPersonaDropdown = ref(false);
 
+// Local responsive copy of personas to allow dynamic addition
+const localPersonas = ref([...props.personas]);
+const oficinas = ref([]);
+const loadingOficinas = ref(false);
+const showQuickRegister = ref(false);
+const savingPersona = ref(false);
+
+const fetchOficinas = async () => {
+    if (oficinas.value.length > 0) return;
+    loadingOficinas.value = true;
+    try {
+        const response = await axios.get(route('api.oficinas.index'));
+        oficinas.value = response.data.data;
+    } catch (error) {
+        console.error("Error al obtener oficinas:", error);
+    } finally {
+        loadingOficinas.value = false;
+    }
+};
+
+const openQuickRegister = async () => {
+    await fetchOficinas();
+    showQuickRegister.value = true;
+};
+
+const savePersona = async (payload) => {
+    savingPersona.value = true;
+    try {
+        const response = await axios.post(route("personas.store"), payload);
+        if (response.data?.data) {
+            const nuevaPersona = response.data.data;
+            
+            // Add new persona to the local reactive list
+            localPersonas.value.push(nuevaPersona);
+            
+            // Auto select the newly created persona
+            selectPersona(nuevaPersona);
+            
+            showQuickRegister.value = false;
+        }
+    } catch (error) {
+        console.error("Error al registrar persona:", error);
+        alert(error.response?.data?.message || "No se pudo registrar a la persona.");
+    } finally {
+        savingPersona.value = false;
+    }
+};
+
+watch(() => props.personas, (newVal) => {
+    localPersonas.value = [...newVal];
+}, { deep: true });
+
 const normalizeText = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 const filteredPersonas = computed(() => {
-    const activePersonas = props.personas.filter(p => p.estado === 'ACTIVO' || !p.estado);
+    const activePersonas = localPersonas.value.filter(p => p.estado === 'ACTIVO' || !p.estado);
     const q = normalizeText(searchPersona.value);
     if (!q) return activePersonas.slice(0, 50);
     return activePersonas.filter(p => {
@@ -90,7 +147,7 @@ const handlePersonaBlur = () => {
 
 watch(() => form.id_persona, (val) => {
     if (val) {
-        const p = props.personas.find(x => x.id === val);
+        const p = localPersonas.value.find(x => x.id === val);
         if (p) {
             searchPersona.value = p.nombre_completo;
         }
@@ -104,6 +161,18 @@ watch(() => form.id_persona, (val) => {
         }
     }
 }, { immediate: true });
+
+watch(() => form.tipo, (newTipo) => {
+    if (!['PC', 'LAPTOP', 'TODO EN UNO'].includes(newTipo)) {
+        form.ip = "";
+    }
+});
+
+watch(() => form.estado, (newEstado) => {
+    if (newEstado !== 'BAJA') {
+        form.observacion_tecnica = "";
+    }
+});
 
 const copiarLink = () => {
     navigator.clipboard.writeText(currentUrl.value);
@@ -190,6 +259,28 @@ const quitarCaracteristica = (index) => {
     form.caracteristicas.splice(index, 1);
 };
 
+const loadingIA = ref(false);
+const mejorarObservacionConIA = async () => {
+    if (!form.observacion_tecnica || !form.observacion_tecnica.trim()) return;
+
+    loadingIA.value = true;
+    try {
+        const response = await axios.post(route('api.ai.mejorar-observacion'), {
+            observacion: form.observacion_tecnica
+        });
+        if (response.data && response.data.success && response.data.resultado) {
+            form.observacion_tecnica = response.data.resultado;
+        } else {
+            alert('No se pudo mejorar la observación. Inténtelo de nuevo.');
+        }
+    } catch (error) {
+        console.error("Error al mejorar la observación con IA:", error);
+        alert(error.response?.data?.message || 'Error al conectar con el servicio de IA. Verifique su conexión o intente más tarde.');
+    } finally {
+        loadingIA.value = false;
+    }
+};
+
 const currentUrl = computed(() => window.location.href);
 
 const getEstadoClass = (estado) => {
@@ -229,8 +320,11 @@ const downloadQr = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </Link>
-                    <h2 class="text-xl font-semibold leading-tight text-ugel-guinda">
-                        Detalles del equipo: {{ form.cod_informatica }}
+                    <h2 class="text-xl font-semibold leading-tight text-ugel-guinda flex items-center gap-2">
+                        <span>Detalles del equipo: {{ form.cod_informatica }}</span>
+                        <span class="inline-flex items-center rounded-md bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-700 uppercase tracking-wide">
+                            {{ form.categoria || 'equipo' }}
+                        </span>
                     </h2>
                 </div>
 
@@ -400,9 +494,79 @@ const downloadQr = () => {
                                         />
                                     </div>
 
+                                    <!-- Clasificación -->
+                                    <div>
+                                        <label for="equipo_clasificacion" class="block text-sm font-medium text-gray-700">Clasificación</label>
+                                        <select
+                                            id="equipo_clasificacion"
+                                            v-model="form.clasificacion"
+                                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                        >
+                                            <option value="">Seleccione clasificación</option>
+                                            <option value="bueno">Bueno</option>
+                                            <option value="regular">Regular</option>
+                                            <option value="malo">Malo</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Dirección IP -->
+                                    <div v-if="['PC', 'LAPTOP', 'TODO EN UNO'].includes(form.tipo)">
+                                        <label for="equipo_ip" class="block text-sm font-medium text-gray-700">Dirección IP</label>
+                                        <input
+                                            id="equipo_ip"
+                                            v-model="form.ip"
+                                            type="text"
+                                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                            placeholder="192.168.1.XX"
+                                        />
+                                    </div>
+
+                                    <!-- Observación técnica -->
+                                    <div v-if="form.estado === 'BAJA'" class="md:col-span-2">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label for="equipo_observacion" class="block text-sm font-medium text-gray-700">Observación técnica de baja</label>
+                                            <button
+                                                type="button"
+                                                @click="mejorarObservacionConIA"
+                                                :disabled="loadingIA || !form.observacion_tecnica.trim()"
+                                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md border border-purple-200 transition-all duration-200 disabled:opacity-40 disabled:bg-gray-50 disabled:text-gray-400 disabled:border-gray-200 shadow-sm"
+                                                title="Optimizar texto usando IA"
+                                            >
+                                                <svg v-if="loadingIA" class="size-3.5 animate-spin text-purple-600" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                <svg v-else class="size-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L15 15l-5.187.904zM18 7.5l-.5 2.5-.5-2.5-2.5-.5 2.5-.5.5-2.5.5 2.5 2.5.5-2.5.5zM21 16l-.5 2.5-.5-2.5-2.5-.5 2.5-.5.5-2.5.5 2.5 2.5.5-2.5.5z" />
+                                                </svg>
+                                                <span>{{ loadingIA ? 'Mejorando...' : 'Mejorar con IA' }}</span>
+                                            </button>
+                                        </div>
+                                        <textarea
+                                            id="equipo_observacion"
+                                            v-model="form.observacion_tecnica"
+                                            rows="3"
+                                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                            placeholder="Describa el motivo o estado técnico para dar de baja el equipo..."
+                                        ></textarea>
+                                    </div>
+
                                     <!-- Responsable -->
                                     <div class="md:col-span-2 relative">
-                                        <label for="search_persona" class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label for="search_persona" class="block text-sm font-medium text-gray-700">Responsable</label>
+                                            <button
+                                                type="button"
+                                                class="inline-flex items-center gap-1 text-xs font-semibold text-ugel-azul hover:text-ugel-guinda transition"
+                                                @click="openQuickRegister"
+                                                v-if="form.estado !== 'BAJA'"
+                                            >
+                                                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                                </svg>
+                                                Registro rápido
+                                            </button>
+                                        </div>
                                         <input
                                             id="search_persona"
                                             v-model="searchPersona"
@@ -619,6 +783,14 @@ const downloadQr = () => {
             </div>
         </div>
         
+        <PersonaCrearModal
+            :show="showQuickRegister"
+            :oficinas="oficinas"
+            :loading="savingPersona"
+            @close="showQuickRegister = false"
+            @save="savePersona"
+        />
+
         <ModalFichaTecnica 
             :show="showModalFicha" 
             :equipo-id="equipo.id" 

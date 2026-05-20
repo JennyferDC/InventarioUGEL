@@ -26,7 +26,11 @@ class EquipoController extends Controller
                 'estado',
                 'fecha_disponible_uso',
                 'vida_util_anios',
-                'id_persona'
+                'id_persona',
+                'observacion_tecnica',
+                'categoria',
+                'ip',
+                'clasificacion'
             )
             ->orderBy('cod_informatica')
             ->get();
@@ -106,7 +110,20 @@ class EquipoController extends Controller
             'caracteristicas' => ['nullable', 'array'],
             'caracteristicas.*.clave' => ['required_with:caracteristicas.*.valor', 'string', 'max:255'],
             'caracteristicas.*.valor' => ['required_with:caracteristicas.*.clave', 'string', 'max:255'],
+            'observacion_tecnica' => ['nullable', 'string'],
+            'categoria' => ['nullable', 'string', 'in:equipo,componente,programa'],
+            'ip' => ['nullable', 'string', 'max:255'],
+            'clasificacion' => ['nullable', 'string', 'in:bueno,regular,malo'],
         ], $messages);
+
+        $data['categoria'] = $data['categoria'] ?? 'equipo';
+
+        if (($data['estado'] ?? '') !== 'BAJA') {
+            $data['observacion_tecnica'] = null;
+        }
+        if (!in_array($data['tipo'] ?? '', ['PC', 'LAPTOP', 'TODO EN UNO'])) {
+            $data['ip'] = null;
+        }
 
         $caracteristicas = $data['caracteristicas'] ?? [];
         unset($data['caracteristicas']);
@@ -176,7 +193,18 @@ class EquipoController extends Controller
             'caracteristicas' => ['nullable', 'array'],
             'caracteristicas.*.clave' => ['required_with:caracteristicas.*.valor', 'string', 'max:255'],
             'caracteristicas.*.valor' => ['required_with:caracteristicas.*.clave', 'string', 'max:255'],
+            'observacion_tecnica' => ['nullable', 'string'],
+            'categoria' => ['nullable', 'string', 'in:equipo,componente,programa'],
+            'ip' => ['nullable', 'string', 'max:255'],
+            'clasificacion' => ['nullable', 'string', 'in:bueno,regular,malo'],
         ], $messages);
+
+        if (($data['estado'] ?? '') !== 'BAJA') {
+            $data['observacion_tecnica'] = null;
+        }
+        if (!in_array($data['tipo'] ?? '', ['PC', 'LAPTOP', 'TODO EN UNO'])) {
+            $data['ip'] = null;
+        }
 
         $caracteristicas = $data['caracteristicas'] ?? null;
         unset($data['caracteristicas']);

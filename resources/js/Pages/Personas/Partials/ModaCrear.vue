@@ -22,11 +22,73 @@ const emit = defineEmits(["close", "save"]);
 const form = reactive({
     nombre_completo: "",
     celular: "",
+    correo: "",
+    cargo: "",
     id_oficina: "",
 });
 
 const searchOficina = ref("");
 const showOficinaDropdown = ref(false);
+const inputRef = ref(null);
+const dropdownStyle = ref({});
+
+const updateDropdownPosition = () => {
+    if (!inputRef.value) return;
+    const rect = inputRef.value.getBoundingClientRect();
+    
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const dropdownHeight = 192; // max-h-48 is 192px
+    
+    let top = rect.bottom + window.scrollY;
+    
+    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        top = rect.top + window.scrollY - dropdownHeight - 4;
+    } else {
+        top = rect.bottom + window.scrollY + 4;
+    }
+    
+    dropdownStyle.value = {
+        position: 'absolute',
+        top: `${top}px`,
+        left: `${rect.left + window.scrollX}px`,
+        width: `${rect.width}px`,
+        zIndex: '9999',
+    };
+};
+
+const handleResize = () => {
+    if (showOficinaDropdown.value) {
+        showOficinaDropdown.value = false;
+    }
+};
+
+watch(showOficinaDropdown, (newVal) => {
+    if (newVal) {
+        nextTick(() => {
+            updateDropdownPosition();
+        });
+        window.addEventListener('resize', handleResize);
+    } else {
+        window.removeEventListener('resize', handleResize);
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+});
+
+const handleScroll = () => {
+    if (showOficinaDropdown.value) {
+        showOficinaDropdown.value = false;
+    }
+};
+
+const selectedArea = computed(() => {
+    if (!form.id_oficina) return "---";
+    const ofi = props.oficinas?.find(o => o.id === form.id_oficina);
+    return ofi?.area?.nombre || "---";
+});
 
 const normalizeText = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -59,6 +121,8 @@ const handleOficinaBlur = () => {
 const resetForm = () => {
     form.nombre_completo = "";
     form.celular = "";
+    form.correo = "";
+    form.cargo = "";
     form.id_oficina = "";
     searchOficina.value = "";
 };
@@ -72,6 +136,8 @@ const handleSubmit = () => {
     emit("save", {
         nombre_completo: form.nombre_completo,
         celular: form.celular,
+        correo: form.correo,
+        cargo: form.cargo,
         id_oficina: form.id_oficina,
     });
 };
@@ -80,89 +146,148 @@ defineExpose({ resetForm });
 </script>
 
 <template>
-    <DialogModal :show="show" @close="handleClose" max-width="lg">
+    <DialogModal :show="show" @close="handleClose" max-width="xl">
         <template #title>
             <span class="text-ugel-guinda font-semibold">Nueva persona</span>
         </template>
 
         <template #content>
-            <form class="space-y-4" @submit.prevent="handleSubmit">
-                <div>
-                    <label
-                        for="persona_nombre"
-                        class="block text-sm font-medium text-gray-700"
-                    >
-                        Nombre completo
-                    </label>
-                    <input
-                        id="persona_nombre"
-                        v-model="form.nombre_completo"
-                        type="text"
-                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Nombre y apellidos"
-                        :disabled="loading"
-                    />
-                </div>
-
-                <div>
-                    <label
-                        for="persona_celular"
-                        class="block text-sm font-medium text-gray-700"
-                    >
-                        Celular
-                    </label>
-                    <input
-                        id="persona_celular"
-                        v-model="form.celular"
-                        type="text"
-                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Ej. 987654321"
-                        :disabled="loading"
-                    />
-                </div>
-
-                <div class="relative transition-all duration-300" :class="showOficinaDropdown ? 'pb-64' : 'pb-0'">
-                    <label
-                        for="search_oficina"
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Oficina
-                    </label>
-                    <input
-                        id="search_oficina"
-                        v-model="searchOficina"
-                        type="text"
-                        class="block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
-                        placeholder="Buscar oficina por nombre o área..."
-                        @focus="showOficinaDropdown = true"
-                        @blur="handleOficinaBlur"
-                        :disabled="loading"
-                    />
-                    <div
-                        v-if="showOficinaDropdown"
-                        class="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                    >
-                        <div
-                            class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            @click="selectOficina(null)"
+            <div class="max-h-[calc(100vh-14rem)] overflow-y-auto pr-2 scroll-light" @scroll="handleScroll">
+                <form class="space-y-4" @submit.prevent="handleSubmit">
+                    <div>
+                        <label
+                            for="persona_nombre"
+                            class="block text-sm font-medium text-gray-700"
                         >
-                            -- Sin asignar --
+                            Nombre completo
+                        </label>
+                        <input
+                            id="persona_nombre"
+                            v-model="form.nombre_completo"
+                            type="text"
+                            class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                            placeholder="Nombre y apellidos"
+                            :disabled="loading"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                for="persona_celular"
+                                class="block text-sm font-medium text-gray-700"
+                            >
+                                Celular
+                            </label>
+                            <input
+                                id="persona_celular"
+                                v-model="form.celular"
+                                type="text"
+                                class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                placeholder="Ej. 987654321"
+                                :disabled="loading"
+                            />
                         </div>
-                        <div
-                            v-for="o in filteredOficinas"
-                            :key="o.id"
-                            class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            @click="selectOficina(o)"
-                        >
-                            <div class="font-medium">{{ o.nombre }}</div>
-                            <div class="text-xs text-gray-500" v-if="o.area">{{ o.area.nombre }}</div>
-                        </div>
-                        <div v-if="filteredOficinas.length === 0" class="px-4 py-2 text-sm text-gray-500">
-                            No se encontraron resultados
+                        <div>
+                            <label
+                                for="persona_correo"
+                                class="block text-sm font-medium text-gray-700"
+                            >
+                                Correo electrónico
+                            </label>
+                            <input
+                                id="persona_correo"
+                                v-model="form.correo"
+                                type="email"
+                                class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                placeholder="Ej. correo@ejemplo.com"
+                                :disabled="loading"
+                            />
                         </div>
                     </div>
-                </div>
-            </form>
+
+                    <div>
+                        <label
+                            for="persona_cargo"
+                            class="block text-sm font-medium text-gray-700"
+                        >
+                            Cargo / Especialidad
+                        </label>
+                        <input
+                            id="persona_cargo"
+                            v-model="form.cargo"
+                            type="text"
+                            class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                            placeholder="Ej. Especialista en Soporte"
+                            :disabled="loading"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative">
+                            <label
+                                for="search_oficina"
+                                class="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Oficina
+                            </label>
+                            <input
+                                id="search_oficina"
+                                ref="inputRef"
+                                v-model="searchOficina"
+                                type="text"
+                                class="block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                placeholder="Buscar oficina por nombre o área..."
+                                @focus="showOficinaDropdown = true"
+                                @blur="handleOficinaBlur"
+                                :disabled="loading"
+                                autocomplete="off"
+                            />
+                            
+                            <Teleport to="body">
+                                <div
+                                    v-if="showOficinaDropdown"
+                                    :style="dropdownStyle"
+                                    class="overflow-y-auto rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-10 scroll-light"
+                                >
+                                    <div
+                                        class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        @mousedown.prevent
+                                        @click="selectOficina(null)"
+                                    >
+                                        -- Sin asignar --
+                                    </div>
+                                    <div
+                                        v-for="o in filteredOficinas"
+                                        :key="o.id"
+                                        class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        @mousedown.prevent
+                                        @click="selectOficina(o)"
+                                    >
+                                        <div class="font-medium">{{ o.nombre }}</div>
+                                        <div class="text-xs text-gray-500" v-if="o.area">{{ o.area.nombre }}</div>
+                                    </div>
+                                    <div v-if="filteredOficinas.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                        No se encontraron resultados
+                                    </div>
+                                </div>
+                            </Teleport>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Área
+                            </label>
+                            <input
+                                type="text"
+                                :value="selectedArea"
+                                disabled
+                                class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
+                            />
+                        </div>
+                    </div>
+                </form>
+            </div>
         </template>
 
         <template #footer>
@@ -209,3 +334,19 @@ defineExpose({ resetForm });
         </template>
     </DialogModal>
 </template>
+
+<style scoped>
+.scroll-light::-webkit-scrollbar {
+    width: 6px;
+}
+.scroll-light::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scroll-light::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+.scroll-light::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+</style>

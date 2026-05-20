@@ -18,7 +18,7 @@ class EquipoController extends Controller
      */
     public function index(): Response
     {
-        $equipos = Equipo::with(['persona:id,nombre_completo,id_oficina,celular', 'persona.oficina.area:id,nombre'])
+        $equipos = Equipo::with(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre'])
             ->select(
                 'id',
                 'cod_informatica',
@@ -48,7 +48,7 @@ class EquipoController extends Controller
     public function showByCodigo($cod_informatica): Response
     {
         $equipo = Equipo::with([
-            'persona:id,nombre_completo,id_oficina,celular', 
+            'persona:id,nombre_completo,id_oficina,celular,correo,cargo', 
             'persona.oficina.area:id,nombre', 
             'caracteristicas:id,clave,valor,id_equipo'
         ])
@@ -130,7 +130,7 @@ class EquipoController extends Controller
             return $equipo;
         });
 
-        $equipo->load(['persona:id,nombre_completo,id_oficina,celular', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']);
+        $equipo->load(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']);
 
         return response()->json([
             'message' => 'Equipo registrado correctamente.',
@@ -144,7 +144,7 @@ class EquipoController extends Controller
     public function show(Equipo $equipo): JsonResponse
     {
         return response()->json([
-            'data' => $equipo->load(['persona:id,nombre_completo,id_oficina,celular', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
+            'data' => $equipo->load(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
         ]);
     }
 
@@ -208,7 +208,7 @@ class EquipoController extends Controller
 
         return response()->json([
             'message' => 'Equipo actualizado correctamente.',
-            'data' => $equipo->fresh()->load(['persona:id,nombre_completo,id_oficina,celular', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
+            'data' => $equipo->fresh()->load(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
         ]);
     }
 

@@ -427,7 +427,7 @@ const crearPersona = async (payload) => {
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">#</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Nombre completo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Celular</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Contacto</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors" @click="setSort('oficinas')">
                                         <div class="flex items-center gap-1">
                                             Oficina / Área
@@ -452,8 +452,21 @@ const crearPersona = async (payload) => {
                             <tbody v-if="hayPersonas" class="divide-y divide-ugel-azul/10">
                                 <tr v-for="persona in filteredPersonas" :key="persona.id" class="hover:bg-ugel-azul/5 transition">
                                     <td class="px-6 py-4 text-sm text-gray-600 font-semibold">#{{ persona.id }}</td>
-                                    <td class="px-6 py-4 text-sm text-ugel-guinda font-semibold">{{ persona.nombre_completo }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ persona.celular || '-' }}</td>
+                                    <td class="px-6 py-4 text-sm text-ugel-guinda font-semibold">
+                                        {{ persona.nombre_completo }}
+                                        <div v-if="persona.cargo" class="text-xs text-gray-500 font-normal mt-0.5">{{ persona.cargo }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                        <div class="flex items-center gap-1.5 mb-1" v-if="persona.celular">
+                                            <svg class="size-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                            {{ persona.celular }}
+                                        </div>
+                                        <div class="flex items-center gap-1.5 text-xs" v-if="persona.correo">
+                                            <svg class="size-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                            {{ persona.correo }}
+                                        </div>
+                                        <div v-if="!persona.celular && !persona.correo" class="text-gray-400">-</div>
+                                    </td>
                                     <td class="px-6 py-4 text-sm">
                                         <div class="font-medium text-gray-700">{{ persona.oficina?.nombre ?? "Sin oficina" }}</div>
                                         <div class="text-[10px] text-gray-500 uppercase tracking-wide font-medium">{{ persona.oficina?.area?.nombre ?? "Sin área" }}</div>

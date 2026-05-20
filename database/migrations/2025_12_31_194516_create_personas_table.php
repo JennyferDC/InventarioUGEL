@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id(); // id : int
             $table->string('nombre_completo'); // nombre_completo : varchar
             $table->string('celular')->nullable(); // celular : varchar
+            $table->string('correo')->nullable(); // correo : varchar
+            $table->string('cargo')->nullable(); // cargo : varchar
             $table->enum('estado', ['ACTIVO', 'INACTIVO'])->default('ACTIVO'); // estado : enum
 
             // FK -> oficinas

@@ -40,7 +40,51 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["close", "save"]);
+const emit = defineEmits(["close", "save", "persona-creada"]);
+
+import axios from "axios";
+import PersonaCrearModal from "@/Pages/Personas/Partials/ModaCrear.vue";
+
+const showQuickRegister = ref(false);
+const oficinas = ref([]);
+const loadingOficinas = ref(false);
+const savingPersona = ref(false);
+
+const fetchOficinas = async () => {
+    if (oficinas.value.length > 0) return;
+    loadingOficinas.value = true;
+    try {
+        const response = await axios.get(route('api.oficinas.index'));
+        oficinas.value = response.data.data;
+    } catch (error) {
+        console.error("Error al obtener oficinas:", error);
+    } finally {
+        loadingOficinas.value = false;
+    }
+};
+
+const openQuickRegister = async () => {
+    await fetchOficinas();
+    showQuickRegister.value = true;
+};
+
+const savePersona = async (payload) => {
+    savingPersona.value = true;
+    try {
+        const response = await axios.post(route("personas.store"), payload);
+        if (response.data?.data) {
+            const nuevaPersona = response.data.data;
+            emit("persona-creada", nuevaPersona);
+            selectPersona(nuevaPersona);
+            showQuickRegister.value = false;
+        }
+    } catch (error) {
+        console.error("Error al registrar persona:", error);
+        alert(error.response?.data?.message || "No se pudo registrar a la persona.");
+    } finally {
+        savingPersona.value = false;
+    }
+};
 
 const form = reactive({
     id: null,
@@ -338,11 +382,23 @@ const quitarCaracteristica = (index) => {
                             </div>
 
                             <div class="md:col-span-2 relative">
-                                <label
-                                    for="equipo_persona"
-                                    class="block text-sm font-medium text-gray-700"
-                                    >Responsable</label
-                                >
+                                <div class="flex items-center justify-between">
+                                    <label
+                                        for="equipo_persona"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Responsable</label
+                                    >
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-ugel-azul hover:text-ugel-guinda transition"
+                                        @click="openQuickRegister"
+                                    >
+                                        <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                        </svg>
+                                        Registro rápido
+                                    </button>
+                                </div>
                                 <div class="relative mt-1">
                                     <input
                                         id="equipo_persona"
@@ -561,6 +617,15 @@ const quitarCaracteristica = (index) => {
                 </div>
             </div>
         </Transition>
+
+        <!-- Modal de registro rápido de persona -->
+        <PersonaCrearModal
+            :show="showQuickRegister"
+            :oficinas="oficinas"
+            :loading="savingPersona"
+            @close="showQuickRegister = false"
+            @save="savePersona"
+        />
     </div>
 </template>
 

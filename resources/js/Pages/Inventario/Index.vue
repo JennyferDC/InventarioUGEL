@@ -25,11 +25,20 @@ const props = defineProps({
 });
 
 const equipos = ref([...props.equipos]);
+const personasList = ref([...props.personas]);
 
 watch(
     () => props.equipos,
     (value) => {
         equipos.value = [...value];
+    },
+    { deep: true },
+);
+
+watch(
+    () => props.personas,
+    (value) => {
+        personasList.value = [...value];
     },
     { deep: true },
 );
@@ -53,6 +62,12 @@ const modalCrearRef = ref(null);
 
 const erroresCrear = ref({});
 const erroresEditar = ref({});
+
+const handlePersonaCreada = (nuevaPersona) => {
+    personasList.value = [...personasList.value, nuevaPersona].sort((a, b) =>
+        a.nombre_completo.localeCompare(b.nombre_completo)
+    );
+};
 
 const successMessage = ref("");
 const errorMessage = ref("");
@@ -539,21 +554,23 @@ const confirmarEliminacion = async () => {
         <ModalEditar
             :show="showEditModal"
             :equipo="equipoEditando"
-            :personas="personas"
+            :personas="personasList"
             :loading="saving"
             :errors="erroresEditar"
             @close="cerrarModalEditar"
             @save="guardarCambios"
+            @persona-creada="handlePersonaCreada"
         />
 
         <ModalCrear
             ref="modalCrearRef"
             :show="showCreateModal"
-            :personas="personas"
+            :personas="personasList"
             :loading="creating"
             :errors="erroresCrear"
             @close="cerrarModalCrear"
             @save="crearEquipo"
+            @persona-creada="handlePersonaCreada"
         />
 
         <ModalReportes

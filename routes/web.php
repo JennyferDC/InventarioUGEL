@@ -78,6 +78,15 @@ Route::middleware([
     Route::put('/api/caracteristicas/{caracteristicaEquipo}', [CaracteristicaEquipoController::class, 'update'])->name('api.caracteristicas.update');
     Route::delete('/api/caracteristicas/{caracteristicaEquipo}', [CaracteristicaEquipoController::class, 'destroy'])->name('api.caracteristicas.destroy');
 
+    Route::get('/api/oficinas', function () {
+        return response()->json([
+            'data' => \App\Models\Oficina::with('area:id,nombre')
+                ->select('id', 'nombre', 'area_id')
+                ->orderBy('nombre')
+                ->get()
+        ]);
+    })->name('api.oficinas.index');
+
     Route::get('/archivos', [ArchivoInventarioController::class, 'index'])->name('archivos.index');
     Route::post('/archivos', [ArchivoInventarioController::class, 'store'])->name('archivos.store');
     Route::get('/archivos/{archivoInventario}', [ArchivoInventarioController::class, 'show'])->name('archivos.show');

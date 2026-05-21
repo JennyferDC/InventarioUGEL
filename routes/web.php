@@ -50,7 +50,11 @@ Route::middleware([
     Route::delete('/oficinas/{oficina}', [OficinaController::class, 'destroy'])->name('oficinas.destroy');
 
 
-    Route::get('/inventario', [EquipoController::class, 'index'])->name('equipos.index');
+    Route::get('/equipos', [EquipoController::class, 'index'])->name('equipos.index');
+    Route::get('/programas', [EquipoController::class, 'index'])->name('programas.index');
+    Route::get('/inventario', function () {
+        return redirect()->route('equipos.index');
+    });
     Route::post('/inventario', [EquipoController::class, 'store'])->name('equipos.store');
     Route::get('/inventario/equipo/{cod_informatica}', [EquipoController::class, 'showByCodigo'])->name('equipos.showByCodigo');
     Route::get('/inventario/{equipo}', [EquipoController::class, 'show'])->name('equipos.show');

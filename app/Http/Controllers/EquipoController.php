@@ -16,12 +16,17 @@ class EquipoController extends Controller
     /**
      * Muestra la vista principal del inventario de equipos.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $categoriaInicial = $request->is('programas*') ? 'programa' : 'equipo';
+
         $equipos = Equipo::with(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre'])
             ->select(
                 'id',
                 'cod_informatica',
+                'cod_patrimonial',
+                'nombre',
+                'nombre_usuario',
                 'tipo',
                 'estado',
                 'fecha_disponible_uso',
@@ -46,6 +51,7 @@ class EquipoController extends Controller
             'equipos' => $equipos,
             'personas' => $personas,
             'areas' => $areas,
+            'categoriaInicial' => $categoriaInicial,
         ]);
     }
 
@@ -88,10 +94,7 @@ class EquipoController extends Controller
     public function store(Request $request): JsonResponse
     {
         $messages = [
-            'cod_informatica.required' => 'El código de informática es obligatorio.',
-            'cod_informatica.unique' => 'Este código de informática ya está en uso.',
-            'tipo.required' => 'El tipo de equipo es obligatorio.',
-            'estado.required' => 'El estado es obligatorio.',
+            'tipo.required' => 'El tipo es obligatorio.',
             'id_persona.exists' => 'El responsable seleccionado no es válido.',
             'vida_util_anios.min' => 'La vida útil debe ser mínimo 0 años.',
             'fecha_disponible_uso.date' => 'La fecha no tiene un formato válido.',
@@ -100,9 +103,11 @@ class EquipoController extends Controller
         ];
 
         $data = $request->validate([
-            'cod_informatica' => ['required', 'string', 'max:255', 'unique:equipos,cod_informatica'],
+            'cod_patrimonial' => ['nullable', 'string', 'max:255'],
+            'nombre' => ['nullable', 'string', 'max:255'],
+            'nombre_usuario' => ['nullable', 'string', 'max:255'],
             'tipo' => ['required', 'string', 'max:255'],
-            'estado' => ['required', 'string', 'max:255'],
+            'estado' => ['nullable', 'string', 'max:255'],
             'fecha_ingreso' => ['nullable', 'date'],
             'fecha_disponible_uso' => ['nullable', 'date'],
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
@@ -111,9 +116,9 @@ class EquipoController extends Controller
             'caracteristicas.*.clave' => ['required_with:caracteristicas.*.valor', 'string', 'max:255'],
             'caracteristicas.*.valor' => ['required_with:caracteristicas.*.clave', 'string', 'max:255'],
             'observacion_tecnica' => ['nullable', 'string'],
-            'categoria' => ['nullable', 'string', 'in:equipo,componente,programa'],
+            'categoria' => ['nullable', 'string', 'max:255'],
             'ip' => ['nullable', 'string', 'max:255'],
-            'clasificacion' => ['nullable', 'string', 'in:bueno,regular,malo'],
+            'clasificacion' => ['nullable', 'string', 'max:255'],
         ], $messages);
 
         $data['categoria'] = $data['categoria'] ?? 'equipo';
@@ -121,7 +126,7 @@ class EquipoController extends Controller
         if (($data['estado'] ?? '') !== 'BAJA') {
             $data['observacion_tecnica'] = null;
         }
-        if (!in_array($data['tipo'] ?? '', ['PC', 'LAPTOP', 'TODO EN UNO'])) {
+        if (!in_array(strtoupper($data['tipo'] ?? ''), ['PC', 'LAPTOP', 'TODO EN UNO'])) {
             $data['ip'] = null;
         }
 
@@ -129,6 +134,36 @@ class EquipoController extends Controller
         unset($data['caracteristicas']);
 
         $equipo = DB::transaction(function () use ($data, $caracteristicas) {
+            $ultimoId = DB::table('equipos')->lockForUpdate()->max('id') ?? 0;
+            $nuevoId = $ultimoId + 1;
+
+            $categoria = strtolower($data['categoria'] ?? 'equipo');
+            $tipo = strtolower($data['tipo'] ?? '');
+
+            $abrevCat = ($categoria === 'programa') ? 'PR' : 'EQ';
+
+            $abrevTipoMap = [
+                'pc' => 'PC',
+                'laptop' => 'LP',
+                'todo en uno' => 'TE',
+                'monitor' => 'MN',
+                'teclado' => 'TC',
+                'mouse' => 'MS',
+                'otro' => 'OT',
+                'otro (equipos)' => 'OT',
+                'institucional' => 'IS',
+                'navegador' => 'NV',
+                'ofimática' => 'OF',
+                'ofimatica' => 'OF',
+                'soporte' => 'SP',
+                'antivirus' => 'AV',
+                'otro (programas)' => 'OP',
+            ];
+
+            $abrevTipo = $abrevTipoMap[$tipo] ?? (($categoria === 'programa') ? 'OP' : 'OT');
+
+            $data['cod_informatica'] = $abrevCat . $abrevTipo . $nuevoId;
+
             $equipo = Equipo::create($data);
 
             $caracteristicasPayload = collect($caracteristicas)
@@ -183,9 +218,12 @@ class EquipoController extends Controller
         ];
 
         $data = $request->validate([
-            'cod_informatica' => ['required', 'string', 'max:255', 'unique:equipos,cod_informatica,' . $equipo->id],
+            'cod_informatica' => ['nullable', 'string', 'max:255', 'unique:equipos,cod_informatica,' . $equipo->id],
+            'cod_patrimonial' => ['nullable', 'string', 'max:255'],
+            'nombre' => ['nullable', 'string', 'max:255'],
+            'nombre_usuario' => ['nullable', 'string', 'max:255'],
             'tipo' => ['required', 'string', 'max:255'],
-            'estado' => ['required', 'string', 'max:255'],
+            'estado' => ['nullable', 'string', 'max:255'],
             'fecha_ingreso' => ['nullable', 'date'],
             'fecha_disponible_uso' => ['nullable', 'date'],
             'vida_util_anios' => ['nullable', 'integer', 'min:0'],
@@ -194,15 +232,15 @@ class EquipoController extends Controller
             'caracteristicas.*.clave' => ['required_with:caracteristicas.*.valor', 'string', 'max:255'],
             'caracteristicas.*.valor' => ['required_with:caracteristicas.*.clave', 'string', 'max:255'],
             'observacion_tecnica' => ['nullable', 'string'],
-            'categoria' => ['nullable', 'string', 'in:equipo,componente,programa'],
+            'categoria' => ['nullable', 'string', 'max:255'],
             'ip' => ['nullable', 'string', 'max:255'],
-            'clasificacion' => ['nullable', 'string', 'in:bueno,regular,malo'],
+            'clasificacion' => ['nullable', 'string', 'max:255'],
         ], $messages);
 
         if (($data['estado'] ?? '') !== 'BAJA') {
             $data['observacion_tecnica'] = null;
         }
-        if (!in_array($data['tipo'] ?? '', ['PC', 'LAPTOP', 'TODO EN UNO'])) {
+        if (!in_array(strtoupper($data['tipo'] ?? ''), ['PC', 'LAPTOP', 'TODO EN UNO'])) {
             $data['ip'] = null;
         }
 

@@ -12,35 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('equipos', function (Blueprint $table) {
-            $table->id(); // id : int
+            $table->id();
 
-            $table->string('cod_informatica'); // cod_informatica : varchar
-
-            $table->enum('tipo', [
-                'PC',
-                'LAPTOP',
-                'TODO EN UNO',
-                'COMPONENTE',
-                'TECLADO',
-                'MOUSE',
-                'OTRO',
-                'MONITOR',
-            ]); // tipo : enum
-
-            $table->enum('estado', [
-                'LIBRE',
-                'EN USO',
-                'BAJA'
-            ]); // estado : enum
-
-            $table->date('fecha_ingreso')->nullable(); // fecha_ingreso : date
-            $table->date('fecha_disponible_uso')->nullable(); // fecha_disponible_uso : date
-            $table->integer('vida_util_anios')->nullable(); // vida_util_anios : int
-
-            $table->text('observacion_tecnica')->nullable();
-            $table->enum('categoria', ['equipo', 'componente', 'programa'])->default('equipo')->nullable();
+            $table->string('cod_informatica')->nullable();
+            $table->string('cod_patrimonial')->nullable();
+            $table->string('nombre')->nullable();
+            $table->string('nombre_usuario')->nullable();
+            $table->string('tipo')->nullable();
+            $table->string('estado')->nullable();
+            $table->string('categoria')->default('equipo')->nullable();
+            $table->string('clasificacion')->nullable();
             $table->string('ip')->nullable();
-            $table->enum('clasificacion', ['bueno', 'regular', 'malo'])->nullable();
+
+            $table->date('fecha_ingreso')->nullable();
+            $table->date('fecha_disponible_uso')->nullable();
+            $table->integer('vida_util_anios')->nullable();
+            $table->text('observacion_tecnica')->nullable();
 
             // FK -> personas
             $table->foreignId('id_persona')

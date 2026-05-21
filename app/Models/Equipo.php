@@ -13,6 +13,9 @@ class Equipo extends Model
 
     protected $fillable = [
         'cod_informatica',
+        'cod_patrimonial',
+        'nombre',
+        'nombre_usuario',
         'tipo',
         'estado',
         'fecha_ingreso',

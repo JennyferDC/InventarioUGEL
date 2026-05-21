@@ -22,6 +22,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    categoriaInicial: {
+        type: String,
+        default: "equipo",
+    },
 });
 
 const equipos = ref([...props.equipos]);
@@ -46,9 +50,22 @@ watch(
 const searchTerm = ref("");
 const filtroEstado = ref("todos");
 const filtroTipo = ref("todos");
-const filtroCategoria = ref("equipo");
+const filtroCategoria = ref(props.categoriaInicial || "equipo");
 
-const TIPOS_EQUIPO = ["PC", "LAPTOP", "TODO EN UNO", "COMPONENTE", "TECLADO", "MOUSE", "OTRO", "MONITOR"];
+const TIPOS_POR_CATEGORIA = {
+    equipo: ["PC", "LAPTOP", "TODO EN UNO", "MONITOR", "TECLADO", "MOUSE", "OTRO (EQUIPOS)"],
+    programa: ["Institucional", "Navegador", "Ofimática", "Soporte", "Antivirus", "Otro (programas)"]
+};
+
+const tiposDisponibles = computed(() => {
+    return TIPOS_POR_CATEGORIA[filtroCategoria.value] || [];
+});
+
+watch(filtroCategoria, (val) => {
+    filtroTipo.value = "todos";
+    const path = val === "programa" ? "/programas" : "/equipos";
+    window.history.pushState(null, "", path);
+});
 
 const showDeleteModal = ref(false);
 const showEditModal = ref(false);
@@ -216,6 +233,9 @@ const filteredEquipos = computed(() => {
             const coincideBusqueda =
                 !term ||
                 equipo.cod_informatica?.toLowerCase().includes(term) ||
+                equipo.cod_patrimonial?.toLowerCase().includes(term) ||
+                equipo.nombre?.toLowerCase().includes(term) ||
+                equipo.nombre_usuario?.toLowerCase().includes(term) ||
                 equipo.tipo?.toLowerCase().includes(term) ||
                 equipo.persona?.nombre_completo?.toLowerCase().includes(term) ||
                 equipo.persona?.oficina?.area?.nombre?.toLowerCase().includes(term);
@@ -290,7 +310,7 @@ const confirmarEliminacion = async () => {
     <AppLayout title="Inventario">
         <template #header>
             <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
-                Inventario de Equipos
+                Inventario
             </h2>
         </template>
 
@@ -310,7 +330,7 @@ const confirmarEliminacion = async () => {
 
             <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
                 <!-- Selector de Categoría Premium -->
-                <div class="bg-gray-100/80 backdrop-blur p-1 rounded-xl flex items-center gap-1 w-full max-w-md border border-gray-200">
+                <div class="bg-gray-100/80 backdrop-blur p-1 rounded-xl flex items-center gap-1 w-full max-w-xs border border-gray-200">
                     <button
                         type="button"
                         @click="filtroCategoria = 'equipo'"
@@ -325,21 +345,6 @@ const confirmarEliminacion = async () => {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                         Equipos
-                    </button>
-                    <button
-                        type="button"
-                        @click="filtroCategoria = 'componente'"
-                        :class="[
-                            'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200',
-                            filtroCategoria === 'componente' 
-                                ? 'bg-white text-ugel-guinda shadow-sm' 
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                        ]"
-                    >
-                        <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                        </svg>
-                        Componentes
                     </button>
                     <button
                         type="button"
@@ -402,13 +407,13 @@ const confirmarEliminacion = async () => {
                                 class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
                             >
                                 <option value="todos">Todos los tipos</option>
-                                <option v-for="tipo in TIPOS_EQUIPO" :key="tipo" :value="tipo.toLowerCase()">
+                                <option v-for="tipo in tiposDisponibles" :key="tipo" :value="tipo.toLowerCase()">
                                     {{ tipo }}
                                 </option>
                             </select>
                         </div>
 
-                        <div class="w-full sm:w-44">
+                        <div v-if="filtroCategoria !== 'programa'" class="w-full sm:w-44">
                             <label class="sr-only" for="filtro-estado"
                                 >Estado</label
                             >
@@ -443,7 +448,7 @@ const confirmarEliminacion = async () => {
                             class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                             @click="abrirModalCrear"
                         >
-                            + Nuevo equipo
+                            + {{ filtroCategoria === 'programa' ? 'Nuevo programa' : 'Nuevo equipo' }}
                         </button>
                     </div>
                 </div>
@@ -463,27 +468,27 @@ const confirmarEliminacion = async () => {
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
-                                        Tipo
+                                        Nombre
                                     </th>
                                     <th
+                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                    >
+                                        Tipo
+                                    </th>
+                                    <th v-if="filtroCategoria !== 'programa'"
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
                                         Estado
                                     </th>
-                                    <th
+                                    <th v-if="filtroCategoria !== 'programa'"
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
                                         Responsable
                                     </th>
-                                    <th
+                                    <th v-if="filtroCategoria !== 'programa'"
                                         class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
-                                        Disponible desde
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
-                                    >
-                                        Vida útil
+                                        Clasificación
                                     </th>
                                     <th
                                         class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul"
@@ -512,16 +517,16 @@ const confirmarEliminacion = async () => {
                                         </div>
                                     </td>
                                     <td
+                                        class="px-6 py-4 text-sm text-gray-700"
+                                    >
+                                        <span>{{ equipo.nombre || '-' }}</span>
+                                    </td>
+                                    <td
                                         class="px-6 py-4 text-sm text-ugel-guinda"
                                     >
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-semibold">{{ equipo.tipo }}</span>
-                                            <span v-if="equipo.clasificacion" class="size-5 inline-flex items-center justify-center rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500 border border-gray-200 shrink-0" :title="'Clasificación: ' + equipo.clasificacion">
-                                                {{ equipo.clasificacion.charAt(0).toUpperCase() }}
-                                            </span>
-                                        </div>
+                                        <span class="font-semibold uppercase">{{ (equipo.tipo || '').toUpperCase() }}</span>
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td v-if="filtroCategoria !== 'programa'" class="px-6 py-4">
                                         <span :class="[
                                             'px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full border',
                                             equipo.estado === 'LIBRE' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
@@ -531,7 +536,7 @@ const confirmarEliminacion = async () => {
                                             {{ equipo.estado === 'BAJA' ? 'DE BAJA' : (equipo.estado || 'Sin estado') }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td v-if="filtroCategoria !== 'programa'" class="px-6 py-4">
                                         <div v-if="equipo.persona" class="flex flex-col">
                                             <span class="text-sm text-gray-700">{{ equipo.persona.nombre_completo }}</span>
                                             <span v-if="equipo.persona.oficina?.area" class="text-xs text-gray-500 mt-0.5">
@@ -540,28 +545,13 @@ const confirmarEliminacion = async () => {
                                         </div>
                                         <span v-else class="text-sm text-gray-700">No asignado</span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                        {{
-                                            equipo.fecha_disponible_uso
-                                                ? new Date(
-                                                      equipo.fecha_disponible_uso,
-                                                  ).toLocaleDateString(
-                                                      "es-PE",
-                                                      {
-                                                          year: "numeric",
-                                                          month: "short",
-                                                          day: "numeric",
-                                                      },
-                                                  )
-                                                : "Sin registro"
-                                        }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                        {{
-                                            equipo.vida_util_anios
-                                                ? `${equipo.vida_util_anios} años`
-                                                : "No definido"
-                                        }}
+                                    <td v-if="filtroCategoria !== 'programa'" class="px-6 py-4">
+                                        <span v-if="equipo.clasificacion" class="bg-gray-100 text-gray-700 border border-gray-200 uppercase px-2.5 py-0.5 rounded-md text-xs font-semibold">
+                                            {{ equipo.clasificacion }}
+                                        </span>
+                                        <span v-else class="text-sm text-gray-400 italic">
+                                            Sin clasificación
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div
@@ -605,10 +595,10 @@ const confirmarEliminacion = async () => {
                             <tbody v-else>
                                 <tr>
                                     <td
-                                        colspan="7"
+                                        :colspan="filtroCategoria === 'programa' ? 4 : 7"
                                         class="px-6 py-12 text-center text-gray-600"
                                     >
-                                        No hay equipos que coincidan con la
+                                        No hay {{ filtroCategoria === 'programa' ? 'programas' : 'equipos' }} que coincidan con la
                                         búsqueda o filtros aplicados.
                                     </td>
                                 </tr>
@@ -644,6 +634,7 @@ const confirmarEliminacion = async () => {
             :personas="personasList"
             :loading="creating"
             :errors="erroresCrear"
+            :categoria-inicial="filtroCategoria"
             @close="cerrarModalCrear"
             @save="crearEquipo"
             @persona-creada="handlePersonaCreada"

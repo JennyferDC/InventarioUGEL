@@ -63,7 +63,7 @@ const tiposDisponibles = computed(() => {
 
 watch(filtroCategoria, (val) => {
     filtroTipo.value = "todos";
-    const path = val === "programa" ? "/programas" : "/equipos";
+    const path = val === "programa" ? "/inventario/programas" : "/inventario/equipos";
     window.history.pushState(null, "", path);
 });
 

@@ -18,7 +18,7 @@ class EquipoController extends Controller
      */
     public function index(Request $request): Response
     {
-        $categoriaInicial = $request->is('programas*') ? 'programa' : 'equipo';
+        $categoriaInicial = $request->is('inventario/programas*') ? 'programa' : 'equipo';
 
         $equipos = Equipo::with(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre'])
             ->select(
@@ -140,27 +140,27 @@ class EquipoController extends Controller
             $categoria = strtolower($data['categoria'] ?? 'equipo');
             $tipo = strtolower($data['tipo'] ?? '');
 
-            $abrevCat = ($categoria === 'programa') ? 'PR' : 'EQ';
+            $abrevCat = ($categoria === 'programa') ? 'PRO' : 'EQU';
 
             $abrevTipoMap = [
                 'pc' => 'PC',
-                'laptop' => 'LP',
-                'todo en uno' => 'TE',
-                'monitor' => 'MN',
-                'teclado' => 'TC',
-                'mouse' => 'MS',
-                'otro' => 'OT',
-                'otro (equipos)' => 'OT',
-                'institucional' => 'IS',
-                'navegador' => 'NV',
-                'ofimática' => 'OF',
-                'ofimatica' => 'OF',
-                'soporte' => 'SP',
-                'antivirus' => 'AV',
-                'otro (programas)' => 'OP',
+                'laptop' => 'LAP',
+                'todo en uno' => 'TEU',
+                'monitor' => 'MON',
+                'teclado' => 'TEC',
+                'mouse' => 'MOU',
+                'otro' => 'OTR',
+                'otro (equipos)' => 'OTR',
+                'institucional' => 'INS',
+                'navegador' => 'NAV',
+                'ofimática' => 'OFI',
+                'ofimatica' => 'OFI',
+                'soporte' => 'SOP',
+                'antivirus' => 'ANT',
+                'otro (programas)' => 'OTP',
             ];
 
-            $abrevTipo = $abrevTipoMap[$tipo] ?? (($categoria === 'programa') ? 'OP' : 'OT');
+            $abrevTipo = $abrevTipoMap[$tipo] ?? (($categoria === 'programa') ? 'OTP' : 'OTR');
 
             $data['cod_informatica'] = $abrevCat . $abrevTipo . $nuevoId;
 

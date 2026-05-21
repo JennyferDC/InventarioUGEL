@@ -15,7 +15,7 @@ class EquipoSeeder extends Seeder
         $faker = Faker::create();
         
         $equiposTipos = ['pc', 'laptop', 'todo en uno', 'monitor', 'teclado', 'mouse', 'otro'];
-        $programasTipos = ['antivirus', 'interno ugel', 'otro'];
+        $programasTipos = ['institucional', 'navegador', 'ofimática', 'soporte', 'antivirus', 'otro (programas)'];
         
         $estados = ['LIBRE', 'EN USO', 'BAJA'];
         $caracteristicasNombres = ['Marca', 'Modelo', 'Serie', 'Color', 'Procesador', 'RAM', 'Almacenamiento', 'Pantalla'];
@@ -33,13 +33,18 @@ class EquipoSeeder extends Seeder
             
             if ($categoria === 'programa') {
                 $tipo = $faker->randomElement($programasTipos);
-                $abrevCat = 'PR';
+                $abrevCat = 'PRO';
                 $abrevTipoMap = [
-                    'antivirus' => 'AV',
-                    'interno ugel' => 'IU',
-                    'otro' => 'OP',
+                    'institucional' => 'INS',
+                    'navegador' => 'NAV',
+                    'ofimática' => 'OFI',
+                    'ofimatica' => 'OFI',
+                    'soporte' => 'SOP',
+                    'antivirus' => 'ANT',
+                    'otro (programas)' => 'OTP',
+                    'otro' => 'OTP',
                 ];
-                $abrevTipo = $abrevTipoMap[$tipo] ?? 'OP';
+                $abrevTipo = $abrevTipoMap[$tipo] ?? 'OTP';
                 
                 $nombresProgramas = [
                     'Kaspersky Endpoint Security',
@@ -66,17 +71,17 @@ class EquipoSeeder extends Seeder
                 $observacion_tecnica = null;
             } else {
                 $tipo = $faker->randomElement($equiposTipos);
-                $abrevCat = 'EQ';
+                $abrevCat = 'EQU';
                 $abrevTipoMap = [
                     'pc' => 'PC',
-                    'laptop' => 'LP',
-                    'todo en uno' => 'TE',
-                    'monitor' => 'MN',
-                    'teclado' => 'TC',
-                    'mouse' => 'MS',
-                    'otro' => 'OT',
+                    'laptop' => 'LAP',
+                    'todo en uno' => 'TEU',
+                    'monitor' => 'MON',
+                    'teclado' => 'TEC',
+                    'mouse' => 'MOU',
+                    'otro' => 'OTR',
                 ];
-                $abrevTipo = $abrevTipoMap[$tipo] ?? 'OT';
+                $abrevTipo = $abrevTipoMap[$tipo] ?? 'OTR';
                 
                 $nombre = 'PC-' . strtoupper($faker->bothify('???-###'));
                 $nombre_usuario = $faker->name();

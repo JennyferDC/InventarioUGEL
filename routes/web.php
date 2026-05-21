@@ -28,9 +28,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/areas', [AreaController::class, 'index'])->name('areas.index');
     Route::post('/areas', [AreaController::class, 'store'])->name('areas.store');
@@ -107,4 +105,6 @@ Route::middleware([
     Route::post('/reportes/equipos/excel', [ReporteController::class, 'equiposExcel'])->name('reportes.equipos.excel');
 
     Route::post('/api/ai/mejorar-observacion', [AIController::class, 'mejorarObservacionTecnica'])->name('api.ai.mejorar-observacion');
+    Route::post('/api/ai/diagnosticar-equipo', [AIController::class, 'diagnosticarEquipo'])->name('api.ai.diagnosticar-equipo');
 });
+

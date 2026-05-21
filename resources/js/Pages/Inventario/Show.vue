@@ -360,6 +360,114 @@ const downloadQr = () => {
         link.click();
     }
 };
+
+// AI Diagnostic Drawer States
+const showAIDrawer = ref(false);
+const loadingDiag = ref(false);
+const problemaText = ref("");
+const diagnosticoResultado = ref("");
+const copyDiagCopiado = ref(false);
+
+const suggestions = [
+    "El equipo presenta lentitud extrema",
+    "El ventilador hace ruido y se apaga",
+    "Conflicto de dirección IP / Red",
+    "Pantalla azul de error (BSOD) constante"
+];
+
+const selectSugerencia = (sug) => {
+    if (!problemaText.value) {
+        problemaText.value = sug;
+    } else if (problemaText.value.endsWith('.')) {
+        problemaText.value += " " + sug;
+    } else if (problemaText.value.endsWith('. ') || problemaText.value.endsWith(' ')) {
+        problemaText.value += sug;
+    } else {
+        problemaText.value += ". " + sug;
+    }
+};
+
+const openAIDrawer = () => {
+    showAIDrawer.value = true;
+};
+
+const generarDiagnostico = async () => {
+    if (!problemaText.value || !problemaText.value.trim()) return;
+
+    loadingDiag.value = true;
+    diagnosticoResultado.value = "";
+    try {
+        const response = await axios.post(route('api.ai.diagnosticar-equipo'), {
+            equipo_id: form.id,
+            problema: problemaText.value
+        });
+        if (response.data && response.data.success && response.data.resultado) {
+            diagnosticoResultado.value = response.data.resultado;
+        } else {
+            alert('No se pudo generar el diagnóstico. Inténtelo de nuevo.');
+        }
+    } catch (error) {
+        console.error("Error al generar el diagnóstico con IA:", error);
+        alert(error.response?.data?.message || 'Error al conectar con el servicio de diagnóstico por IA.');
+    } finally {
+        loadingDiag.value = false;
+    }
+};
+
+const copiarDiagnostico = () => {
+    if (!diagnosticoResultado.value) return;
+    navigator.clipboard.writeText(diagnosticoResultado.value);
+    copyDiagCopiado.value = true;
+    setTimeout(() => {
+        copyDiagCopiado.value = false;
+    }, 2000);
+};
+
+const aplicarAObservacion = () => {
+    if (!diagnosticoResultado.value) return;
+    form.estado = 'BAJA';
+    form.observacion_tecnica = diagnosticoResultado.value;
+};
+
+const formatMarkdown = (text) => {
+    if (!text) return "";
+    
+    // Escape HTML to prevent XSS
+    let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    // Convert Headers ### Title
+    html = html.replace(/^###\s+(.+)$/gm, '<h4 class="text-sm font-bold text-purple-900 mt-4 mb-2 flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-purple-500"></span>$1</h4>');
+    // Convert Headers ## Title
+    html = html.replace(/^##\s+(.+)$/gm, '<h3 class="text-base font-bold text-purple-950 mt-6 mb-3 border-b border-purple-100 pb-1">$1</h3>');
+    // Convert Headers # Title
+    html = html.replace(/^#\s+(.+)$/gm, '<h2 class="text-lg font-bold text-purple-950 mt-8 mb-4 border-b border-purple-200 pb-2">$1</h2>');
+
+    // Convert bold **text**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>');
+
+    // Convert italic *text*
+    html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+
+    // Convert bullet lists
+    html = html.replace(/^\s*[-*]\s+(.+)$/gm, '<li class="ml-4 list-disc pl-1 text-gray-700 my-1.5 text-xs">$1</li>');
+
+    // Convert numbered lists
+    html = html.replace(/^\s*(\d+)\.\s+(.+)$/gm, '<li class="ml-4 list-decimal pl-1 text-gray-700 my-1.5 text-xs">$2</li>');
+
+    // Split by paragraphs
+    const paragraphs = html.split(/\n{2,}/);
+    html = paragraphs.map(p => {
+        if (p.includes('<h') || p.includes('<li')) {
+            return p;
+        }
+        return `<p class="text-xs text-gray-600 leading-relaxed my-2">${p.replace(/\n/g, '<br>')}</p>`;
+    }).join('\n');
+
+    return html;
+};
 </script>
 
 <template>
@@ -393,6 +501,16 @@ const downloadQr = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         Descargar ficha técnica
+                    </button>
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm font-semibold text-purple-700 shadow-sm hover:bg-purple-100 transition-all duration-200"
+                        @click="openAIDrawer"
+                    >
+                        <svg class="size-4 animate-pulse text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L15 15l-5.187.904zM18 7.5l-.5 2.5-.5-2.5-2.5-.5 2.5-.5.5-2.5.5 2.5 2.5.5-2.5.5zM21 16l-.5 2.5-.5-2.5-2.5-.5 2.5-.5.5-2.5.5 2.5 2.5.5-2.5.5z" />
+                        </svg>
+                        Diagnóstico de IA
                     </button>
                     <button
                         type="button"
@@ -1083,6 +1201,190 @@ const downloadQr = () => {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- Drawer de Diagnóstico de IA -->
+        <transition
+            enter-active-class="transition-opacity ease-out duration-300"
+            leave-active-class="transition-opacity ease-in duration-200"
+        >
+            <div v-if="showAIDrawer" class="fixed inset-0 bg-gray-500/75 transition-opacity z-50" @click="showAIDrawer = false"></div>
+        </transition>
+
+        <transition
+            enter-active-class="transform transition ease-in-out duration-300 sm:duration-500"
+            enter-from-class="translate-x-full"
+            enter-to-class="translate-x-0"
+            leave-active-class="transform transition ease-in-out duration-300 sm:duration-500"
+            leave-from-class="translate-x-0"
+            leave-to-class="translate-x-full"
+        >
+            <div v-if="showAIDrawer" class="fixed inset-y-0 right-0 max-w-full pl-10 flex z-50">
+                <div class="w-screen max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-100">
+                    <!-- Header -->
+                    <div class="px-6 py-6 bg-gradient-to-r from-purple-700 to-indigo-800 text-white flex items-center justify-between shadow-md">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <svg class="size-6 text-purple-200 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L15 15l-5.187.904zM18 7.5l-.5 2.5-.5-2.5-2.5-.5 2.5-.5.5-2.5.5 2.5 2.5.5-2.5.5zM21 16l-.5 2.5-.5-2.5-2.5-.5 2.5-.5.5-2.5.5 2.5 2.5.5-2.5.5z" />
+                                </svg>
+                                <h3 class="text-lg font-bold">Diagnóstico con IA</h3>
+                            </div>
+                            <p class="text-xs text-purple-100 mt-1">Análisis predictivo y recomendaciones técnicas en base a su historial y características</p>
+                        </div>
+                        <button 
+                            type="button" 
+                            class="rounded-md text-white/80 hover:text-white focus:outline-none transition p-1 hover:bg-white/10"
+                            @click="showAIDrawer = false"
+                        >
+                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 overflow-y-auto px-6 py-6 bg-gray-50/50 space-y-6">
+                        <!-- Ficha de Contexto Técnico Evaluado -->
+                        <div class="bg-white rounded-xl p-4 border border-gray-200/80 shadow-sm space-y-3">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Contexto Técnico Evaluado</h4>
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                    <span class="text-gray-400 block mb-0.5">Identificador / Hostname</span>
+                                    <span class="font-semibold text-gray-800">{{ form.nombre || form.cod_informatica }}</span>
+                                </div>
+                                <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                    <span class="text-gray-400 block mb-0.5">Categoría / Tipo</span>
+                                    <span class="font-semibold text-gray-800 capitalize">{{ form.categoria }} / {{ form.tipo }}</span>
+                                </div>
+                                <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                    <span class="text-gray-400 block mb-0.5">Características Técnicas</span>
+                                    <span class="font-semibold text-gray-800">{{ form.caracteristicas?.length || 0 }} registradas</span>
+                                </div>
+                                <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                    <span class="text-gray-400 block mb-0.5">Estado / Clasificación</span>
+                                    <span class="font-semibold text-gray-800">
+                                        <span class="inline-flex items-center gap-1">
+                                            <span :class="['px-2 py-0.2 rounded-full font-bold border text-[9px]', 
+                                                form.estado === 'LIBRE' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                form.estado === 'EN USO' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                'bg-red-50 text-red-700 border-red-200']">
+                                                {{ form.estado }}
+                                            </span>
+                                            <span v-if="form.clasificacion" class="text-[10px] text-gray-500 font-medium">({{ form.clasificacion }})</span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formulario de problema -->
+                        <div class="space-y-3">
+                            <label for="problema_text" class="block text-sm font-semibold text-gray-700">Describa la falla u observación técnica</label>
+                            <textarea
+                                id="problema_text"
+                                v-model="problemaText"
+                                rows="4"
+                                class="block w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white"
+                                placeholder="Escriba los síntomas de la falla (ej: la laptop se calienta y se apaga sola a los pocos minutos)..."
+                            ></textarea>
+                            
+                            <!-- Sugerencias / Chips -->
+                            <div class="space-y-1.5">
+                                <span class="text-[11px] font-medium text-gray-400 block">Sugerencias rápidas:</span>
+                                <div class="flex flex-wrap gap-2">
+                                    <button
+                                        v-for="sug in suggestions"
+                                        :key="sug"
+                                        type="button"
+                                        @click="selectSugerencia(sug)"
+                                        class="px-2.5 py-1 rounded-full bg-purple-50 hover:bg-purple-100 border border-purple-200/60 text-purple-700 text-xs transition duration-150 font-medium"
+                                    >
+                                        + {{ sug }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón de acción -->
+                        <div>
+                            <button
+                                type="button"
+                                :disabled="loadingDiag || !problemaText.trim()"
+                                @click="generarDiagnostico"
+                                class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-purple-700 px-5 py-3 text-sm font-bold text-white shadow-md hover:bg-purple-800 disabled:opacity-40 disabled:bg-gray-400 transition-all duration-200"
+                            >
+                                <svg v-if="loadingDiag" class="size-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <svg v-else class="size-4 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                </svg>
+                                <span>{{ loadingDiag ? 'Procesando diagnóstico...' : 'Iniciar Diagnóstico con IA' }}</span>
+                            </button>
+                        </div>
+
+                        <!-- Result Section -->
+                        <div v-if="loadingDiag || diagnosticoResultado" class="space-y-4 pt-4 border-t border-gray-200">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span class="relative flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                                    </span>
+                                    Reporte de Diagnóstico IA
+                                </h4>
+                                
+                                <div v-if="diagnosticoResultado && !loadingDiag" class="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        @click="copiarDiagnostico"
+                                        class="px-2.5 py-1 text-xs border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-gray-700 font-medium transition flex items-center gap-1"
+                                    >
+                                        <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                        </svg>
+                                        <span>{{ copyDiagCopiado ? 'Copiado!' : 'Copiar' }}</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        @click="aplicarAObservacion"
+                                        class="px-2.5 py-1 text-xs border border-purple-250 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium transition flex items-center gap-1"
+                                        title="Establecer como Observación técnica de baja"
+                                    >
+                                        <svg class="size-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                        </svg>
+                                        <span>Copiar a Observación de Baja</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Skeleton loader -->
+                            <div v-if="loadingDiag" class="bg-white rounded-xl border border-gray-200/80 p-5 space-y-4 shadow-sm animate-pulse">
+                                <div class="h-4 bg-gray-200 rounded-full w-2/5"></div>
+                                <div class="space-y-2">
+                                    <div class="h-3 bg-gray-200 rounded-full"></div>
+                                    <div class="h-3 bg-gray-200 rounded-full w-5/6"></div>
+                                    <div class="h-3 bg-gray-200 rounded-full w-4/5"></div>
+                                </div>
+                                <div class="h-4 bg-gray-200 rounded-full w-1/3"></div>
+                                <div class="space-y-2">
+                                    <div class="h-3 bg-gray-200 rounded-full"></div>
+                                    <div class="h-3 bg-gray-200 rounded-full w-11/12"></div>
+                                </div>
+                            </div>
+
+                            <!-- Diagnostic Result Output Card -->
+                            <div v-else class="bg-gradient-to-br from-purple-50/50 to-indigo-50/50 rounded-xl border border-purple-100 p-5 shadow-sm space-y-3 prose max-w-none">
+                                <div v-html="formatMarkdown(diagnosticoResultado)" class="space-y-1"></div>
                             </div>
                         </div>
                     </div>

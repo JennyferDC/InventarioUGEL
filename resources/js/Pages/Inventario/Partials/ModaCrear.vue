@@ -442,7 +442,7 @@ defineExpose({ resetForm });
                                     </div>
 
                                     <div v-if="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
-                                        <label for="eq_usuario" class="block text-sm font-medium text-gray-700">Cuenta</label>
+                                        <label for="eq_usuario" class="block text-sm font-medium text-gray-700">Cuenta local</label>
                                         <input
                                             id="eq_usuario"
                                             v-model="form.nombre_usuario"

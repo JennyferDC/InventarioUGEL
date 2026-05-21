@@ -4,6 +4,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ArchivoInventarioController;
 use App\Http\Controllers\CaracteristicaEquipoController;
 use App\Http\Controllers\EquipoController;
+use App\Http\Controllers\HistorialMovimientoController;
 use App\Http\Controllers\OficinaController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\ReporteController;
@@ -58,6 +59,7 @@ Route::middleware([
         Route::get('/{equipo}', [EquipoController::class, 'show'])->name('equipos.show');
         Route::put('/{equipo}', [EquipoController::class, 'update'])->name('equipos.update');
         Route::delete('/{equipo}', [EquipoController::class, 'destroy'])->name('equipos.destroy');
+        Route::get('/{equipo}/historial', [HistorialMovimientoController::class, 'getHistorial'])->name('equipos.historial');
     });
 
     Route::get('/inventario', function () {

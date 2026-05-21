@@ -179,6 +179,20 @@ class EquipoController extends Controller
                 $equipo->caracteristicas()->createMany($caracteristicasPayload);
             }
 
+            // Log Creation
+            $desc = 'Se registró el ' . (strtolower($equipo->categoria) === 'programa' ? 'programa' : 'equipo') . ' en el inventario.';
+            if (count($caracteristicasPayload) > 0) {
+                $desc .= ' Con ' . count($caracteristicasPayload) . ' características técnicas iniciales.';
+            }
+
+            \App\Models\HistorialMovimiento::create([
+                'tipo_accion' => 'CREACION',
+                'descripcion' => $desc,
+                'fecha_hora' => now(),
+                'id_usuario' => auth()->id(),
+                'id_equipo' => $equipo->id,
+            ]);
+
             return $equipo;
         });
 
@@ -248,8 +262,63 @@ class EquipoController extends Controller
         unset($data['caracteristicas']);
 
         DB::transaction(function () use ($equipo, $data, $caracteristicas) {
+            // 1. Capture old characteristics map
+            $oldCharsMap = $equipo->caracteristicas->pluck('valor', 'clave')->toArray();
+
+            // 2. Capture old attributes for detail comparison
+            $originalAttributes = $equipo->getOriginal();
+
+            // 3. Perform update
             $equipo->update($data);
 
+            // 4. Capture changes in the model
+            $changes = $equipo->getChanges();
+            $descriptions = [];
+
+            // Helper lists for beautiful labels and relation resolving
+            $fieldLabels = [
+                'cod_patrimonial' => 'CÓDIGO PATRIMONIAL',
+                'nombre' => strtolower($equipo->categoria) === 'programa' ? 'NOMBRE DEL PROGRAMA' : 'NOMBRE DEL EQUIPO',
+                'nombre_usuario' => 'CUENTA',
+                'tipo' => 'TIPO',
+                'estado' => 'ESTADO',
+                'fecha_ingreso' => 'FECHA DE INGRESO',
+                'fecha_disponible_uso' => 'DISPONIBLE DESDE',
+                'vida_util_anios' => 'VIDA ÚTIL (AÑOS)',
+                'ip' => 'DIRECCIÓN IP',
+                'clasificacion' => 'CLASIFICACIÓN',
+                'observacion_tecnica' => 'OBSERVACIÓN TÉCNICA',
+            ];
+
+            foreach ($changes as $field => $newValue) {
+                if ($field === 'updated_at') continue;
+                $oldValue = $originalAttributes[$field] ?? null;
+
+                if ($field === 'id_persona') {
+                    $oldPersonName = $oldValue ? (\App\Models\Persona::find($oldValue)?->nombre_completo ?? 'Ninguno') : 'Ninguno';
+                    $newPersonName = $newValue ? (\App\Models\Persona::find($newValue)?->nombre_completo ?? 'Ninguno') : 'Ninguno';
+                    
+                    if ($oldValue && !$newValue) {
+                        $descriptions[] = "Se liberó el " . (strtolower($equipo->categoria) === 'programa' ? 'programa' : 'equipo') . " (se quitó el RESPONSABLE '{$oldPersonName}').";
+                    } elseif (!$oldValue && $newValue) {
+                        $descriptions[] = "Se asignó el " . (strtolower($equipo->categoria) === 'programa' ? 'programa' : 'equipo') . " a '{$newPersonName}'.";
+                    } else {
+                        $descriptions[] = "Se cambió el RESPONSABLE de '{$oldPersonName}' a '{$newPersonName}'.";
+                    }
+                } else {
+                    $label = $fieldLabels[$field] ?? strtoupper($field);
+                    $oldDisp = $oldValue ? "'{$oldValue}'" : "'Ninguno'";
+                    $newDisp = $newValue ? "'{$newValue}'" : "'Ninguno'";
+                    
+                    if ($field === 'observacion_tecnica') {
+                        $descriptions[] = "Se actualizó la OBSERVACIÓN TÉCNICA.";
+                    } else {
+                        $descriptions[] = "Se cambió el campo {$label} de {$oldDisp} a {$newDisp}.";
+                    }
+                }
+            }
+
+            // 5. Check if characteristics changed
             if (is_array($caracteristicas)) {
                 $equipo->caracteristicas()->delete();
 
@@ -265,6 +334,44 @@ class EquipoController extends Controller
                 if (count($caracteristicasPayload) > 0) {
                     $equipo->caracteristicas()->createMany($caracteristicasPayload);
                 }
+
+                $newCharsMap = collect($caracteristicasPayload)->pluck('valor', 'clave')->toArray();
+
+                // 5.1 Handle deleted characteristics
+                $deletedChars = array_diff_key($oldCharsMap, $newCharsMap);
+                foreach ($deletedChars as $clave => $valor) {
+                    \App\Models\HistorialMovimiento::create([
+                        'tipo_accion' => 'ELIMINACION',
+                        'descripcion' => "Se eliminó la característica técnica: " . strtoupper($clave) . " con valor '{$valor}'.",
+                        'fecha_hora' => now(),
+                        'id_usuario' => auth()->id(),
+                        'id_equipo' => $equipo->id,
+                    ]);
+                }
+
+                // 5.2 Handle added characteristics
+                $addedChars = array_diff_key($newCharsMap, $oldCharsMap);
+                foreach ($addedChars as $clave => $valor) {
+                    $descriptions[] = "Se agregó la característica técnica: " . strtoupper($clave) . " con valor '{$valor}'.";
+                }
+
+                // 5.3 Handle updated characteristics
+                foreach ($newCharsMap as $clave => $valor) {
+                    if (array_key_exists($clave, $oldCharsMap) && $oldCharsMap[$clave] !== $valor) {
+                        $descriptions[] = "Se cambió el valor de la característica técnica " . strtoupper($clave) . " de '{$oldCharsMap[$clave]}' a '{$valor}'.";
+                    }
+                }
+            }
+
+            // 6. Log history if there were changes
+            if (count($descriptions) > 0) {
+                \App\Models\HistorialMovimiento::create([
+                    'tipo_accion' => 'MODIFICACION',
+                    'descripcion' => implode("\n", $descriptions),
+                    'fecha_hora' => now(),
+                    'id_usuario' => auth()->id(),
+                    'id_equipo' => $equipo->id,
+                ]);
             }
         });
 
@@ -283,6 +390,15 @@ class EquipoController extends Controller
      */
     public function destroy(Equipo $equipo): JsonResponse
     {
+        // Log Deletion
+        \App\Models\HistorialMovimiento::create([
+            'tipo_accion' => 'ELIMINACION',
+            'descripcion' => 'Se eliminó el ' . (strtolower($equipo->categoria) === 'programa' ? 'programa' : 'equipo') . ' ' . $equipo->cod_informatica . ' (' . $equipo->nombre . ').',
+            'fecha_hora' => now(),
+            'id_usuario' => auth()->id(),
+            'id_equipo' => $equipo->id,
+        ]);
+
         $equipo->delete();
 
         return response()->json([

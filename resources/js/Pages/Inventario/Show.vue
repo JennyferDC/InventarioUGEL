@@ -63,6 +63,45 @@ const showSuccess = ref(false);
 const showModalFicha = ref(false);
 const linkCopiado = ref(false);
 
+const showHistorialDrawer = ref(false);
+const historial = ref([]);
+const loadingHistorial = ref(false);
+
+const fetchHistorial = async () => {
+    loadingHistorial.value = true;
+    try {
+        const response = await axios.get(route('equipos.historial', form.id));
+        historial.value = response.data.data;
+    } catch (error) {
+        console.error("Error al obtener el historial de cambios:", error);
+    } finally {
+        loadingHistorial.value = false;
+    }
+};
+
+const getDescripcionLines = (descripcion) => {
+    if (!descripcion) return [];
+    return descripcion.split('\n').map(l => l.trim()).filter(Boolean);
+};
+
+const openHistorialDrawer = () => {
+    showHistorialDrawer.value = true;
+    fetchHistorial();
+};
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleString("es-ES", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
+};
+
 const searchPersona = ref("");
 const showPersonaDropdown = ref(false);
 
@@ -251,6 +290,9 @@ const handleSubmit = () => {
             setTimeout(() => {
                 showSuccess.value = false;
             }, 3000);
+            if (showHistorialDrawer.value) {
+                fetchHistorial();
+            }
         },
     });
 };
@@ -351,6 +393,16 @@ const downloadQr = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         Descargar ficha técnica
+                    </button>
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all duration-200"
+                        @click="openHistorialDrawer"
+                    >
+                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Historial de cambios
                     </button>
                     <button
                         type="button"
@@ -559,7 +611,7 @@ const downloadQr = () => {
 
                                             <!-- Cuenta -->
                                             <div v-if="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
-                                                <label for="eq_usuario" class="block text-sm font-medium text-gray-700">Cuenta</label>
+                                                <label for="eq_usuario" class="block text-sm font-medium text-gray-700">Cuenta local</label>
                                                 <input
                                                     id="eq_usuario"
                                                     v-model="form.nombre_usuario"
@@ -921,5 +973,121 @@ const downloadQr = () => {
             @close="showModalFicha = false" 
             @download="handleDownloadFicha" 
         />
+
+        <!-- Drawer de Historial de Cambios -->
+        <transition
+            enter-active-class="transition-opacity ease-out duration-300"
+            leave-active-class="transition-opacity ease-in duration-200"
+        >
+            <div v-if="showHistorialDrawer" class="fixed inset-0 bg-gray-500/75 transition-opacity z-50" @click="showHistorialDrawer = false"></div>
+        </transition>
+
+        <transition
+            enter-active-class="transform transition ease-in-out duration-300 sm:duration-500"
+            enter-from-class="translate-x-full"
+            enter-to-class="translate-x-0"
+            leave-active-class="transform transition ease-in-out duration-300 sm:duration-500"
+            leave-from-class="translate-x-0"
+            leave-to-class="translate-x-full"
+        >
+            <div v-if="showHistorialDrawer" class="fixed inset-y-0 right-0 max-w-full pl-10 flex z-50">
+                <div class="w-screen max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-100">
+                    <!-- Header -->
+                    <div class="px-6 py-6 bg-gradient-to-r from-ugel-guinda to-ugel-guinda/90 text-white flex items-center justify-between shadow-md">
+                        <div>
+                            <h3 class="text-lg font-bold">Historial de cambios</h3>
+                            <p class="text-xs text-white/80 mt-1">Registros de acciones realizadas sobre este equipo</p>
+                        </div>
+                        <button 
+                            type="button" 
+                            class="rounded-md text-white/80 hover:text-white focus:outline-none transition p-1 hover:bg-white/10"
+                            @click="showHistorialDrawer = false"
+                        >
+                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 overflow-y-auto px-6 py-6 bg-gray-50 relative">
+                        <div v-if="loadingHistorial" class="flex flex-col items-center justify-center py-20 gap-3">
+                            <svg class="animate-spin h-8 w-8 text-ugel-azul" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-500">Cargando historial...</span>
+                        </div>
+
+                        <div v-else-if="historial.length === 0" class="flex flex-col items-center justify-center py-20 text-center gap-4">
+                            <div class="rounded-full bg-gray-100 p-4 text-gray-400">
+                                <svg class="size-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-sm font-semibold text-gray-700">Sin movimientos registrados</h4>
+                            <p class="text-xs text-gray-500 max-w-xs">Aún no se han registrado movimientos o cambios para este registro.</p>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div v-else class="relative border-l-2 border-gray-200 ml-4 pl-6 space-y-8">
+                            <div v-for="item in historial" :key="item.id" class="relative group">
+                                <!-- Bullet point indicator -->
+                                <span class="absolute -left-[33px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2"
+                                      :class="[
+                                          item.tipo_accion === 'CREACION' ? 'ring-emerald-500' : 
+                                          item.tipo_accion === 'ELIMINACION' ? 'ring-rose-500' : 'ring-indigo-500'
+                                      ]">
+                                    <span class="h-1.5 w-1.5 rounded-full"
+                                          :class="[
+                                              item.tipo_accion === 'CREACION' ? 'bg-emerald-500' : 
+                                              item.tipo_accion === 'ELIMINACION' ? 'bg-rose-500' : 'bg-indigo-500'
+                                          ]"></span>
+                                </span>
+
+                                <!-- Box Container -->
+                                <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all duration-200 group-hover:border-gray-200">
+                                    <div class="flex items-center justify-between gap-2 mb-2">
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide border"
+                                              :class="[
+                                                  item.tipo_accion === 'CREACION' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' : 
+                                                  item.tipo_accion === 'ELIMINACION' ? 'bg-rose-50 text-rose-700 border-rose-200/50' : 
+                                                  'bg-indigo-50 text-indigo-700 border-indigo-200/50'
+                                              ]">
+                                            {{ item.tipo_accion }}
+                                        </span>
+                                        <span class="text-[11px] text-gray-400 font-medium">
+                                            {{ formatDate(item.fecha_hora) }}
+                                        </span>
+                                    </div>
+
+                                    <div v-if="getDescripcionLines(item.descripcion).length > 1" class="mb-3">
+                                        <ul class="list-disc pl-5 space-y-1.5 text-sm text-gray-600">
+                                            <li v-for="(line, idx) in getDescripcionLines(item.descripcion)" :key="idx" class="leading-relaxed">
+                                                {{ line }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <p v-else class="text-sm text-gray-600 font-medium leading-relaxed mb-3 whitespace-pre-line" style="white-space: pre-line">
+                                        {{ item.descripcion }}
+                                    </p>
+
+                                    <!-- User metadata footer -->
+                                    <div class="flex items-center gap-2 pt-2.5 border-t border-gray-50 text-xs text-gray-500">
+                                        <div class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-600 uppercase border border-gray-200">
+                                            {{ item.usuario?.name?.charAt(0) || 'U' }}
+                                        </div>
+                                        <div class="truncate">
+                                            <span class="font-semibold text-gray-700 block truncate leading-none mb-0.5">{{ item.usuario?.name || 'Usuario' }}</span>
+                                            <span class="text-[10px] text-gray-400 block truncate leading-none">{{ item.usuario?.email }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </AppLayout>
 </template>

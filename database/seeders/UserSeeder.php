@@ -13,18 +13,18 @@ class UserSeeder extends Seeder
     {
         User::insert([
             [
-                'name' => 'Administrador del Sistema',
-                'email' => 'admin@sistema.com',
-                'password' => Hash::make('admin@sistema.com'),
+                'name' => 'Henry Gonzales',
+                'email' => 'informatica@ugelhuanuco.gob.pe',
+                'password' => Hash::make('informatica@ugelhuanuco.gob.pe'),
                 'rol' => 'ADMIN',
                 'activo' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Usuario Miembro',
-                'email' => 'miembro@sistema.com',
-                'password' => Hash::make('miembro@sistema.com'),
+                'name' => 'Jennyfer Del Castillo',
+                'email' => 'scolyperez@gmail.com',
+                'password' => Hash::make('scolyperez@gmail.com'),
                 'rol' => 'MIEMBRO',
                 'activo' => true,
                 'created_at' => now(),

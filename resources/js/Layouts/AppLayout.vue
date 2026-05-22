@@ -183,9 +183,12 @@ const logout = () => {
                             </Link>
                         </div>
                     </nav>
+                </div>
 
+                <!-- User Profile / Settings (includes Logout above the account info) -->
+                <div class="flex flex-col px-4 py-6 border-t border-ugel-azul/10 gap-4">
                     <!-- Logout Button -->
-                    <div class="mt-auto px-3 mt-2">
+                    <div class="w-full">
                         <form @submit.prevent="logout" class="w-full">
                             <button 
                                 type="submit" 
@@ -205,10 +208,8 @@ const logout = () => {
                             </button>
                         </form>
                     </div>
-                </div>
 
-                <!-- User Profile / Settings -->
-                <div class="flex flex-col px-4 py-6 border-t border-ugel-azul/10">
+                    <!-- User Account Info -->
                     <div
                         class="w-full flex items-center gap-3 px-1 text-left"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"

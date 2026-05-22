@@ -14,7 +14,7 @@ class EquipoSeeder extends Seeder
     {
         $faker = Faker::create();
         
-        $equiposTipos = ['pc', 'laptop', 'todo en uno', 'monitor', 'teclado', 'mouse', 'otro'];
+        $equiposTipos = ['pc', 'laptop', 'todo en uno', 'monitor', 'teclado', 'mouse', 'otro (equipo)'];
         $programasTipos = ['institucional', 'navegador', 'ofimática', 'soporte', 'antivirus', 'otro (programas)'];
         
         $estados = ['LIBRE', 'EN USO', 'BAJA'];

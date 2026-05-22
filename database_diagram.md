@@ -14,8 +14,10 @@ erDiagram
         bigint id PK
         string name "Nombre del administrador/operador"
         string email "Correo de login"
-        timestamp email_verified_at
         string password
+        enum rol "ADMIN | MIEMBRO"
+        boolean activo "Estado de usuario"
+        timestamp email_verified_at
         string remember_token
         timestamps timestamps
     }
@@ -70,6 +72,13 @@ erDiagram
         string clave "Ej: RAM, Procesador, Marca"
         string valor "Ej: 16GB, Intel Core i7, HP"
         bigint id_equipo FK "Equipo al que pertenece"
+        timestamps timestamps
+    }
+
+    equipo_programa {
+        bigint id PK
+        bigint equipo_id FK "Equipo físico (PC, Laptop, etc.)"
+        bigint programa_id FK "Programa o licencia de software"
         timestamps timestamps
     }
 
@@ -133,6 +142,8 @@ erDiagram
     users ||--o{ mantenimientos : "ejecuta"
     users ||--o{ historial_movimientos : "genera"
     users ||--o{ archivo_inventarios : "gestiona"
+    equipos ||--o{ equipo_programa : "posee programas (equipo_id)"
+    equipos ||--o{ equipo_programa : "instalado en (programa_id)"
 ```
 
 ---
@@ -151,3 +162,5 @@ erDiagram
    * Al realizarse la intervención técnica sobre un **Equipo**, se registra un evento en **Mantenimientos** detallando la fecha real, el operador de TI responsable (`id_usuario` vinculando a `users`), y observaciones técnicas encontradas.
 5. **Auditoría e Historial (`users` / `equipos` ➔ `historial_movimientos`)**:
    * Cada cambio granular o movimiento en un equipo o software (inserción, actualización de características, cambio de responsable, eliminación) queda auditado en el **Historial de Movimientos**, ligando de forma explícita quién realizó la acción (`id_usuario`) y qué equipo fue afectado (`id_equipo`).
+6. **Relación de Equipos y Programas (`equipos` ➔ `equipo_programa`)**:
+   * Dado que la tabla `equipos` unifica tanto dispositivos físicos (**equipo**) como software/licencias (**programa**), la tabla intermedia `equipo_programa` gestiona una relación de muchos a muchos. Esto permite asociar cuáles programas y licencias de software están instalados o asignados a qué equipos físicos específicos.

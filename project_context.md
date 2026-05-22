@@ -84,12 +84,13 @@ AI Service: Gemini & OpenRouter Sequential Failover (managed by AIManager single
 └─ vite.config.js
 
 [DB_SCHEMA]
-- users (id PK, name, email, email_verified_at, password, remember_token, timestamps)
+- users (id PK, name, email, password, rol[ADMIN|MIEMBRO], activo[bool], email_verified_at, remember_token, timestamps)
 - areas (id PK, nombre, descripcion, timestamps)
 - oficinas (id PK, nombre, descripcion, area_id FK -> areas.id, timestamps)
 - personas (id PK, nombre_completo, celular, correo, cargo, estado[ACTIVO|INACTIVO], id_oficina FK -> oficinas.id, timestamps)
 - equipos (id PK, cod_informatica UNIQUE, cod_patrimonial UNIQUE, nombre, nombre_usuario, tipo[PC|Laptop|Monitor|etc], estado[LIBRE|EN USO|BAJA], categoria[equipo|programa], clasificacion[BUENO|REGULAR|MALO], ip, fecha_ingreso, fecha_disponible_uso, vida_util_anios, observacion_tecnica, id_persona FK -> personas.id NULL, timestamps)
 - caracteristica_equipos (id PK, clave, valor, id_equipo FK -> equipos.id, timestamps)
+- equipo_programa (id PK, equipo_id FK -> equipos.id, programa_id FK -> equipos.id, timestamps)
 - cronograma_mantenimientos (id PK, titulo, descripcion, timestamps)
 - item_cronogramas (id PK, id_oficinas FK -> oficinas.id, id_cronograma FK -> cronograma_mantenimientos.id, fecha_inicio, fecha_fin, actividad, estado[Pendiente|Cancelado|Completado], timestamps)
 - mantenimientos (id PK, fecha_realizada, observaciones, realizado[bool], id_equipo FK -> equipos.id, id_cronograma FK -> cronograma_mantenimientos.id NULL, id_usuario FK -> users.id, timestamps)

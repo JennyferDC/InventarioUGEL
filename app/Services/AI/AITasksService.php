@@ -35,16 +35,24 @@ class AITasksService
     }
 
     /**
-     * Realiza un diagnóstico técnico de problemas en base a la información, características e historial de un equipo.
+     * Realiza un diagnóstico técnico de problemas en base a la información, características, historial, programas y responsable de un equipo.
      *
      * @param array $equipoData
      * @param array $caracteristicas
      * @param array $historial
+     * @param array $programas
+     * @param array|null $responsable
      * @param string $problema
      * @return string
      */
-    public function diagnosticarEquipo(array $equipoData, array $caracteristicas, array $historial, string $problema): string
-    {
+    public function diagnosticarEquipo(
+        array $equipoData,
+        array $caracteristicas,
+        array $historial,
+        array $programas,
+        ?array $responsable,
+        string $problema
+    ): string {
         // Formatting characteristics
         $specs = "";
         foreach ($caracteristicas as $c) {
@@ -63,6 +71,26 @@ class AITasksService
             $historyStr = "Ningún historial de movimientos registrado.\n";
         }
 
+        // Formatting programs
+        $programsStr = "";
+        foreach ($programas as $p) {
+            $programsStr .= "- Código: " . ($p['cod_informatica'] ?? '') . " | Nombre: " . ($p['nombre'] ?? '') . " | Tipo: " . ($p['tipo'] ?? '') . " | Estado: " . ($p['estado'] ?? '') . "\n";
+        }
+        if (empty($programsStr)) {
+            $programsStr = "Ningún programa de software asignado a este equipo.\n";
+        }
+
+        // Formatting responsible
+        $respStr = "Sin asignar / Libre\n";
+        if (!empty($responsable)) {
+            $respStr = "- Nombre Completo: " . ($responsable['nombre_completo'] ?? 'N/A') . "\n"
+                . "- Cargo: " . ($responsable['cargo'] ?? 'N/A') . "\n"
+                . "- Celular: " . ($responsable['celular'] ?? 'N/A') . "\n"
+                . "- Correo: " . ($responsable['correo'] ?? 'N/A') . "\n"
+                . "- Oficina: " . ($responsable['oficina'] ?? 'N/A') . "\n"
+                . "- Área: " . ($responsable['area'] ?? 'N/A') . "\n";
+        }
+
         // Formatting equipment info
         $eqDetails = "Código Informática: {$equipoData['cod_informatica']}\n"
             . "Categoría: " . ($equipoData['categoria'] ?? 'equipo') . "\n"
@@ -75,21 +103,29 @@ class AITasksService
             . "Vida útil en años: " . ($equipoData['vida_util_anios'] ?? 'N/A') . "\n"
             . "Observación Técnica: " . ($equipoData['observacion_tecnica'] ?? 'N/A') . "\n";
 
-        $systemPrompt = "Eres un Asistente Técnico y Experto en Soporte de TI de alta experiencia en la UGEL. Tu tarea es analizar la información, características técnicas e historial de cambios de un equipo tecnológico para emitir un diagnóstico profesional respecto al problema reportado por el usuario.\n\n"
+        $systemPrompt = "Eres un Asistente Técnico y Experto en Soporte de TI de alta experiencia en la UGEL. Tu tarea es analizar la información, características técnicas, programas instalados, responsable e historial de cambios de un equipo tecnológico para emitir un diagnóstico profesional o responder preguntas del usuario.\n\n"
             . "### CONTEXTO DEL EQUIPO:\n"
             . "{$eqDetails}\n"
+            . "### RESPONSABLE ASIGNADO:\n"
+            . "{$respStr}\n"
+            . "### PROGRAMAS Y SOFTWARE INSTALADO:\n"
+            . "{$programsStr}\n"
             . "### ESPECIFICACIONES TÉCNICAS (CARACTERÍSTICAS):\n"
             . "{$specs}\n"
             . "### HISTORIAL RECIENTE DE CAMBIOS:\n"
             . "{$historyStr}\n\n"
-            . "### PROBLEMA DETECTADO / REPORTADO POR EL OPERADOR:\n"
+            . "### CONSULTA / PROBLEMA REPORTADO POR EL OPERADOR:\n"
             . "\"{$problema}\"\n\n"
-            . "### REGLAS PARA EL INFORME DE DIAGNÓSTICO:\n"
-            . "1. Sé extremadamente técnico, conciso y profesional en tu redacción.\n"
-            . "2. Ofrece 3 posibles causas ordenadas por probabilidad, vinculándolas a los datos técnicos, la antigüedad o al historial si es relevante.\n"
-            . "3. Ofrece pasos de solución inmediatos ordenados y claros.\n"
-            . "4. Recomienda acciones preventivas a largo plazo (por ejemplo, si su vida útil está por expirar o su clasificación es MALO).\n"
-            . "5. Formatea la respuesta con Markdown elegante usando negritas, listas ordenadas/desordenadas y secciones claras. Evita saludos introductorios largos y ve al grano.";
+            . "### REGLAS DE DECISIÓN DE INTENCIÓN:\n"
+            . "1. Analiza cuidadosamente la consulta o problema reportado por el operador. Si NO describe un problema técnico ni solicita un diagnóstico técnico (ej. lentitud, falla de hardware, error de software, pantallazo azul, etc.), sino que realiza una consulta fáctica, general o administrativa sobre los datos provistos en el contexto (ej. \"¿quién es el responsable actual?\", \"¿cuál es la IP?\", \"¿qué programas tiene?\", \"¿cuándo se creó?\", etc.):\n"
+            . "   - Inicia aclarando de forma breve, cortés y profesional que lo solicitado no corresponde a una descripción de falla técnica o diagnóstico de hardware/software, pero que con gusto le brindarás la respuesta precisa.\n"
+            . "   - Responde la consulta exacta de forma directa y clara basándote únicamente en el contexto disponible (sin inventar ni alucinar datos).\n"
+            . "   - NO incluyas causas probables, pasos de solución ni recomendaciones preventivas. Sé directo y de longitud breve.\n"
+            . "2. Si la consulta describe un problema técnico o solicita un diagnóstico:\n"
+            . "   - Ofrece 3 posibles causas ordenadas por probabilidad, vinculándolas a los datos técnicos, software instalado, antigüedad o al historial si es relevante.\n"
+            . "   - Ofrece pasos de solución inmediatos ordenados y claros.\n"
+            . "   - Recomienda acciones preventivas a largo plazo (por ejemplo, si su vida útil está por expirar o su clasificación es MALO).\n"
+            . "   - Formatea la respuesta con Markdown elegante usando negritas, listas ordenadas/desordenadas y secciones claras. Evita saludos introductorios largos y ve al grano.";
 
         return trim($this->ai->generateText($systemPrompt));
     }

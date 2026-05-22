@@ -36,11 +36,20 @@ return [
     ],
 
     'ai' => [
-        'default' => env('AI_DRIVER', 'mock'),
+        'default' => env('AI_DRIVER', 'openrouter'),
         'drivers' => [
             'gemini' => [
                 'key' => env('GEMINI_API_KEY'),
                 'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+            ],
+            'openrouter' => [
+                'key' => env('OPENROUTER_API_KEY'),
+                'models' => [
+                    'google/gemini-2.5-flash',
+                    'meta-llama/llama-3.3-70b-instruct',
+                    'deepseek/deepseek-chat',
+                    'qwen/qwen-2.5-72b-instruct',
+                ],
             ],
         ],
     ],

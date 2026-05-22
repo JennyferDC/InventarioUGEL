@@ -60,7 +60,8 @@ class EquipoController extends Controller
         $equipo = Equipo::with([
             'persona:id,nombre_completo,id_oficina,celular,correo,cargo', 
             'persona.oficina.area:id,nombre', 
-            'caracteristicas:id,clave,valor,id_equipo'
+            'caracteristicas:id,clave,valor,id_equipo',
+            'programas:id,cod_informatica,nombre,tipo,estado'
         ])
         ->where('cod_informatica', $cod_informatica)
         ->firstOrFail();
@@ -80,11 +81,18 @@ class EquipoController extends Controller
 
         $areas = Area::select('id', 'nombre')->orderBy('nombre')->get();
 
+        // Get all software programs available for transfer/association
+        $programasDisponibles = Equipo::where('categoria', 'programa')
+            ->select('id', 'cod_informatica', 'nombre', 'tipo', 'estado')
+            ->orderBy('nombre')
+            ->get();
+
         return Inertia::render('Inventario/Show', [
             'equipo' => $equipo,
             'otrosEquipos' => $otrosEquipos,
             'personas' => $personas,
             'areas' => $areas,
+            'programasDisponibles' => $programasDisponibles,
         ]);
     }
 
@@ -382,6 +390,62 @@ class EquipoController extends Controller
         return response()->json([
             'message' => 'Equipo actualizado correctamente.',
             'data' => $equipo->fresh()->load(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
+        ]);
+    }
+
+    /**
+     * Actualiza la lista de programas asociados al equipo.
+     */
+    public function updateProgramas(Request $request, Equipo $equipo)
+    {
+        $validated = $request->validate([
+            'programa_ids' => ['nullable', 'array'],
+            'programa_ids.*' => ['exists:equipos,id'],
+        ]);
+
+        $ids = $validated['programa_ids'] ?? [];
+
+        DB::transaction(function () use ($equipo, $ids) {
+            // Get currently installed program names to log differences
+            $oldProgramNames = $equipo->programas->pluck('nombre', 'id')->toArray();
+            
+            // Sync relationships
+            $equipo->programas()->sync($ids);
+            
+            // Reload and get new program names
+            $equipo->load('programas');
+            $newProgramNames = $equipo->programas->pluck('nombre', 'id')->toArray();
+
+            // Formulate descriptions of added / removed programs
+            $added = array_diff_key($newProgramNames, $oldProgramNames);
+            $removed = array_diff_key($oldProgramNames, $newProgramNames);
+            
+            $descriptions = [];
+            if (count($added) > 0) {
+                $descriptions[] = "Se instalaron los siguientes programas: " . implode(', ', $added);
+            }
+            if (count($removed) > 0) {
+                $descriptions[] = "Se desinstalaron los siguientes programas: " . implode(', ', $removed);
+            }
+
+            if (count($descriptions) > 0) {
+                \App\Models\HistorialMovimiento::create([
+                    'tipo_accion' => 'MODIFICACION',
+                    'descripcion' => implode("\n", $descriptions),
+                    'fecha_hora' => now(),
+                    'id_usuario' => auth()->id(),
+                    'id_equipo' => $equipo->id,
+                ]);
+            }
+        });
+
+        if ($request->header('X-Inertia')) {
+            return redirect()->back();
+        }
+
+        return response()->json([
+            'message' => 'Programas del equipo actualizados correctamente.',
+            'data' => $equipo->fresh()->load('programas:id,cod_informatica,nombre,tipo,estado'),
         ]);
     }
 

@@ -27,9 +27,17 @@ class AIController extends Controller
         try {
             $resultado = $this->aiTasks->mejorarObservacionTecnica($request->input('observacion'));
 
+            $metadata = null;
+            $aiService = app(\App\Services\AI\Contracts\AIService::class);
+            if ($aiService instanceof \App\Services\AI\AIManager) {
+                $metadata = $aiService->getLastResponseMetadata();
+            }
+
             return response()->json([
                 'success' => true,
                 'resultado' => trim($resultado, " \t\n\r\0\x0B\"'"),
+                'provider' => $metadata['provider'] ?? 'Gemini',
+                'model' => $metadata['model'] ?? 'gemini-2.5-flash',
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -52,6 +60,8 @@ class AIController extends Controller
         try {
             $equipo = Equipo::with([
                 'caracteristicas',
+                'programas',
+                'persona.oficina.area',
                 'historialMovimientos' => function ($query) {
                     $query->orderBy('fecha_hora', 'desc')->orderBy('id', 'desc')->take(15);
                 }
@@ -74,18 +84,51 @@ class AIController extends Controller
                 ];
             })->toArray();
 
+            // Convert programs to array structure
+            $programas = $equipo->programas->map(function ($p) {
+                return [
+                    'cod_informatica' => $p->cod_informatica,
+                    'nombre' => $p->nombre,
+                    'tipo' => $p->tipo,
+                    'estado' => $p->estado,
+                ];
+            })->toArray();
+
+            // Convert responsible person to array structure
+            $responsable = null;
+            if ($equipo->persona) {
+                $responsable = [
+                    'nombre_completo' => $equipo->persona->nombre_completo,
+                    'cargo' => $equipo->persona->cargo,
+                    'celular' => $equipo->persona->celular,
+                    'correo' => $equipo->persona->correo,
+                    'oficina' => $equipo->persona->oficina ? $equipo->persona->oficina->nombre : null,
+                    'area' => ($equipo->persona->oficina && $equipo->persona->oficina->area) ? $equipo->persona->oficina->area->nombre : null,
+                ];
+            }
+
             $equipoData = $equipo->toArray();
 
             $resultado = $this->aiTasks->diagnosticarEquipo(
                 $equipoData,
                 $caracteristicas,
                 $historial,
+                $programas,
+                $responsable,
                 $request->input('problema')
             );
+
+            $metadata = null;
+            $aiService = app(\App\Services\AI\Contracts\AIService::class);
+            if ($aiService instanceof \App\Services\AI\AIManager) {
+                $metadata = $aiService->getLastResponseMetadata();
+            }
 
             return response()->json([
                 'success' => true,
                 'resultado' => $resultado,
+                'provider' => $metadata['provider'] ?? 'Gemini',
+                'model' => $metadata['model'] ?? 'gemini-2.5-flash',
             ]);
         } catch (\Exception $e) {
             return response()->json([

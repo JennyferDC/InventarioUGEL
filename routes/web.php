@@ -56,6 +56,7 @@ Route::middleware([
         Route::get('/equipo/{cod_informatica}', [EquipoController::class, 'showByCodigo'])->name('equipos.showByCodigo');
         Route::get('/{equipo}', [EquipoController::class, 'show'])->name('equipos.show');
         Route::put('/{equipo}', [EquipoController::class, 'update'])->name('equipos.update');
+        Route::post('/{equipo}/programas', [EquipoController::class, 'updateProgramas'])->name('equipos.updateProgramas');
         Route::delete('/{equipo}', [EquipoController::class, 'destroy'])->name('equipos.destroy');
         Route::get('/{equipo}/historial', [HistorialMovimientoController::class, 'getHistorial'])->name('equipos.historial');
     });

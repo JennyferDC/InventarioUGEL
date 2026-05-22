@@ -59,4 +59,20 @@ class Equipo extends Model
     {
         return $this->hasMany(HistorialMovimiento::class, 'id_equipo');
     }
+
+    /**
+     * Relación: Un equipo físico tiene muchos programas/softwares instalados.
+     */
+    public function programas()
+    {
+        return $this->belongsToMany(Equipo::class, 'equipo_programa', 'equipo_id', 'programa_id')->withTimestamps();
+    }
+
+    /**
+     * Relación: Un programa/software está instalado en muchos equipos físicos.
+     */
+    public function equipos()
+    {
+        return $this->belongsToMany(Equipo::class, 'equipo_programa', 'programa_id', 'equipo_id')->withTimestamps();
+    }
 }

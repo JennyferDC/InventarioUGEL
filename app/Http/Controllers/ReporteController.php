@@ -13,7 +13,7 @@ class ReporteController extends Controller
         $tipo = $request->tipo_reporte;
         $filtros = $request->filtros;
         
-        $query = Equipo::with('persona.oficina.area', 'caracteristicas');
+        $query = Equipo::with('persona.oficina.area', 'caracteristicas', 'programas');
 
         if ($tipo === 'inventario_general') {
             $query->whereIn('tipo', $filtros['tipos'] ?? [])

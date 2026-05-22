@@ -125,6 +125,30 @@
         </tbody>
     </table>
     
+    <div class="section-title">Programas y Software Instalado</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30%; background-color: #f2f2f2;">Código</th>
+                <th style="width: 45%; background-color: #f2f2f2;">Nombre del Programa</th>
+                <th style="width: 25%; background-color: #f2f2f2;">Tipo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($equipo->programas as $programa)
+            <tr>
+                <td style="font-family: monospace;">{{ $programa->cod_informatica }}</td>
+                <td>{{ $programa->nombre }}</td>
+                <td>{{ $programa->tipo ? ucfirst($programa->tipo) : '-' }}</td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="3" style="text-align: center; color: #666; padding: 15px;">No hay programas de software asignados a este equipo.</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+    
     @if(!empty($filtros['incluir_otros_equipos']) && count($otros_equipos) > 0)
     <div class="section-title" style="margin-top: 20px;">Otros Equipos Asignados a la Persona</div>
     <table>

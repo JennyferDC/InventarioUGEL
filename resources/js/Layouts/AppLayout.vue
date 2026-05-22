@@ -113,7 +113,7 @@ const logout = () => {
             >
                 <!-- Sidebar Header (Fixed Height: h-20 = 5rem = 80px) -->
                 <div class="h-20 flex items-center px-4 border-b border-ugel-azul/10 shrink-0" :class="isSidebarCollapsed ? 'justify-between lg:justify-center' : 'justify-between'">
-                    <Link :href="route('dashboard')" class="items-start gap-1 overflow-hidden" :class="isSidebarCollapsed ? 'flex-col flex lg:hidden' : 'flex-col flex'">
+                    <Link :href="route('dashboard')" class="items-start gap-1 pl-2 overflow-hidden" :class="isSidebarCollapsed ? 'flex-col flex lg:hidden' : 'flex-col flex'">
                         <ApplicationMark class="block h-9 w-auto shrink-0" />
 
                     </Link>
@@ -187,6 +187,7 @@ const logout = () => {
 
                 <!-- User Profile / Settings (includes Logout above the account info) -->
                 <div class="flex flex-col px-4 pt-5 pb-6 border-t border-ugel-azul/10 gap-4">
+                    
                     <!-- Logout Button -->
                     <div class="w-full">
                         <form @submit.prevent="logout" class="w-full">

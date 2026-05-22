@@ -186,7 +186,7 @@ const logout = () => {
                 </div>
 
                 <!-- User Profile / Settings (includes Logout above the account info) -->
-                <div class="flex flex-col px-4 py-6 border-t border-ugel-azul/10 gap-4">
+                <div class="flex flex-col px-4 pt-5 pb-6 border-t border-ugel-azul/10 gap-4">
                     <!-- Logout Button -->
                     <div class="w-full">
                         <form @submit.prevent="logout" class="w-full">

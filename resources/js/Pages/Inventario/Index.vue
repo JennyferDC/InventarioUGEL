@@ -194,7 +194,9 @@ const cerrarModalReportes = () => {
 };
 
 const crearEquipo = async (payload) => {
-    if (!payload?.cod_informatica || !payload.tipo || !payload.estado) return;
+    if (!payload?.tipo?.trim()) return;
+    if (payload.categoria === 'equipo' && !payload.estado?.trim()) return;
+    if (payload.categoria === 'programa' && !payload.nombre?.trim()) return;
 
     creating.value = true;
     erroresCrear.value = {};
@@ -432,6 +434,7 @@ const confirmarEliminacion = async () => {
 
                     <div class="flex items-center gap-3">
                         <button
+                            v-if="filtroCategoria !== 'programa'"
                             type="button"
                             class="inline-flex items-center gap-2 rounded-lg border border-ugel-azul bg-white px-4 py-2 text-ugel-azul font-semibold shadow-sm hover:bg-gray-50 transition-colors duration-150"
                             @click="abrirModalReportes"

@@ -223,7 +223,7 @@ const formatDateRange = (startStr, endStr) => {
                                 <span class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">{{ localAlerts.length }} activas</span>
                             </div>
                             
-                            <div class="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
+                            <div class="max-h-[300px] overflow-y-auto overflow-x-hidden divide-y divide-slate-50 custom-scrollbar">
                                 <div v-if="localAlerts.length === 0" class="p-8 text-center text-xs font-semibold text-slate-400">
                                     No tienes notificaciones pendientes.
                                 </div>
@@ -602,16 +602,16 @@ const formatDateRange = (startStr, endStr) => {
                     </div>
 
                     <!-- Right: Quick actions buttons -->
-                    <div class="bg-white shadow-sm border border-slate-100 rounded-3xl p-6 flex flex-col justify-between h-full">
-                        <div class="flex-1 flex flex-col justify-between h-full">
+                    <div class="bg-white shadow-sm border border-slate-100 rounded-3xl p-6 flex flex-col h-full">
+                        <div class="flex-1 flex flex-col h-full">
                             <div>
                                 <h3 class="text-base font-extrabold text-slate-800">Accesos Rápidos</h3>
                                 <p class="text-xs text-slate-400 font-semibold mt-0.5">Accede de forma directa a las principales herramientas de administración.</p>
                             </div>
                             
-                            <!-- Grid matches picture exactly -->
-                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6">
-                                <Link :href="route('equipos.index')" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#EFF6FF] hover:border-blue-200 transition duration-300 group shadow-sm">
+                            <!-- Grid stretches to fill the vertical height -->
+                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6 flex-1">
+                                <Link :href="route('equipos.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#EFF6FF] hover:border-blue-200 transition duration-300 group shadow-sm">
                                     <span class="rounded-2xl bg-[#EFF6FF] p-3.5 text-[#2563EB] group-hover:scale-110 transition duration-300">
                                         <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -620,7 +620,7 @@ const formatDateRange = (startStr, endStr) => {
                                     <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Ver Equipos</span>
                                 </Link>
 
-                                <Link :href="route('programas.index')" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FAF5FF] hover:border-purple-200 transition duration-300 group shadow-sm">
+                                <Link :href="route('programas.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FAF5FF] hover:border-purple-200 transition duration-300 group shadow-sm">
                                     <span class="rounded-2xl bg-[#FAF5FF] p-3.5 text-[#9333EA] group-hover:scale-110 transition duration-300">
                                         <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -629,7 +629,7 @@ const formatDateRange = (startStr, endStr) => {
                                     <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Ver Programas</span>
                                 </Link>
 
-                                <Link :href="route('mantenimiento.index')" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#ECFDF5] hover:border-emerald-200 transition duration-300 group shadow-sm">
+                                <Link :href="route('mantenimiento.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#ECFDF5] hover:border-emerald-200 transition duration-300 group shadow-sm">
                                     <span class="rounded-2xl bg-[#ECFDF5] p-3.5 text-[#10B981] group-hover:scale-110 transition duration-300">
                                         <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
@@ -638,7 +638,7 @@ const formatDateRange = (startStr, endStr) => {
                                     <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Mantenimientos</span>
                                 </Link>
 
-                                <Link :href="route('personas.index')" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FFFBEB] hover:border-amber-200 transition duration-300 group shadow-sm">
+                                <Link :href="route('personas.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FFFBEB] hover:border-amber-200 transition duration-300 group shadow-sm">
                                     <span class="rounded-2xl bg-[#FFFBEB] p-3.5 text-[#D97706] group-hover:scale-110 transition duration-300">
                                         <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -647,7 +647,7 @@ const formatDateRange = (startStr, endStr) => {
                                     <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Personas</span>
                                 </Link>
 
-                                <Link :href="route('miembros.index')" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#F5F3FF] hover:border-indigo-200 transition duration-300 group shadow-sm">
+                                <Link :href="route('miembros.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#F5F3FF] hover:border-indigo-200 transition duration-300 group shadow-sm">
                                     <span class="rounded-2xl bg-[#F5F3FF] p-3.5 text-[#6366F1] group-hover:scale-110 transition duration-300">
                                         <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -677,7 +677,7 @@ const formatDateRange = (startStr, endStr) => {
                                 </div>
                                 
                                 <!-- Logs layout matching exact picture styling with scroll and clickability -->
-                                <div class="max-h-[300px] overflow-y-auto pr-1 space-y-2.5 mt-6" v-if="movimientos_recientes.length > 0">
+                                <div class="max-h-[300px] overflow-y-auto overflow-x-hidden pr-1.5 space-y-2.5 mt-6 custom-scrollbar" v-if="movimientos_recientes.length > 0">
                                     <component
                                         :is="item.equipo ? Link : 'div'"
                                         :href="item.equipo ? route('equipos.showByCodigo', item.equipo.cod_informatica) : null"
@@ -737,7 +737,7 @@ const formatDateRange = (startStr, endStr) => {
                             </div>
                             
                             <!-- Calendar list premium display -->
-                            <div class="max-h-[300px] overflow-y-auto pr-1 space-y-3 mt-6" v-if="proximos_mantenimientos.length > 0">
+                            <div class="max-h-[300px] overflow-y-auto overflow-x-hidden pr-1.5 space-y-3 mt-6 custom-scrollbar" v-if="proximos_mantenimientos.length > 0">
                                 <div 
                                     v-for="item in proximos_mantenimientos" 
                                     :key="item.id" 
@@ -820,5 +820,29 @@ const formatDateRange = (startStr, endStr) => {
 /* Disable default focus outline on links */
 a:focus {
     outline: none;
+}
+
+/* Soft, modern, minimalist custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* slate-300 */
+    border-radius: 9999px;
+    transition: background 0.2s ease;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* slate-400 */
+}
+
+/* Ensure smooth scrolling inside scrollable areas */
+.custom-scrollbar {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
 }
 </style>

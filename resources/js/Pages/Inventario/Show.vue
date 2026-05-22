@@ -1869,7 +1869,7 @@ const saveProgramas = async () => {
                             <div class="space-y-1 text-xs">
                                 <h4 class="font-extrabold text-purple-950 uppercase tracking-wider">Acceso a Datos del Sistema</h4>
                                 <p class="text-gray-600 leading-normal">
-                                    La Inteligencia Artificial está integrada y tiene acceso en tiempo real a las especificaciones técnicas del hardware, programas/software asignados, historial de movimientos y datos de custodia de este equipo (<strong class="font-bold text-gray-800">{{ form.cod_informatica }}</strong>).
+                                    La IA está integrada y tiene acceso en tiempo real a las especificaciones técnicas del hardware, programas asignados, historial de movimientos y datos de custodia de este equipo (<strong class="font-bold text-gray-800">{{ form.cod_informatica }}</strong>).
                                 </p>
                             </div>
                         </div>

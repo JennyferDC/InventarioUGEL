@@ -4,13 +4,13 @@
 Backend: Laravel ^12.0 | PHP ^8.2 | Jetstream/Sanctum | Inertia-Laravel ^2.0 | DomPDF ^3.1
 Frontend: Vue 3 (^3.3.13) | Inertia.js ^2.0 | Vite ^7.0.7 | Tailwind ^3.4.0 | Axios | Qrcode.vue
 Database: MySQL (inventario_ugel)
-AI Service: Gemini (via AIController using GEMINI_API_KEY)
+AI Service: Gemini & OpenRouter Sequential Failover (managed by AIManager singleton, supports custom env driver and fallback model loops)
 
 [TREE]
 /
 ├─ app/
 │  ├─ Http/Controllers/
-│  │  ├─ AIController.php (Gemini API integrations)
+│  │  ├─ AIController.php (AI endpoint responses with provider/model metadata)
 │  │  ├─ ArchivoInventarioController.php (Upload/manage Excel files)
 │  │  ├─ AreaController.php (CRUD area)
 │  │  ├─ CaracteristicaEquipoController.php (CRUD specs)
@@ -37,6 +37,16 @@ AI Service: Gemini (via AIController using GEMINI_API_KEY)
 │     ├─ Oficina.php (Model: offices)
 │     ├─ Persona.php (Model: staff)
 │     └─ User.php (Model: IT operators / admins)
+│  └─ Services/
+│     └─ AI/
+│        ├─ AIManager.php (Resolves default driver and sequential failover)
+│        ├─ AITasksService.php (Orchestrates structured prompts for observations & diagnostics)
+│        ├─ Contracts/
+│        │  └─ AIService.php (Base interface for text generation)
+│        └─ Drivers/
+│           ├─ GeminiDriver.php (Natively consumes Google Gemini API)
+│           ├─ OpenRouterDriver.php (Consumes OpenRouter chat completions API)
+│           └─ MockDriver.php (Local development & testing double)
 ├─ database/
 │  ├─ migrations/
 │  └─ seeders/
@@ -121,5 +131,5 @@ AI Service: Gemini (via AIController using GEMINI_API_KEY)
 3. DB transaction wrapper for multi-entity edits: `DB::transaction(fn() => ...)` or explicit begin/commit/rollback.
 4. Eager loading relationships in controllers: e.g., `with(['area'])` or `with(['persona.oficina.area'])` to prevent N+1 issues.
 5. Audit Logs: Call `HistorialMovimientoController` or directly insert into `historial_movimientos` upon creating/updating/deleting `equipos`.
-6. Gemini Integration: Utilizes Gemini API. Structured prompt templates for technical text expansion and diagnostic generation are inside `AIController.php`.
+6. AI Integration: Utilizes AIManager (Gemini direct connection & OpenRouter sequential model fallback). Structured prompt templates for technical text expansion and diagnostic generation are inside `AITasksService.php`.
 7. CSS Styling: Vanilla Tailwind CSS (classes integrated in Vue components). Check `.config` for customizations. Do not override layout core metrics without review.

@@ -6,13 +6,89 @@ use Illuminate\Database\Seeder;
 use App\Models\Equipo;
 use App\Models\CaracteristicaEquipo;
 use App\Models\Persona;
-use Faker\Factory as Faker;
+class SimpleFaker {
+    public function randomElement($array) {
+        return $array[array_rand($array)];
+    }
+    public function randomElements($array, $count) {
+        $keys = (array) array_rand($array, $count);
+        $result = [];
+        foreach ($keys as $key) {
+            $result[] = $array[$key];
+        }
+        return $result;
+    }
+    public function userName() {
+        $users = ['admin', 'henrry', 'jorge', 'maria', 'carlos', 'ana', 'pedro', 'luis', 'sofia', 'lucia'];
+        return $users[array_rand($users)] . rand(10, 99);
+    }
+    public function name() {
+        $names = ['Henrry Diaz', 'Jorge Perez', 'Maria Rojas', 'Carlos Flores', 'Ana Torres', 'Pedro Ramirez', 'Luis Gomez', 'Sofia Castro', 'Lucia Vargas', 'David Torres'];
+        return $names[array_rand($names)];
+    }
+    public function bothify($pattern) {
+        $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $result = '';
+        for ($i = 0; $i < strlen($pattern); $i++) {
+            if ($pattern[$i] === '?') {
+                $result .= $letters[rand(0, 25)];
+            } elseif ($pattern[$i] === '#') {
+                $result .= rand(0, 9);
+            } else {
+                $result .= $pattern[$i];
+            }
+        }
+        return $result;
+    }
+    public function numerify($pattern) {
+        $result = '';
+        for ($i = 0; $i < strlen($pattern); $i++) {
+            if ($pattern[$i] === '#') {
+                $result .= rand(0, 9);
+            } else {
+                $result .= $pattern[$i];
+            }
+        }
+        return $result;
+    }
+    public function dateTimeBetween($start, $end) {
+        $min = strtotime($start);
+        $max = strtotime($end);
+        $val = rand($min, $max);
+        return new \DateTime(date('Y-m-d', $val));
+    }
+    public function ipv4() {
+        return "192.168." . rand(1, 254) . "." . rand(1, 254);
+    }
+    public function sentence($nbWords = 6) {
+        $sentences = [
+            'Equipo presenta fallas constantes en el encendido y reinicios.',
+            'Pantalla rota debido a una caida accidental durante traslado.',
+            'Placa madre quemada por sobrecalentamiento y variacion de voltaje.',
+            'Disco duro dañado con sectores defectuosos que impiden el arranque.',
+            'Teclado sulfatado por derrame de liquido y puertos USB inoperativos.',
+            'Memoria RAM con fallas en bus de datos reportadas por soporte.',
+            'Bateria hinchada y carcasa rota que imposibilitan su uso.',
+            'Procesador dañado y cooler inoperativo que causan apagados.'
+        ];
+        return $sentences[array_rand($sentences)];
+    }
+    public function __get($name) {
+        if ($name === 'ipv4') {
+            return $this->ipv4();
+        }
+        if ($name === 'word') {
+            return 'Especificacion';
+        }
+        return '';
+    }
+}
 
 class EquipoSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = Faker::create();
+        $faker = new SimpleFaker();
         
         $equiposTipos = ['pc', 'laptop', 'todo en uno', 'monitor', 'teclado', 'mouse', 'otro (equipo)'];
         $programasTipos = ['institucional', 'navegador', 'ofimática', 'soporte', 'antivirus', 'otro (programas)'];

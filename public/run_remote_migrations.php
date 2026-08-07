@@ -49,14 +49,9 @@ try {
     }
 
 
-    echo "2. Ejecutando migraciones (migrate:fresh)...<br>";
-    $migrateExitCode = Artisan::call('migrate:fresh', ['--force' => true]);
+    echo "2. Ejecutando migraciones (migrate)...<br>";
+    $migrateExitCode = Artisan::call('migrate', ['--force' => true]);
     echo "Codigo de salida de migracion: $migrateExitCode<br>";
-    echo "<pre>" . Artisan::output() . "</pre>";
-
-    echo "3. Ejecutando seeders de base de datos...<br>";
-    $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
-    echo "Codigo de salida de seeder: $seedExitCode<br>";
     echo "<pre>" . Artisan::output() . "</pre>";
 
     echo "4. Limpiando y manteniendo cache dinámica de Laravel...<br>";

@@ -256,6 +256,7 @@ const crearMiembro = async (payload) => {
                     </div>
 
                     <button
+                        v-if="$page.props.auth.user.rol === 'ADMIN'"
                         type="button"
                         class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                         @click="abrirModalCrear"
@@ -297,6 +298,7 @@ const crearMiembro = async (payload) => {
                                         Estado
                                     </th>
                                     <th
+                                        v-if="$page.props.auth.user.rol === 'ADMIN'"
                                         class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul"
                                     >
                                         Acciones
@@ -344,7 +346,7 @@ const crearMiembro = async (payload) => {
                                             }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td v-if="$page.props.auth.user.rol === 'ADMIN'" class="px-6 py-4">
                                         <div
                                             class="flex items-center justify-center gap-3"
                                         >
@@ -397,7 +399,7 @@ const crearMiembro = async (payload) => {
                             <tbody v-else>
                                 <tr>
                                     <td
-                                        colspan="5"
+                                        :colspan="$page.props.auth.user.rol === 'ADMIN' ? 6 : 5"
                                         class="px-6 py-12 text-center text-gray-600"
                                     >
                                         No hay miembros registrados o que

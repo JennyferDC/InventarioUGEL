@@ -112,6 +112,8 @@ const deleting = ref(false);
 const saving = ref(false);
 const creating = ref(false);
 const modalCrearRef = ref(null);
+const createErrors = ref({});
+const editErrors = ref({});
 
 const successMessage = ref("");
 const errorMessage = ref("");
@@ -235,25 +237,28 @@ const confirmarEliminacion = async () => {
 };
 
 const abrirModalEditar = (persona) => {
+    editErrors.value = {};
     personaEditando.value = { ...persona };
     showEditModal.value = true;
 };
 
 const cerrarModalEditar = () => {
     showEditModal.value = false;
+    editErrors.value = {};
     personaEditando.value = null;
 };
 
 const guardarCambios = async (payload) => {
     if (!payload?.id) return;
+    editErrors.value = {};
 
     if (!payload.nombre_completo || !payload.nombre_completo.trim()) {
-        triggerMessage("error", "El nombre completo es obligatorio.");
+        editErrors.value = { nombre_completo: "El nombre completo es obligatorio." };
         return;
     }
 
     if (!payload.id_oficina) {
-        triggerMessage("error", "La oficina es obligatoria.");
+        editErrors.value = { id_oficina: "La oficina es obligatoria." };
         return;
     }
 
@@ -273,33 +278,43 @@ const guardarCambios = async (payload) => {
         triggerMessage("success", "Persona actualizada correctamente.");
         cerrarModalEditar();
     } catch (error) {
-        triggerMessage(
-            "error",
-            error.response?.data?.message ||
-                "No se pudo actualizar la persona. Revisa los datos."
-        );
+        if (error.response?.status === 422 && error.response?.data?.errors) {
+            const errs = {};
+            for (const [key, val] of Object.entries(error.response.data.errors)) {
+                errs[key] = Array.isArray(val) ? val[0] : val;
+            }
+            editErrors.value = errs;
+        } else {
+            editErrors.value = {
+                general: error.response?.data?.message || "No se pudo actualizar la persona. Revisa los datos."
+            };
+        }
     } finally {
         saving.value = false;
     }
 };
 
 const abrirModalCrear = () => {
+    createErrors.value = {};
     showCreateModal.value = true;
 };
 
 const cerrarModalCrear = () => {
     showCreateModal.value = false;
+    createErrors.value = {};
     modalCrearRef.value?.resetForm();
 };
 
 const crearPersona = async (payload) => {
+    createErrors.value = {};
+
     if (!payload?.nombre_completo || !payload.nombre_completo.trim()) {
-        triggerMessage("error", "El nombre completo es obligatorio.");
+        createErrors.value = { nombre_completo: "El nombre completo es obligatorio." };
         return;
     }
 
     if (!payload?.id_oficina) {
-        triggerMessage("error", "La oficina es obligatoria.");
+        createErrors.value = { id_oficina: "La oficina es obligatoria." };
         return;
     }
 
@@ -315,10 +330,17 @@ const crearPersona = async (payload) => {
         triggerMessage("success", "Persona creada correctamente.");
         cerrarModalCrear();
     } catch (error) {
-        const message =
-            error.response?.data?.message ||
-            "No se pudo crear la persona. Intenta nuevamente.";
-        triggerMessage("error", message);
+        if (error.response?.status === 422 && error.response?.data?.errors) {
+            const errs = {};
+            for (const [key, val] of Object.entries(error.response.data.errors)) {
+                errs[key] = Array.isArray(val) ? val[0] : val;
+            }
+            createErrors.value = errs;
+        } else {
+            createErrors.value = {
+                general: error.response?.data?.message || "No se pudo crear la persona. Intenta nuevamente."
+            };
+        }
     } finally {
         creating.value = false;
     }
@@ -543,16 +565,18 @@ const crearPersona = async (payload) => {
             :show="showEditModal"
             :persona="personaEditando"
             :oficinas="oficinas"
+            :errors="editErrors"
             :loading="saving"
             @close="cerrarModalEditar"
             @save="guardarCambios"
             @toggle-status="abrirModalDarDeBaja"
-            />
+        />
 
         <ModalCrear
             ref="modalCrearRef"
             :show="showCreateModal"
             :oficinas="oficinas"
+            :errors="createErrors"
             :loading="creating"
             @close="cerrarModalCrear"
             @save="crearPersona"

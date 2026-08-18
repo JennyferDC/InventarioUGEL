@@ -134,6 +134,29 @@ const handleOficinaBlur = () => {
     }, 200);
 };
 
+const formatNombreCompleto = (val) => {
+    if (!val) return "";
+    return val
+        .toLowerCase()
+        .replace(/(?:^|\s)\p{L}/gu, (letter) => letter.toUpperCase());
+};
+
+const formatCelular = (val) => {
+    if (!val) return "";
+    const digits = val.replace(/\D/g, "").slice(0, 9);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+};
+
+const handleNombreInput = (e) => {
+    form.nombre_completo = formatNombreCompleto(e.target.value);
+};
+
+const handleCelularInput = (e) => {
+    form.celular = formatCelular(e.target.value);
+};
+
 const resetForm = () => {
     form.nombre_completo = "";
     form.celular = "";
@@ -179,6 +202,7 @@ defineExpose({ resetForm });
                     <input
                         id="persona_nombre"
                         v-model="form.nombre_completo"
+                        @input="handleNombreInput"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                         placeholder="Nombre y apellidos"
@@ -213,9 +237,11 @@ defineExpose({ resetForm });
                         <input
                             id="persona_celular"
                             v-model="form.celular"
+                            @input="handleCelularInput"
                             type="text"
+                            maxlength="11"
                             class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                            placeholder="Ej. 987654321"
+                            placeholder="Ej. 987 654 321"
                             :disabled="loading"
                         />
                     </div>

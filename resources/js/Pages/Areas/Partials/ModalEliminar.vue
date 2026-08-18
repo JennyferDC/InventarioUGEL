@@ -17,7 +17,7 @@ const props = defineProps({
     },
     title: {
         type: String,
-        default: "Eliminar área",
+        default: "Eliminar unidad",
     },
     itemName: {
         type: String,

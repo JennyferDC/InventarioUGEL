@@ -67,7 +67,7 @@ const handleSubmit = () => {
                         v-model="form.nombre"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Nombre del área"
+                        placeholder="Ej. Recursos Humanos"
                         :disabled="loading"
                     />
                 </div>
@@ -94,7 +94,7 @@ const handleSubmit = () => {
                         for="area_id"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Área a la que pertenece
+                        Unidad a la que pertenece
                     </label>
                     <select
                         id="area_id"
@@ -102,7 +102,7 @@ const handleSubmit = () => {
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                         :disabled="loading"
                     >
-                        <option value="" disabled>Seleccione un área</option>
+                        <option value="" disabled>Seleccione una unidad</option>
                         <option v-for="area in areas" :key="area.id" :value="area.id">
                             {{ area.nombre }}
                         </option>

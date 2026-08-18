@@ -45,7 +45,7 @@ const navigationGroups = computed(() => [
         name: "Organización UGEL",
         items: [
             {
-                name: "Áreas",
+                name: "Unidades",
                 href: route("areas.index"),
                 active: route().current("areas.*"),
                 icon: "areas",

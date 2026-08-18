@@ -90,12 +90,12 @@ const confirmarEliminacion = async () => {
             (area) => area.id !== areaSeleccionada.value.id
         );
         cerrarModalEliminar();
-        triggerMessage("success", "Área eliminada correctamente.");
+        triggerMessage("success", "Unidad eliminada correctamente.");
     } catch (error) {
         triggerMessage(
             "error",
             error.response?.data?.message ||
-                "No se pudo eliminar el área. Intenta nuevamente."
+                "No se pudo eliminar la unidad. Intenta nuevamente."
         );
     } finally {
         deleting.value = false;
@@ -128,13 +128,13 @@ const guardarCambios = async (payload) => {
         areas.value = areas.value.map((area) =>
             area.id === payload.id ? { ...area, ...updated } : area
         );
-        triggerMessage("success", "Área actualizada correctamente.");
+        triggerMessage("success", "Unidad actualizada correctamente.");
         cerrarModalEditar();
     } catch (error) {
         triggerMessage(
             "error",
             error.response?.data?.message ||
-                "No se pudo actualizar el área. Revisa los datos e intenta otra vez."
+                "No se pudo actualizar la unidad. Revisa los datos e intenta otra vez."
         );
     } finally {
         saving.value = false;
@@ -161,12 +161,12 @@ const crearArea = async (payload) => {
                 a.nombre.localeCompare(b.nombre)
             );
         }
-        triggerMessage("success", "Área creada correctamente.");
+        triggerMessage("success", "Unidad creada correctamente.");
         cerrarModalCrear();
     } catch (error) {
         const message =
             error.response?.data?.message ||
-            "No se pudo crear el área. Intenta nuevamente.";
+            "No se pudo crear la unidad. Intenta nuevamente.";
         triggerMessage("error", message);
     } finally {
         creating.value = false;
@@ -175,11 +175,11 @@ const crearArea = async (payload) => {
 </script>
 
 <template>
-    <AppLayout title="Áreas">
+    <AppLayout title="Unidades">
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
-                    Directorio de Áreas
+                    Directorio de Unidades
                 </h2>
             </div>
         </template>
@@ -205,10 +205,10 @@ const crearArea = async (payload) => {
                         class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                         @click="abrirModalCrear"
                     >
-                        + Nueva área
+                        + Nueva unidad
                     </button>
                 </div>
-                <!-- Grid de Áreas -->
+                <!-- Grid de Unidades -->
                 <div v-if="hayAreas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
                     <div 
                         v-for="area in filteredAreas" 
@@ -265,9 +265,9 @@ const crearArea = async (payload) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">No se encontraron áreas</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">No se encontraron unidades</h3>
                     <p class="text-gray-500 max-w-sm mx-auto text-sm">
-                        Aún no se han registrado áreas en el sistema.
+                        Aún no se han registrado unidades en el sistema.
                     </p>
                 </div>
             </div>

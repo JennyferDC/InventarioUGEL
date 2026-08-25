@@ -36,7 +36,7 @@ const submit = () => {
         <template #logo>
             <div class="flex flex-col items-center">
                 <AuthenticationCardLogo />
-                <h2 class="mt-4 text-center text-xl font-bold text-gray-800 tracking-tight">Inventario de Informática</h2>
+                <h2 class="mt-4 text-center text-xl font-bold text-gray-800 tracking-tight">Inventario de Informática UGEL</h2>
             </div>
         </template>
 

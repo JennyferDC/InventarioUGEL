@@ -19,6 +19,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    errors: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const emit = defineEmits(["close", "save", "toggle-status"]);
@@ -107,9 +111,9 @@ const handleScroll = () => {
 };
 
 const selectedArea = computed(() => {
-    if (!form.id_oficina) return "---";
+    if (!form.id_oficina) return "";
     const ofi = props.oficinas?.find(o => o.id === form.id_oficina);
-    return ofi?.area?.nombre || "---";
+    return ofi?.area?.nombre || "";
 });
 
 const normalizeText = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -140,12 +144,35 @@ const handleOficinaBlur = () => {
     }, 200);
 };
 
+const formatNombreCompleto = (val) => {
+    if (!val) return "";
+    return val
+        .toLowerCase()
+        .replace(/(?:^|\s)\p{L}/gu, (letter) => letter.toUpperCase());
+};
+
+const formatCelular = (val) => {
+    if (!val) return "";
+    const digits = val.replace(/\D/g, "").slice(0, 9);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+};
+
+const handleNombreInput = (e) => {
+    form.nombre_completo = formatNombreCompleto(e.target.value);
+};
+
+const handleCelularInput = (e) => {
+    form.celular = formatCelular(e.target.value);
+};
+
 watch(
     () => props.persona,
     (value) => {
         form.id = value?.id ?? null;
-        form.nombre_completo = value?.nombre_completo ?? "";
-        form.celular = value?.celular ?? "";
+        form.nombre_completo = value?.nombre_completo ? formatNombreCompleto(value.nombre_completo) : "";
+        form.celular = formatCelular(value?.celular ?? "");
         form.correo = value?.correo ?? "";
         form.cargo = value?.cargo ?? "";
         form.id_oficina = value?.id_oficina ?? "";
@@ -206,6 +233,14 @@ const handleSubmit = () => {
             </div>
 
             <form class="space-y-4" @submit.prevent="handleSubmit">
+                <!-- Alerta de error general si existe -->
+                <div v-if="errors?.general" class="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                    <svg class="size-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{{ errors.general }}</span>
+                </div>
+
                 <div>
                     <label
                         for="nombre_completo_editar"
@@ -216,11 +251,16 @@ const handleSubmit = () => {
                     <input
                         id="nombre_completo_editar"
                         v-model="form.nombre_completo"
+                        @input="handleNombreInput"
                         type="text"
-                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                        class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors"
+                        :class="errors?.nombre_completo ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul focus:ring-1 focus:ring-ugel-azul'"
                         placeholder="Nombre y apellidos"
                         :disabled="loading"
                     />
+                    <p v-if="errors?.nombre_completo" class="mt-1 text-xs text-red-600 font-medium">
+                        {{ errors.nombre_completo }}
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -235,10 +275,14 @@ const handleSubmit = () => {
                             id="persona_correo_editar"
                             v-model="form.correo"
                             type="email"
-                            class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                            class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors"
+                            :class="errors?.correo ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul focus:ring-1 focus:ring-ugel-azul'"
                             placeholder="Ej. correo@ejemplo.com"
                             :disabled="loading"
                         />
+                        <p v-if="errors?.correo" class="mt-1 text-xs text-red-600 font-medium">
+                            {{ errors.correo }}
+                        </p>
                     </div>
                     <div class="md:col-span-2">
                         <label
@@ -250,11 +294,17 @@ const handleSubmit = () => {
                         <input
                             id="persona_celular_editar"
                             v-model="form.celular"
+                            @input="handleCelularInput"
                             type="text"
-                            class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                            placeholder="Ej. 987654321"
+                            maxlength="11"
+                            class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors"
+                            :class="errors?.celular ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul focus:ring-1 focus:ring-ugel-azul'"
+                            placeholder="Ej. 987 654 321"
                             :disabled="loading"
                         />
+                        <p v-if="errors?.celular" class="mt-1 text-xs text-red-600 font-medium">
+                            {{ errors.celular }}
+                        </p>
                     </div>
                 </div>
 
@@ -269,87 +319,95 @@ const handleSubmit = () => {
                         id="persona_cargo_editar"
                         v-model="form.cargo"
                         type="text"
-                        class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                        class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors"
+                        :class="errors?.cargo ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul focus:ring-1 focus:ring-ugel-azul'"
                         placeholder="Ej. Especialista en Soporte"
                         :disabled="loading"
                     />
+                    <p v-if="errors?.cargo" class="mt-1 text-xs text-red-600 font-medium">
+                        {{ errors.cargo }}
+                    </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div class="md:col-span-3">
-                        <label
-                            for="search_oficina_editar"
-                            class="block text-sm font-medium text-gray-700 mb-1"
+                <!-- Input de Oficina (Ancho completo) -->
+                <div>
+                    <label
+                        for="search_oficina_editar"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Oficina <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input
+                            id="search_oficina_editar"
+                            ref="inputRef"
+                            v-model="searchOficina"
+                            type="text"
+                            class="block w-full rounded-lg border pl-3 pr-10 py-2 text-sm focus:outline-none transition-colors"
+                            :class="errors?.id_oficina ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-ugel-azul/40 focus:border-ugel-azul focus:ring-1 focus:ring-ugel-azul'"
+                            placeholder="Buscar oficina por nombre o unidad..."
+                            @focus="showOficinaDropdown = true"
+                            @blur="handleOficinaBlur"
+                            :disabled="loading"
+                            autocomplete="off"
+                        />
+                        <!-- Clear Button -->
+                        <button
+                            v-if="searchOficina || form.id_oficina"
+                            type="button"
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                            @click="selectOficina(null)"
                         >
-                            Oficina <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <input
-                                id="search_oficina_editar"
-                                ref="inputRef"
-                                v-model="searchOficina"
-                                type="text"
-                                class="block w-full rounded-lg border border-ugel-azul/40 pl-3 pr-10 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
-                                placeholder="Buscar oficina por nombre o área..."
-                                @focus="showOficinaDropdown = true"
-                                @blur="handleOficinaBlur"
-                                :disabled="loading"
-                                autocomplete="off"
-                            />
-                            <!-- Clear Button -->
-                            <button
-                                v-if="searchOficina || form.id_oficina"
-                                type="button"
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p v-if="errors?.id_oficina" class="mt-1 text-xs text-red-600 font-medium">
+                        {{ errors.id_oficina }}
+                    </p>
+                    
+                    <Teleport :to="teleportTarget">
+                        <div
+                            v-if="showOficinaDropdown"
+                            :style="dropdownStyle"
+                            class="max-h-60 overflow-y-auto rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-10 scroll-light"
+                        >
+                            <div
+                                class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                @mousedown.prevent
                                 @click="selectOficina(null)"
                             >
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <Teleport :to="teleportTarget">
-                            <div
-                                v-if="showOficinaDropdown"
-                                :style="dropdownStyle"
-                                class="max-h-60 overflow-y-auto rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-10 scroll-light"
-                            >
-                                <div
-                                    class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    @mousedown.prevent
-                                    @click="selectOficina(null)"
-                                >
-                                    -- Sin asignar --
-                                </div>
-                                <div
-                                    v-for="o in filteredOficinas"
-                                    :key="o.id"
-                                    class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    @mousedown.prevent
-                                    @click="selectOficina(o)"
-                                >
-                                    <div class="font-medium">{{ o.nombre }}</div>
-                                    <div class="text-xs text-gray-500" v-if="o.area">{{ o.area.nombre }}</div>
-                                </div>
-                                <div v-if="filteredOficinas.length === 0" class="px-4 py-2 text-sm text-gray-500">
-                                    No se encontraron resultados
-                                </div>
+                                -- Sin asignar --
                             </div>
-                        </Teleport>
-                    </div>
+                            <div
+                                v-for="o in filteredOficinas"
+                                :key="o.id"
+                                class="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                @mousedown.prevent
+                                @click="selectOficina(o)"
+                            >
+                                <div class="font-medium">{{ o.nombre }}</div>
+                                <div class="text-xs text-gray-500" v-if="o.area">{{ o.area.nombre }}</div>
+                            </div>
+                            <div v-if="filteredOficinas.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                No se encontraron resultados
+                            </div>
+                        </div>
+                    </Teleport>
+                </div>
 
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Área
-                        </label>
-                        <input
-                            type="text"
-                            :value="selectedArea"
-                            disabled
-                            class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
-                        />
-                    </div>
+                <!-- Input de Unidad (Debajo de Oficina, ancho completo) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Unidad
+                    </label>
+                    <input
+                        type="text"
+                        :value="selectedArea || 'Se asigna automáticamente según la oficina'"
+                        disabled
+                        class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
+                    />
                 </div>
             </form>
 

@@ -44,7 +44,7 @@ const handleSubmit = () => {
 <template>
     <DialogModal :show="show" @close="emit('close')" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda">Editar área</span>
+            <span class="text-ugel-guinda font-semibold">Editar unidad</span>
         </template>
 
         <template #content>
@@ -62,7 +62,7 @@ const handleSubmit = () => {
                         type="text"
                         maxlength="255"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Nombre del área"
+                        placeholder="Nombre de la unidad"
                         :disabled="loading"
                     />
                     <div class="text-right mt-1">

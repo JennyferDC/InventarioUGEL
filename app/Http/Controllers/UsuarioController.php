@@ -30,6 +30,12 @@ class UsuarioController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        if ($request->user()->rol !== 'ADMIN') {
+            return response()->json([
+                'message' => 'No tienes permisos para realizar esta acción.'
+            ], 403);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -65,6 +71,12 @@ class UsuarioController extends Controller
      */
     public function update(Request $request, User $usuario): JsonResponse
     {
+        if ($request->user()->rol !== 'ADMIN') {
+            return response()->json([
+                'message' => 'No tienes permisos para realizar esta acción.'
+            ], 403);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $usuario->id],
@@ -90,6 +102,12 @@ class UsuarioController extends Controller
      */
     public function destroy(User $usuario): JsonResponse
     {
+        if ($request->user()->rol !== 'ADMIN') {
+            return response()->json([
+                'message' => 'No tienes permisos para realizar esta acción.'
+            ], 403);
+        }
+
         $usuario->delete();
 
         return response()->json([

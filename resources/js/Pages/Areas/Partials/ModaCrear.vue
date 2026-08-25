@@ -43,7 +43,7 @@ defineExpose({ resetForm });
 <template>
     <DialogModal :show="show" @close="handleClose" max-width="lg">
         <template #title>
-            <span class="text-ugel-guinda font-semibold">Nueva área</span>
+            <span class="text-ugel-guinda font-semibold">Nueva unidad</span>
         </template>
 
         <template #content>
@@ -82,7 +82,7 @@ defineExpose({ resetForm });
                         rows="3"
                         maxlength="255"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Breve descripción del área..."
+                        placeholder="Breve descripción de la unidad..."
                         :disabled="loading"
                     ></textarea>
                     <div class="text-right mt-1">
@@ -129,7 +129,7 @@ defineExpose({ resetForm });
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                 </svg>
-                Crear área
+                Crear unidad
             </button>
         </template>
     </DialogModal>

@@ -47,6 +47,7 @@ const showQuickRegister = ref(false);
 const oficinas = ref([]);
 const loadingOficinas = ref(false);
 const savingPersona = ref(false);
+const personaErrors = ref({});
 
 const fetchOficinas = async () => {
     if (oficinas.value.length > 0) return;
@@ -62,12 +63,14 @@ const fetchOficinas = async () => {
 };
 
 const openQuickRegister = async () => {
+    personaErrors.value = {};
     await fetchOficinas();
     showQuickRegister.value = true;
 };
 
 const savePersona = async (payload) => {
     savingPersona.value = true;
+    personaErrors.value = {};
     try {
         const response = await axios.post(route("personas.store"), payload);
         if (response.data?.data) {
@@ -78,7 +81,17 @@ const savePersona = async (payload) => {
         }
     } catch (error) {
         console.error("Error al registrar persona:", error);
-        alert(error.response?.data?.message || "No se pudo registrar a la persona.");
+        if (error.response?.status === 422 && error.response?.data?.errors) {
+            const errs = {};
+            for (const [key, val] of Object.entries(error.response.data.errors)) {
+                errs[key] = Array.isArray(val) ? val[0] : val;
+            }
+            personaErrors.value = errs;
+        } else {
+            personaErrors.value = {
+                general: error.response?.data?.message || "No se pudo registrar a la persona."
+            };
+        }
     } finally {
         savingPersona.value = false;
     }
@@ -794,8 +807,9 @@ defineExpose({ resetForm });
         <PersonaCrearModal
             :show="showQuickRegister"
             :oficinas="oficinas"
+            :errors="personaErrors"
             :loading="savingPersona"
-            @close="showQuickRegister = false"
+            @close="showQuickRegister = false; personaErrors = {}"
             @save="savePersona"
         />
     </div>

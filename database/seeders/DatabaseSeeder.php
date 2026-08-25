@@ -14,11 +14,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AreaSeeder::class,
             OficinaSeeder::class,
-            PersonaSeeder::class,
-            EquipoSeeder::class,
+            // PersonaSeeder::class,
+            // EquipoSeeder::class,
             UserSeeder::class,
             CronogramaMantenimientoSeeder::class,
-            ItemCronogramaSeeder::class,
+            // ItemCronogramaSeeder::class,
         ]);
     }
 }

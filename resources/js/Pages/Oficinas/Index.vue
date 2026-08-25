@@ -148,9 +148,9 @@ const selectArea = (areaId) => {
 };
 
 const getAreaName = computed(() => {
-    if (activeArea.value === "todos") return "Todas las áreas";
+    if (activeArea.value === "todos") return "Todas las unidades";
     const area = props.areas.find(a => a.id === activeArea.value);
-    return area ? area.nombre : "Todas las áreas";
+    return area ? area.nombre : "Todas las unidades";
 });
 
 const getCountForArea = (areaId) => {
@@ -191,7 +191,7 @@ const filteredOficinas = computed(() => {
             </div>
 
             <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
-                <!-- Filtros y Buscador (Misma estructura que Personas/Index.vue) -->
+                <!-- Filtros y Buscador -->
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center w-full">
                         
@@ -212,7 +212,7 @@ const filteredOficinas = computed(() => {
                             />
                         </div>
 
-                        <!-- Select Personalizado de Áreas -->
+                        <!-- Select Personalizado de Unidades -->
                         <div class="relative w-full sm:w-72">
                             <!-- Overlay para cerrar clickeando fuera -->
                             <div v-if="isDropdownOpen" @click="isDropdownOpen = false" class="fixed inset-0 z-10"></div>
@@ -238,7 +238,7 @@ const filteredOficinas = computed(() => {
                                         class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-ugel-azul/5 flex items-center justify-between transition-colors"
                                         :class="activeArea === 'todos' ? 'bg-ugel-azul/10 text-ugel-azul font-bold' : 'text-gray-900'"
                                     >
-                                        <span class="block truncate">Todas las áreas</span>
+                                        <span class="block truncate">Todas las unidades</span>
                                         <span class="inline-flex items-center justify-center bg-gray-100 text-gray-600 rounded-full px-2 py-0.5 text-xs font-medium">
                                             {{ getCountForArea('todos') }}
                                         </span>
@@ -321,7 +321,7 @@ const filteredOficinas = computed(() => {
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-2">No se encontraron oficinas</h3>
                     <p class="text-gray-500 max-w-sm mx-auto text-sm">
-                        {{ searchQuery ? 'No hay resultados que coincidan con tu búsqueda actual.' : 'Aún no se han registrado oficinas para esta área administrativa.' }}
+                        {{ searchQuery ? 'No hay resultados que coincidan con tu búsqueda actual.' : 'Aún no se han registrado oficinas para esta unidad.' }}
                     </p>
                     <button v-if="searchQuery" @click="searchQuery = ''" class="mt-6 inline-flex items-center gap-2 text-white bg-ugel-azul hover:bg-ugel-guinda px-4 py-2 rounded-full text-sm font-semibold transition-colors">
                         Limpiar búsqueda
@@ -344,6 +344,7 @@ const filteredOficinas = computed(() => {
             ref="modalCrearRef"
             :show="showCreateModal"
             :areas="areas"
+            :default-area-id="activeArea !== 'todos' ? activeArea : ''"
             :loading="creating"
             @close="cerrarModalCrear"
             @save="crearOficina"

@@ -1,0 +1,88 @@
+name: Despliegue Automático por FTP (CI/CD)
+
+on:
+  push:
+    branches:
+      - main  # Reemplaza por 'master' si tu rama principal tiene ese nombre
+
+jobs:
+  web-deploy:
+    name: 🎉 Desplegando en Producción
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🚚 Obtener código fuente
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: setup-php
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, mysql, zip, bcmath
+        coverage: none
+
+    - name: ✍️ Instalar Dependencias PHP (Composer)
+      run: composer install --no-dev --optimize-autoloader
+
+    - name: 🟢 Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: ⚡ Instalar NPM & Compilar Assets (Vite)
+      env:
+        ASSET_URL: /Henrry
+      run: |
+        npm ci
+        npm run build
+
+    - name: 🔍 Detectar cambios en composer.lock
+      id: filter
+      uses: dorny/paths-filter@v3
+      with:
+        filters: |
+          composer:
+            - 'composer.lock'
+
+    - name: 🚀 Subir archivos vía FTP (Excluyendo vendor)
+      if: steps.filter.outputs.composer == 'false'
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: /
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/vendor/**
+          **/tests/**
+          **/storage/logs/**
+          **/storage/framework/sessions/**
+          **/storage/framework/views/**
+          **/storage/framework/cache/**
+          release.zip
+          test_zip.php
+
+    - name: 🚀 Subir archivos vía FTP (Incluyendo vendor)
+      if: steps.filter.outputs.composer == 'true'
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: /
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/tests/**
+          **/storage/logs/**
+          **/storage/framework/sessions/**
+          **/storage/framework/views/**
+          **/storage/framework/cache/**
+          release.zip
+          test_zip.php

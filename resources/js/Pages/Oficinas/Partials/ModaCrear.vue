@@ -1,6 +1,6 @@
 <script setup>
 import DialogModal from "@/Components/DialogModal.vue";
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
 
 const props = defineProps({
     show: {
@@ -15,6 +15,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    defaultAreaId: {
+        type: [Number, String],
+        default: "",
+    },
 });
 
 const emit = defineEmits(["close", "save"]);
@@ -25,10 +29,20 @@ const form = reactive({
     area_id: "",
 });
 
+watch(
+    () => props.show,
+    (val) => {
+        if (val) {
+            form.area_id = props.defaultAreaId && props.defaultAreaId !== "todos" ? props.defaultAreaId : "";
+        }
+    },
+    { immediate: true }
+);
+
 const resetForm = () => {
     form.nombre = "";
     form.descripcion = "";
-    form.area_id = "";
+    form.area_id = props.defaultAreaId && props.defaultAreaId !== "todos" ? props.defaultAreaId : "";
 };
 
 const handleClose = () => {
@@ -67,7 +81,7 @@ defineExpose({ resetForm });
                         v-model="form.nombre"
                         type="text"
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                        placeholder="Área de recursos humanos"
+                        placeholder="Ej. Recursos Humanos"
                         :disabled="loading"
                     />
                 </div>
@@ -94,7 +108,7 @@ defineExpose({ resetForm });
                         for="area_id"
                         class="block text-sm font-medium text-gray-700"
                     >
-                        Área a la que pertenece
+                        Unidad a la que pertenece
                     </label>
                     <select
                         id="area_id"
@@ -102,7 +116,7 @@ defineExpose({ resetForm });
                         class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
                         :disabled="loading"
                     >
-                        <option value="" disabled>Seleccione un área</option>
+                        <option value="" disabled>Seleccione una unidad</option>
                         <option v-for="area in areas" :key="area.id" :value="area.id">
                             {{ area.nombre }}
                         </option>

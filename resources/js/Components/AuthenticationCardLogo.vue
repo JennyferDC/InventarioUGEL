@@ -5,7 +5,7 @@ import { Link } from "@inertiajs/vue3";
 <template>
     <Link :href="'/'">
         <img
-            src="/logo.png"
+            :src="$page.props.app_url + '/logo.png'"
             alt="Logo Ugel Huánuco - Inventario"
             class="h-20 w-auto"
         />

@@ -177,7 +177,7 @@ const quitarCaracteristica = (index) => {
 </script>
 
 <template>
-    <div class="lg:col-span-2 bg-white shadow-xl rounded-2xl overflow-hidden">
+    <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
         <div class="border-b border-ugel-azul/10 px-6 py-5 bg-gray-50">
             <h3 class="text-lg font-bold text-ugel-azul">Información y Edición</h3>
             <p class="mt-1 text-sm text-gray-500">
@@ -233,6 +233,19 @@ const quitarCaracteristica = (index) => {
                         </select>
                         <div v-if="form.errors.tipo" class="mt-1 text-xs text-red-500">{{ form.errors.tipo }}</div>
                     </div>
+
+                    <!-- Descripción del programa -->
+                    <div class="md:col-span-2">
+                        <label for="prog_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                        <textarea
+                            id="prog_descripcion"
+                            v-model="form.descripcion"
+                            rows="3"
+                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                            placeholder="Detalles o finalidad del programa..."
+                        ></textarea>
+                        <div v-if="form.errors.descripcion" class="mt-1 text-xs text-red-500">{{ form.errors.descripcion }}</div>
+                    </div>
                 </div>
 
                 <!-- VISTA PARA EQUIPOS (SECCIONADA) -->
@@ -268,8 +281,21 @@ const quitarCaracteristica = (index) => {
                                 <div v-if="form.errors.cod_patrimonial" class="mt-1 text-xs text-red-500">{{ form.errors.cod_patrimonial }}</div>
                             </div>
 
+                            <!-- Código serial -->
+                            <div>
+                                <label for="eq_serial" class="block text-sm font-medium text-gray-700">Código serial</label>
+                                <input
+                                    id="eq_serial"
+                                    v-model="form.cod_serial"
+                                    type="text"
+                                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                    placeholder="SN-XXXX..."
+                                />
+                                <div v-if="form.errors.cod_serial" class="mt-1 text-xs text-red-500">{{ form.errors.cod_serial }}</div>
+                            </div>
+
                             <!-- Nombre de equipo -->
-                            <div v-if="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
+                            <div v-if="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
                                 <label for="eq_nombre" class="block text-sm font-medium text-gray-700">Nombre de equipo</label>
                                 <input
                                     id="eq_nombre"
@@ -282,7 +308,7 @@ const quitarCaracteristica = (index) => {
                             </div>
 
                             <!-- Tipo de equipo -->
-                            <div :class="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase()) ? '' : 'md:col-span-2'">
+                            <div :class="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase()) ? '' : 'md:col-span-2'">
                                 <label for="equipo_tipo" class="block text-sm font-medium text-gray-700">Tipo de equipo <span class="text-red-500">*</span></label>
                                 <select
                                     id="equipo_tipo"
@@ -340,7 +366,7 @@ const quitarCaracteristica = (index) => {
                             </div>
 
                             <!-- Cuenta -->
-                            <div v-if="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
+                            <div v-if="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
                                 <label for="eq_usuario" class="block text-sm font-medium text-gray-700">Cuenta local</label>
                                 <input
                                     id="eq_usuario"

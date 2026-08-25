@@ -89,6 +89,10 @@ const savePersona = async (payload) => {
 const form = reactive({
     id: null,
     cod_informatica: "",
+    cod_patrimonial: "",
+    cod_serial: "",
+    nombre: "",
+    descripcion: "",
     tipo: "",
     estado: "",
     fecha_ingreso: "",
@@ -136,6 +140,10 @@ watch(
     (value) => {
         form.id = value?.id ?? null;
         form.cod_informatica = value?.cod_informatica ?? "";
+        form.cod_patrimonial = value?.cod_patrimonial ?? "";
+        form.cod_serial = value?.cod_serial ?? "";
+        form.nombre = value?.nombre ?? "";
+        form.descripcion = value?.descripcion ?? "";
         form.tipo = value?.tipo ?? "";
         form.estado = value?.estado ?? "";
         form.fecha_ingreso = value?.fecha_ingreso ?? "";
@@ -166,7 +174,7 @@ watch(
 );
 
 watch(() => form.tipo, (newTipo) => {
-    if (!['PC', 'LAPTOP', 'TODO EN UNO'].includes(newTipo)) {
+    if (!['PC', 'LAPTOP', 'TODO EN UNO'].includes((newTipo || '').toUpperCase())) {
         form.ip = "";
     }
 });
@@ -187,6 +195,10 @@ const handleSubmit = () => {
     emit("save", {
         id: form.id,
         cod_informatica: form.cod_informatica,
+        cod_patrimonial: form.cod_patrimonial,
+        cod_serial: form.cod_serial,
+        nombre: form.nombre,
+        descripcion: form.descripcion,
         tipo: form.tipo,
         estado: form.estado,
         fecha_ingreso: form.fecha_ingreso,
@@ -311,6 +323,38 @@ const quitarCaracteristica = (index) => {
 
                             <div>
                                 <label
+                                    for="equipo_patrimonial"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Código patrimonial</label
+                                >
+                                <input
+                                    id="equipo_patrimonial"
+                                    v-model="form.cod_patrimonial"
+                                    type="text"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    placeholder="74089900XXXX"
+                                    :disabled="loading"
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    for="equipo_serial"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Código serial</label
+                                >
+                                <input
+                                    id="equipo_serial"
+                                    v-model="form.cod_serial"
+                                    type="text"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    placeholder="SN-XXXX..."
+                                    :disabled="loading"
+                                />
+                            </div>
+
+                            <div>
+                                <label
                                     for="equipo_tipo"
                                     class="block text-sm font-medium text-gray-700"
                                     >Tipo <span class="text-red-500">*</span></label
@@ -329,6 +373,7 @@ const quitarCaracteristica = (index) => {
                                     <option value="COMPONENTE">COMPONENTE</option>
                                     <option value="TECLADO">TECLADO</option>
                                     <option value="MOUSE">MOUSE</option>
+                                    <option value="GABINETE">GABINETE</option>
                                     <option value="OTRO">OTRO</option>
                                     <option value="MONITOR">MONITOR</option>
                                 </select>

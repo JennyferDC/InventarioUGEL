@@ -53,7 +53,7 @@ const filtroTipo = ref("todos");
 const filtroCategoria = ref(props.categoriaInicial || "equipo");
 
 const TIPOS_POR_CATEGORIA = {
-    equipo: ["PC", "LAPTOP", "TODO EN UNO", "MONITOR", "TECLADO", "MOUSE", "OTRO (EQUIPOS)"],
+    equipo: ["PC", "LAPTOP", "TODO EN UNO", "MONITOR", "TECLADO", "MOUSE", "GABINETE", "OTRO (EQUIPOS)"],
     programa: ["Institucional", "Navegador", "Ofimática", "Soporte", "Antivirus", "Otro (programas)"]
 };
 
@@ -236,7 +236,9 @@ const filteredEquipos = computed(() => {
                 !term ||
                 equipo.cod_informatica?.toLowerCase().includes(term) ||
                 equipo.cod_patrimonial?.toLowerCase().includes(term) ||
+                equipo.cod_serial?.toLowerCase().includes(term) ||
                 equipo.nombre?.toLowerCase().includes(term) ||
+                equipo.descripcion?.toLowerCase().includes(term) ||
                 equipo.nombre_usuario?.toLowerCase().includes(term) ||
                 equipo.tipo?.toLowerCase().includes(term) ||
                 equipo.persona?.nombre_completo?.toLowerCase().includes(term) ||
@@ -514,7 +516,10 @@ const confirmarEliminacion = async () => {
                                     >
                                         <div class="flex flex-col">
                                             <span>{{ equipo.cod_informatica }}</span>
-                                            <span v-if="equipo.ip" class="text-[11px] font-mono text-gray-500 mt-0.5" title="Dirección IP">
+                                            <span v-if="equipo.cod_serial" class="text-[11px] font-mono text-gray-500 mt-0.5" title="Código serial">
+                                                S/N: {{ equipo.cod_serial }}
+                                            </span>
+                                            <span v-if="equipo.ip" class="text-[11px] font-mono text-blue-600 mt-0.5" title="Dirección IP">
                                                 {{ equipo.ip }}
                                             </span>
                                         </div>
@@ -522,7 +527,12 @@ const confirmarEliminacion = async () => {
                                     <td
                                         class="px-6 py-4 text-sm text-gray-700"
                                     >
-                                        <span>{{ equipo.nombre || '-' }}</span>
+                                        <div class="flex flex-col">
+                                            <span>{{ equipo.nombre || '-' }}</span>
+                                            <span v-if="equipo.descripcion && filtroCategoria === 'programa'" class="text-xs text-gray-500 mt-0.5 truncate max-w-xs" :title="equipo.descripcion">
+                                                {{ equipo.descripcion }}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td
                                         class="px-6 py-4 text-sm text-ugel-guinda"

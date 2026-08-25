@@ -3,6 +3,7 @@
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ArchivoInventarioController;
 use App\Http\Controllers\CaracteristicaEquipoController;
+use App\Http\Controllers\ComentarioEquipoController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\HistorialMovimientoController;
 use App\Http\Controllers\OficinaController;
@@ -59,6 +60,8 @@ Route::middleware([
         Route::post('/{equipo}/programas', [EquipoController::class, 'updateProgramas'])->name('equipos.updateProgramas');
         Route::delete('/{equipo}', [EquipoController::class, 'destroy'])->name('equipos.destroy');
         Route::get('/{equipo}/historial', [HistorialMovimientoController::class, 'getHistorial'])->name('equipos.historial');
+        Route::post('/{equipo}/comentarios', [ComentarioEquipoController::class, 'store'])->name('equipos.comentarios.store');
+        Route::delete('/comentarios/{comentario}', [ComentarioEquipoController::class, 'destroy'])->name('equipos.comentarios.destroy');
     });
 
     Route::get('/inventario', function () {

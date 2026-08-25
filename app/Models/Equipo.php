@@ -14,7 +14,9 @@ class Equipo extends Model
     protected $fillable = [
         'cod_informatica',
         'cod_patrimonial',
+        'cod_serial',
         'nombre',
+        'descripcion',
         'nombre_usuario',
         'tipo',
         'estado',
@@ -42,6 +44,14 @@ class Equipo extends Model
     public function caracteristicas()
     {
         return $this->hasMany(CaracteristicaEquipo::class, 'id_equipo');
+    }
+
+    /**
+     * Relación: Equipo tiene muchos Comentarios
+     */
+    public function comentarios()
+    {
+        return $this->hasMany(ComentarioEquipo::class, 'id_equipo')->with('usuario:id,name,email')->latest();
     }
 
     /**

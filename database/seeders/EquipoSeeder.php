@@ -14,7 +14,7 @@ class EquipoSeeder extends Seeder
     {
         $faker = Faker::create();
         
-        $equiposTipos = ['pc', 'laptop', 'todo en uno', 'monitor', 'teclado', 'mouse', 'otro (equipo)'];
+        $equiposTipos = ['pc', 'laptop', 'todo en uno', 'monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipo)'];
         $programasTipos = ['institucional', 'navegador', 'ofimática', 'soporte', 'antivirus', 'otro (programas)'];
         
         $estados = ['LIBRE', 'EN USO', 'BAJA'];
@@ -79,6 +79,7 @@ class EquipoSeeder extends Seeder
                     'monitor' => 'MON',
                     'teclado' => 'TEC',
                     'mouse' => 'MOU',
+                    'gabinete' => 'GAB',
                     'otro' => 'OTR',
                 ];
                 $abrevTipo = $abrevTipoMap[$tipo] ?? 'OTR';

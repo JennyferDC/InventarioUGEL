@@ -69,4 +69,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(ArchivoInventario::class, 'id_usuario');
     }
+
+    /**
+     * Usuario realiza muchos comentarios en equipos
+     */
+    public function comentariosEquipo()
+    {
+        return $this->hasMany(ComentarioEquipo::class, 'id_usuario');
+    }
 }

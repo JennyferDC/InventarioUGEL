@@ -25,7 +25,9 @@ class EquipoController extends Controller
                 'id',
                 'cod_informatica',
                 'cod_patrimonial',
+                'cod_serial',
                 'nombre',
+                'descripcion',
                 'nombre_usuario',
                 'tipo',
                 'estado',
@@ -61,7 +63,8 @@ class EquipoController extends Controller
             'persona:id,nombre_completo,id_oficina,celular,correo,cargo', 
             'persona.oficina.area:id,nombre', 
             'caracteristicas:id,clave,valor,id_equipo',
-            'programas:id,cod_informatica,nombre,tipo,estado'
+            'programas:id,cod_informatica,nombre,tipo,estado',
+            'comentarios.usuario:id,name,email'
         ])
         ->where('cod_informatica', $cod_informatica)
         ->firstOrFail();
@@ -83,7 +86,7 @@ class EquipoController extends Controller
 
         // Get all software programs available for transfer/association
         $programasDisponibles = Equipo::where('categoria', 'programa')
-            ->select('id', 'cod_informatica', 'nombre', 'tipo', 'estado')
+            ->select('id', 'cod_informatica', 'nombre', 'tipo', 'estado', 'descripcion')
             ->orderBy('nombre')
             ->get();
 
@@ -112,7 +115,9 @@ class EquipoController extends Controller
 
         $data = $request->validate([
             'cod_patrimonial' => ['nullable', 'string', 'max:255'],
+            'cod_serial' => ['nullable', 'string', 'max:255'],
             'nombre' => ['nullable', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string'],
             'nombre_usuario' => ['nullable', 'string', 'max:255'],
             'tipo' => ['required', 'string', 'max:255'],
             'estado' => ['nullable', 'string', 'max:255'],
@@ -157,6 +162,7 @@ class EquipoController extends Controller
                 'monitor' => 'MON',
                 'teclado' => 'TEC',
                 'mouse' => 'MOU',
+                'gabinete' => 'GAB',
                 'otro' => 'OTR',
                 'otro (equipos)' => 'OTR',
                 'institucional' => 'INS',
@@ -218,7 +224,7 @@ class EquipoController extends Controller
     public function show(Equipo $equipo): JsonResponse
     {
         return response()->json([
-            'data' => $equipo->load(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo']),
+            'data' => $equipo->load(['persona:id,nombre_completo,id_oficina,celular,correo,cargo', 'persona.oficina.area:id,nombre', 'caracteristicas:id,clave,valor,id_equipo', 'comentarios.usuario:id,name,email']),
         ]);
     }
 
@@ -242,7 +248,9 @@ class EquipoController extends Controller
         $data = $request->validate([
             'cod_informatica' => ['nullable', 'string', 'max:255', 'unique:equipos,cod_informatica,' . $equipo->id],
             'cod_patrimonial' => ['nullable', 'string', 'max:255'],
+            'cod_serial' => ['nullable', 'string', 'max:255'],
             'nombre' => ['nullable', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string'],
             'nombre_usuario' => ['nullable', 'string', 'max:255'],
             'tipo' => ['required', 'string', 'max:255'],
             'estado' => ['nullable', 'string', 'max:255'],
@@ -286,7 +294,9 @@ class EquipoController extends Controller
             // Helper lists for beautiful labels and relation resolving
             $fieldLabels = [
                 'cod_patrimonial' => 'CÓDIGO PATRIMONIAL',
+                'cod_serial' => 'CÓDIGO SERIAL',
                 'nombre' => strtolower($equipo->categoria) === 'programa' ? 'NOMBRE DEL PROGRAMA' : 'NOMBRE DEL EQUIPO',
+                'descripcion' => 'DESCRIPCIÓN',
                 'nombre_usuario' => 'CUENTA',
                 'tipo' => 'TIPO',
                 'estado' => 'ESTADO',

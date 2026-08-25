@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, computed } from "vue";
-import { useForm, Link } from "@inertiajs/vue3";
+import { useForm, usePage, Link } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import QrcodeVue from "qrcode.vue";
 import ModalFichaTecnica from "./Partials/ModalFichaTecnica.vue";
@@ -31,8 +31,11 @@ const props = defineProps({
     },
 });
 
+const page = usePage();
+const currentUser = computed(() => page.props.auth?.user);
+
 const TIPOS_POR_CATEGORIA = {
-    equipo: ["PC", "Laptop", "Todo en uno", "Monitor", "Teclado", "Mouse", "Otro (equipos)"],
+    equipo: ["PC", "Laptop", "Todo en uno", "Monitor", "Teclado", "Mouse", "Gabinete", "Otro (equipos)"],
     programa: ["Institucional", "Navegador", "Ofimática", "Soporte", "Antivirus", "Otro (programas)"]
 };
 
@@ -45,7 +48,9 @@ const form = useForm({
     id: props.equipo.id,
     cod_informatica: props.equipo.cod_informatica,
     cod_patrimonial: props.equipo.cod_patrimonial ?? "",
+    cod_serial: props.equipo.cod_serial ?? "",
     nombre: props.equipo.nombre ?? "",
+    descripcion: props.equipo.descripcion ?? "",
     nombre_usuario: props.equipo.nombre_usuario ?? "",
     tipo: props.equipo.tipo,
     estado: props.equipo.estado,
@@ -61,6 +66,58 @@ const form = useForm({
         ? props.equipo.caracteristicas.map((c) => ({ ...c }))
         : [],
 });
+
+// --- COMENTARIOS STATE & HANDLERS ---
+const comentarios = ref([...(props.equipo.comentarios || [])]);
+const nuevoComentario = ref("");
+const guardandoComentario = ref(false);
+const errorComentario = ref("");
+
+watch(() => props.equipo.comentarios, (newVal) => {
+    comentarios.value = [...(newVal || [])];
+}, { deep: true });
+
+const publicarComentario = async () => {
+    if (!nuevoComentario.value || !nuevoComentario.value.trim()) return;
+
+    guardandoComentario.value = true;
+    errorComentario.value = "";
+    try {
+        const response = await axios.post(route('equipos.comentarios.store', form.id), {
+            comentario: nuevoComentario.value.trim(),
+        });
+        if (response.data?.data) {
+            comentarios.value.unshift(response.data.data);
+            nuevoComentario.value = "";
+            showSuccess.value = true;
+            setTimeout(() => {
+                showSuccess.value = false;
+            }, 3000);
+        }
+    } catch (err) {
+        console.error("Error al publicar comentario:", err);
+        errorComentario.value = err.response?.data?.message || "No se pudo publicar el comentario.";
+    } finally {
+        guardandoComentario.value = false;
+    }
+};
+
+const eliminarComentario = async (comentarioId) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este comentario?")) return;
+
+    try {
+        await axios.delete(route('equipos.comentarios.destroy', comentarioId));
+        comentarios.value = comentarios.value.filter(c => c.id !== comentarioId);
+    } catch (err) {
+        console.error("Error al eliminar comentario:", err);
+        alert(err.response?.data?.message || "No se pudo eliminar el comentario.");
+    }
+};
+
+const canDeleteComentario = (c) => {
+    if (!currentUser.value) return false;
+    return c.id_usuario === currentUser.value.id || String(currentUser.value.rol || '').toUpperCase() === 'ADMIN';
+};
 
 const showSuccess = ref(false);
 const showModalFicha = ref(false);
@@ -528,13 +585,130 @@ const onProgramasSaved = (nuevosProgramas) => {
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
-                    <!-- Lado izquierdo: Formulario de edición (Extraído) -->
-                    <FormularioEdicion
-                        :form="form"
-                        :personas="personas"
-                        :tipos-disponibles="tiposDisponibles"
-                        @submit="handleSubmit"
-                    />
+                    <!-- Lado izquierdo: Formulario de edición + Comentarios -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <FormularioEdicion
+                            :form="form"
+                            :personas="personas"
+                            :tipos-disponibles="tiposDisponibles"
+                            @submit="handleSubmit"
+                        />
+
+                        <!-- Sección de Comentarios del Dispositivo -->
+                        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border-t-4 border-ugel-azul">
+                            <!-- Header de Comentarios -->
+                            <div class="border-b border-ugel-azul/10 px-6 py-5 bg-gray-50 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 rounded-xl bg-ugel-azul/10 text-ugel-azul">
+                                        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                                            Comentarios del Dispositivo
+                                            <span class="inline-flex items-center rounded-full bg-ugel-azul/10 px-2.5 py-0.5 text-xs font-bold text-ugel-azul">
+                                                {{ comentarios.length }}
+                                            </span>
+                                        </h3>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            Anotaciones, incidencias y observaciones registradas por el personal sobre este activo.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 space-y-6">
+                                <!-- Formulario para agregar comentario -->
+                                <form @submit.prevent="publicarComentario" class="space-y-3">
+                                    <div v-if="errorComentario" class="rounded-lg bg-red-50 p-3 text-xs text-red-600 border border-red-200">
+                                        {{ errorComentario }}
+                                    </div>
+                                    <div class="relative">
+                                        <textarea
+                                            v-model="nuevoComentario"
+                                            rows="3"
+                                            maxlength="2000"
+                                            class="block w-full rounded-xl border border-gray-300 p-3 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul transition resize-none placeholder-gray-400"
+                                            :placeholder="`Escribe un comentario o anotación técnica sobre este ${form.categoria === 'programa' ? 'programa' : 'equipo'}...`"
+                                            :disabled="guardandoComentario"
+                                        ></textarea>
+                                        <div class="text-[11px] text-gray-400 text-right mt-1">
+                                            {{ nuevoComentario.length }} / 2000 caracteres
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-xs text-gray-500 flex items-center gap-1.5" v-if="currentUser">
+                                            <span class="size-2 rounded-full bg-green-500"></span>
+                                            Publicando como <strong class="font-medium text-gray-700">{{ currentUser.name }}</strong>
+                                        </div>
+                                        <div v-else></div>
+                                        <button
+                                            type="submit"
+                                            :disabled="guardandoComentario || !nuevoComentario.trim()"
+                                            class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-xs font-bold text-white shadow hover:bg-ugel-guinda disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                        >
+                                            <svg v-if="guardandoComentario" class="size-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <svg v-else class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                            </svg>
+                                            Publicar comentario
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <!-- Lista de comentarios -->
+                                <div class="border-t border-gray-100 pt-5 space-y-4">
+                                    <div v-if="comentarios.length === 0" class="py-8 text-center flex flex-col items-center justify-center rounded-xl bg-gray-50/70 border border-dashed border-gray-200">
+                                        <div class="size-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-2">
+                                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-sm font-semibold text-gray-700">Sin comentarios registrados</p>
+                                        <p class="text-xs text-gray-400 mt-0.5 max-w-xs">Sé el primero en dejar una observación o detalle sobre este dispositivo.</p>
+                                    </div>
+
+                                    <div v-else class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                                        <div
+                                            v-for="c in comentarios"
+                                            :key="c.id"
+                                            class="p-4 rounded-xl bg-gray-50/80 border border-gray-100 hover:border-gray-200 transition space-y-2 group"
+                                        >
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div class="flex items-center gap-2.5">
+                                                    <div class="size-7 rounded-full bg-gradient-to-tr from-ugel-azul to-ugel-guinda text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                                        {{ (c.usuario?.name || 'U').charAt(0).toUpperCase() }}
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-bold text-gray-800 block leading-tight">{{ c.usuario?.name || 'Usuario' }}</span>
+                                                        <span class="text-[10px] text-gray-400 block leading-tight">{{ formatDate(c.created_at) }}</span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    v-if="canDeleteComentario(c)"
+                                                    type="button"
+                                                    class="opacity-0 group-hover:opacity-100 transition p-1 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50"
+                                                    title="Eliminar comentario"
+                                                    @click="eliminarComentario(c.id)"
+                                                >
+                                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <p class="text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line pl-9">
+                                                {{ c.comentario }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Lado derecho: QR y Equipos del responsable -->
                     <div class="space-y-6">

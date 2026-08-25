@@ -74,6 +74,18 @@
                 <th>Código Informática</th>
                 <td><strong>{{ $equipo->cod_informatica }}</strong></td>
             </tr>
+            @if($equipo->cod_patrimonial)
+            <tr>
+                <th>Código Patrimonial</th>
+                <td>{{ $equipo->cod_patrimonial }}</td>
+            </tr>
+            @endif
+            @if($equipo->cod_serial)
+            <tr>
+                <th>Código Serial</th>
+                <td>{{ $equipo->cod_serial }}</td>
+            </tr>
+            @endif
             <tr>
                 <th>Tipo de Equipo</th>
                 <td>{{ $equipo->tipo }}</td>

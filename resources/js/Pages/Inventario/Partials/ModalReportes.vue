@@ -19,7 +19,7 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 
-const TIPOS_EQUIPO = ["PC", "LAPTOP", "TODO EN UNO", "COMPONENTE", "TECLADO", "MOUSE", "OTRO", "MONITOR"];
+const TIPOS_EQUIPO = ["PC", "LAPTOP", "TODO EN UNO", "COMPONENTE", "TECLADO", "MOUSE", "GABINETE", "OTRO", "MONITOR"];
 const ESTADOS_EQUIPO = ["LIBRE", "EN USO", "BAJA"];
 
 const form = reactive({

@@ -96,7 +96,7 @@ class ReporteController extends Controller
             'Expires'             => '0'
         ];
 
-        $columns = ['Código', 'Tipo', 'Estado', 'Fecha Ingreso', 'Vida Útil (Años)', 'Responsable', 'Área'];
+        $columns = ['Código Informática', 'Código Patrimonial', 'Código Serial', 'Tipo', 'Estado', 'Fecha Ingreso', 'Vida Útil (Años)', 'Responsable', 'Área'];
 
         $callback = function () use ($equipos, $columns) {
             $file = fopen('php://output', 'w');
@@ -107,6 +107,8 @@ class ReporteController extends Controller
             foreach ($equipos as $equipo) {
                 $row = [
                     $equipo->cod_informatica,
+                    $equipo->cod_patrimonial ?? '-',
+                    $equipo->cod_serial ?? '-',
                     $equipo->tipo,
                     $equipo->estado,
                     $equipo->fecha_ingreso ? date('d/m/Y', strtotime($equipo->fecha_ingreso)) : 'S/R',

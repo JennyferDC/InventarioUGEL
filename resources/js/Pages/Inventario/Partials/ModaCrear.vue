@@ -118,7 +118,9 @@ const handleBlur = () => {
 
 const form = reactive({
     cod_patrimonial: "",
+    cod_serial: "",
     nombre: "",
+    descripcion: "",
     nombre_usuario: "",
     tipo: "",
     estado: "LIBRE",
@@ -135,7 +137,9 @@ const form = reactive({
 
 const resetForm = () => {
     form.cod_patrimonial = "";
+    form.cod_serial = "";
     form.nombre = "";
+    form.descripcion = "";
     form.nombre_usuario = "";
     form.tipo = "";
     form.estado = "LIBRE";
@@ -163,6 +167,8 @@ const handleSubmit = () => {
 
     // If it's a program, reset equipment-specific fields so they aren't saved accidentally
     if (form.categoria === 'programa') {
+        form.cod_patrimonial = null;
+        form.cod_serial = null;
         form.estado = null;
         form.fecha_ingreso = null;
         form.fecha_disponible_uso = null;
@@ -191,7 +197,7 @@ const restaurarEquipo = () => {
 };
 
 const TIPOS_POR_CATEGORIA = {
-    equipo: ["PC", "Laptop", "Todo en uno", "Monitor", "Teclado", "Mouse", "Otro (equipos)"],
+    equipo: ["PC", "Laptop", "Todo en uno", "Monitor", "Teclado", "Mouse", "Gabinete", "Otro (equipos)"],
     programa: ["Institucional", "Navegador", "Ofimática", "Soporte", "Antivirus", "Otro (programas)"]
 };
 
@@ -350,6 +356,20 @@ defineExpose({ resetForm });
                                 </select>
                                 <p v-if="errors.tipo" class="mt-1 text-xs text-red-600">{{ errors.tipo[0] }}</p>
                             </div>
+
+                            <!-- Descripción del Programa -->
+                            <div class="md:col-span-2">
+                                <label for="prog_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                                <textarea
+                                    id="prog_descripcion"
+                                    v-model="form.descripcion"
+                                    rows="3"
+                                    class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul focus:ring-1"
+                                    placeholder="Detalles o finalidad del programa..."
+                                    :disabled="loading"
+                                ></textarea>
+                                <p v-if="errors.descripcion" class="mt-1 text-xs text-red-600">{{ errors.descripcion[0] }}</p>
+                            </div>
                         </div>
 
                         <!-- VISTA PARA EQUIPOS (SECCIONADA) -->
@@ -372,7 +392,19 @@ defineExpose({ resetForm });
                                         />
                                         <p v-if="errors.cod_patrimonial" class="mt-1 text-xs text-red-600">{{ errors.cod_patrimonial[0] }}</p>
                                     </div>
-                                    <div v-if="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
+                                    <div>
+                                        <label for="eq_serial" class="block text-sm font-medium text-gray-700">Código serial</label>
+                                        <input
+                                            id="eq_serial"
+                                            v-model="form.cod_serial"
+                                            type="text"
+                                            class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul focus:ring-1"
+                                            placeholder="SN-XXXX..."
+                                            :disabled="loading"
+                                        />
+                                        <p v-if="errors.cod_serial" class="mt-1 text-xs text-red-600">{{ errors.cod_serial[0] }}</p>
+                                    </div>
+                                    <div v-if="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
                                         <label for="eq_nombre" class="block text-sm font-medium text-gray-700">Nombre de equipo</label>
                                         <input
                                             id="eq_nombre"
@@ -384,7 +416,7 @@ defineExpose({ resetForm });
                                         />
                                         <p v-if="errors.nombre" class="mt-1 text-xs text-red-600">{{ errors.nombre[0] }}</p>
                                     </div>
-                                    <div :class="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase()) ? 'md:col-span-2' : ''">
+                                    <div :class="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase()) ? '' : 'md:col-span-2'">
                                         <label for="eq_tipo" class="block text-sm font-medium text-gray-700">Tipo de equipo <span class="text-red-500">*</span></label>
                                         <select
                                             id="eq_tipo"
@@ -441,7 +473,7 @@ defineExpose({ resetForm });
                                         </p>
                                     </div>
 
-                                    <div v-if="!['monitor', 'teclado', 'mouse', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
+                                    <div v-if="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
                                         <label for="eq_usuario" class="block text-sm font-medium text-gray-700">Cuenta local</label>
                                         <input
                                             id="eq_usuario"

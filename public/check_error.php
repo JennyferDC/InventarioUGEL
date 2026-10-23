@@ -5,16 +5,12 @@ ini_set('display_errors', 1);
 header('Content-Type: text/plain; charset=utf-8');
 
 $logPath = __DIR__ . '/../storage/logs/laravel.log';
-if (!file_exists($logPath)) {
-    die("Log not found at $logPath");
-}
-
 $content = file_get_contents($logPath);
-$errors = preg_split('/\[\d{4}-\d{2}-\d{2}[^\]]+\]/', $content);
-$lastErrors = array_slice($errors, -3);
+preg_match_all('/\[(\d{4}-\d{2}-\d{2}[^\]]+)\]\s+([^\n]+)/', $content, $matches);
 
-foreach ($lastErrors as $err) {
-    echo "==================== ERROR ====================\n";
-    $lines = explode("\n", trim($err));
-    echo implode("\n", array_slice($lines, 0, 15)) . "\n\n";
+$count = count($matches[0]);
+echo "Total log entries: $count\n\n";
+
+for ($i = max(0, $count - 5); $i < $count; $i++) {
+    echo "[" . $matches[1][$i] . "] " . $matches[2][$i] . "\n";
 }

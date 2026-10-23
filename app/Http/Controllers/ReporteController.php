@@ -66,7 +66,8 @@ class ReporteController extends Controller
         if ($request->tipo_reporte === 'inventario_area') $titulo = "Inventario por Áreas";
         if ($request->tipo_reporte === 'inventario_persona') $titulo = "Equipos Asignados al Responsable";
 
-        $pdf = Pdf::loadView('reportes.equipos_pdf', compact('equipos', 'titulo'));
+        $pdf = Pdf::loadView('reportes.equipos_pdf', compact('equipos', 'titulo'))
+                  ->setPaper('a4', 'landscape');
         return $pdf->download('reporte_' . date('Y_m_d_H_i_s') . '.pdf');
     }
 
@@ -96,7 +97,7 @@ class ReporteController extends Controller
             'Expires'             => '0'
         ];
 
-        $columns = ['Código Informática', 'Código Patrimonial', 'Código Serial', 'Tipo', 'Estado', 'Fecha Ingreso', 'Vida Útil (Años)', 'Responsable', 'Área'];
+        $columns = ['Código Informática', 'Código Patrimonial', 'Número de Serie', 'Tipo', 'Estado', 'Fecha Ingreso', 'Vida Útil (Años)', 'Responsable', 'Área', 'Observación Técnica de Baja'];
 
         $callback = function () use ($equipos, $columns) {
             $file = fopen('php://output', 'w');
@@ -105,6 +106,9 @@ class ReporteController extends Controller
             fputcsv($file, $columns, ',');
 
             foreach ($equipos as $equipo) {
+                $esBaja = strtoupper($equipo->estado ?? '') === 'BAJA';
+                $observacionBaja = $esBaja ? ($equipo->observacion_tecnica ?? '') : '';
+
                 $row = [
                     $equipo->cod_informatica,
                     $equipo->cod_patrimonial ?? '-',
@@ -114,7 +118,8 @@ class ReporteController extends Controller
                     $equipo->fecha_ingreso ? date('d/m/Y', strtotime($equipo->fecha_ingreso)) : 'S/R',
                     $equipo->vida_util_anios ?? '-',
                     $equipo->persona ? $equipo->persona->nombre_completo : 'Sin asignar',
-                    ($equipo->persona && $equipo->persona->oficina && $equipo->persona->oficina->area) ? $equipo->persona->oficina->area->nombre : '-'
+                    ($equipo->persona && $equipo->persona->oficina && $equipo->persona->oficina->area) ? $equipo->persona->oficina->area->nombre : (($equipo->persona && $equipo->persona->area) ? $equipo->persona->area->nombre : '-'),
+                    $observacionBaja
                 ];
                 fputcsv($file, $row, ',');
             }

@@ -5,6 +5,7 @@ import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import ModalAgregarActividad from "./Partials/Actividades/ModalAgregarActividad.vue";
 import ModalEditarActividad from "./Partials/Actividades/ModalEditarActividad.vue";
 import ModalEditar from "./Partials/ModalEditar.vue";
+import ModalEliminar from "./Partials/ModalEliminar.vue";
 import FeedbackBanner from "@/Components/FeedbackBanner.vue";
 
 const props = defineProps({
@@ -25,6 +26,10 @@ const showUpcomingOnly = ref(false);
 const isAddModalOpen = ref(false);
 const isEditModalOpen = ref(false);
 const selectedItem = ref(null);
+
+const isDeleteModalOpen = ref(false);
+const itemToDelete = ref(null);
+const isDeletingItem = ref(false);
 
 const isEditPlanModalOpen = ref(false);
 const isUpdatingPlan = ref(false);
@@ -117,6 +122,31 @@ const openAddModal = () => {
 const openEditModal = (item) => {
     selectedItem.value = item;
     isEditModalOpen.value = true;
+};
+
+const openDeleteModal = (item) => {
+    itemToDelete.value = item;
+    isDeleteModalOpen.value = true;
+};
+
+const handleDeleteItem = () => {
+    if (!itemToDelete.value) return;
+
+    isDeletingItem.value = true;
+    router.delete(route('mantenimiento.actividades.destroy', itemToDelete.value.id), {
+        onSuccess: () => {
+            isDeleteModalOpen.value = false;
+            itemToDelete.value = null;
+            triggerMessage("success", "Actividad eliminada correctamente.");
+        },
+        onError: () => {
+            triggerMessage("error", "Ocurrió un error al eliminar la actividad.");
+        },
+        onFinish: () => {
+            isDeletingItem.value = false;
+        },
+        preserveScroll: true
+    });
 };
 
 const formatDate = (dateString) => {
@@ -248,22 +278,22 @@ const groupedItems = computed(() => {
 <template>
     <AppLayout :title="`Plan anual de mantenimiento informático - ${plan.titulo}`">
         <template #header>
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <Link :href="route('mantenimiento.index')" class="text-gray-500 hover:text-ugel-azul transition-colors">
-                        <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <Link :href="route('mantenimiento.index')" class="text-gray-500 hover:text-ugel-azul transition-colors shrink-0">
+                        <svg class="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </Link>
-                    <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
+                    <h2 class="font-bold text-xl sm:text-2xl lg:text-3xl text-ugel-guinda leading-tight truncate">
                         Plan anual de mantenimiento informático - {{ plan.titulo }}
                     </h2>
                 </div>
             </div>
         </template>
 
-        <section class="py-10 space-y-6">
-            <div class="max-w-7xl mx-auto px-6 lg:px-8 space-y-2">
+        <section class="py-6 sm:py-8 space-y-4 sm:space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
                 <FeedbackBanner
                     :show="showSuccess"
                     :message="successMessage"
@@ -276,13 +306,13 @@ const groupedItems = computed(() => {
                 />
             </div>
 
-            <div class="max-w-7xl mx-auto px-6 lg:px-8 space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
                 
                 <!-- Info Plan -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start group">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <h3 class="text-xl font-bold text-gray-900">Detalles del plan</h3>
+                <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 sm:gap-6 justify-between items-start group">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Detalles del plan</h3>
                             <button 
                                 @click="openEditPlanModal"
                                 class="text-ugel-azul hover:text-ugel-guinda p-1.5 rounded-md hover:bg-gray-100 transition-colors opacity-100 focus:opacity-100"
@@ -293,21 +323,21 @@ const groupedItems = computed(() => {
                                 </svg>
                             </button>
                         </div>
-                        <p class="text-gray-600">{{ plan.descripcion || 'Sin descripción detallada para este plan de mantenimiento.' }}</p>
+                        <p class="text-xs sm:text-sm text-gray-600 break-words">{{ plan.descripcion || 'Sin descripción detallada para este plan de mantenimiento.' }}</p>
                     </div>
-                    <div class="flex gap-4 flex-wrap items-start">
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 min-w-[140px]">
-                            <div class="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Fecha Inicio</div>
-                            <div class="font-bold text-gray-900">{{ formatDate(planStartDate) }}</div>
+                    <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-4 items-start w-full md:w-auto">
+                        <div class="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-100 flex-1 sm:min-w-[130px]">
+                            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold mb-0.5 sm:mb-1 uppercase tracking-wider">Fecha Inicio</div>
+                            <div class="text-xs sm:text-sm font-bold text-gray-900">{{ formatDate(planStartDate) }}</div>
                         </div>
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 min-w-[140px]">
-                            <div class="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Fecha Fin</div>
-                            <div class="font-bold text-gray-900">{{ formatDate(planEndDate) }}</div>
+                        <div class="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-100 flex-1 sm:min-w-[130px]">
+                            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold mb-0.5 sm:mb-1 uppercase tracking-wider">Fecha Fin</div>
+                            <div class="text-xs sm:text-sm font-bold text-gray-900">{{ formatDate(planEndDate) }}</div>
                         </div>
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 min-w-[140px]">
-                            <div class="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Estado Actual</div>
+                        <div class="col-span-2 sm:col-span-1 bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-100 flex-1 sm:min-w-[130px]">
+                            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold mb-0.5 sm:mb-1 uppercase tracking-wider">Estado Actual</div>
                             <div class="mt-1">
-                                <span class="px-2.5 py-1 text-xs font-bold rounded-full border" :class="planStatus.color">
+                                <span class="px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs font-bold rounded-full border inline-block" :class="planStatus.color">
                                     {{ planStatus.text }}
                                 </span>
                             </div>
@@ -316,19 +346,19 @@ const groupedItems = computed(() => {
                 </div>
 
                 <!-- Lista de Items -->
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <h3 class="font-bold text-lg text-gray-900">Cronograma</h3>
-                            <span class="bg-ugel-azul/10 text-ugel-azul text-xs font-bold px-3 py-1 rounded-full border border-ugel-azul/20">
+                <div class="bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-gray-50/50 flex flex-col xl:flex-row gap-3 sm:gap-4 xl:items-center justify-between">
+                        <div class="flex items-center gap-2.5 sm:gap-3">
+                            <h3 class="font-bold text-base sm:text-lg text-gray-900">Cronograma</h3>
+                            <span class="bg-ugel-azul/10 text-ugel-azul text-xs font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-ugel-azul/20">
                                 {{ plan.items.length }} Oficinas
                             </span>
                         </div>
                         
-                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full xl:w-auto">
                             <!-- Buscador -->
-                            <div class="w-full sm:w-64 relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <div class="w-full sm:w-60 md:w-64 relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 pointer-events-none">
                                     <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
                                     </svg>
@@ -337,14 +367,14 @@ const groupedItems = computed(() => {
                                     v-model="searchQuery"
                                     type="text"
                                     placeholder="Buscar por oficina..."
-                                    class="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul transition-shadow"
+                                    class="w-full rounded-lg border border-gray-300 pl-9 sm:pl-10 pr-4 py-2 text-xs sm:text-sm focus:border-ugel-azul focus:ring-ugel-azul transition-shadow"
                                 />
                             </div>
                             
                             <!-- Actividades proximas toggle -->
                             <button 
                                 @click="showUpcomingOnly = !showUpcomingOnly"
-                                class="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 border"
+                                class="w-full sm:w-auto px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 border"
                                 :class="showUpcomingOnly ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
                             >
                                 <svg v-if="!showUpcomingOnly" class="size-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -353,40 +383,38 @@ const groupedItems = computed(() => {
                                 <svg v-else class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                                 </svg>
-                                {{ showUpcomingOnly ? 'Ver todas' : 'Actividades próximas' }}
+                                <span>{{ showUpcomingOnly ? 'Ver todas' : 'Actividades próximas' }}</span>
                             </button>
 
                             <!-- Agregar actividad -->
                             <button 
                                 @click="openAddModal"
-                                class="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 border bg-ugel-azul text-white hover:bg-ugel-guinda disabled:opacity-50 disabled:cursor-not-allowed"
-                                :disabled="planStatus.text === 'Finalizado'"
-                                :title="planStatus.text === 'Finalizado' ? 'El plan ya finalizó' : ''"
+                                class="w-full sm:w-auto px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 border bg-ugel-azul text-white hover:bg-ugel-guinda"
                             >
                                 <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Agregar actividad
+                                <span>Agregar actividad</span>
                             </button>
                         </div>
                     </div>
                     
                     <div class="overflow-x-auto">
-                        <div class="px-6 py-4 bg-white border-b border-gray-100 flex flex-wrap gap-10 text-xs font-medium text-gray-600 justify-center">
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-100 flex flex-wrap gap-4 sm:gap-8 lg:gap-10 text-[11px] sm:text-xs font-medium text-gray-600 justify-start sm:justify-center">
                             <div class="flex items-center gap-1.5">
-                                <div class="size-3 rounded-full bg-red-400 animate-pulse ring-2 ring-white shadow-sm"></div>
+                                <div class="size-2.5 sm:size-3 rounded-full bg-red-400 animate-pulse ring-2 ring-white shadow-sm"></div>
                                 <span>En curso</span>
                             </div>
                             <div class="flex items-center gap-1.5">
-                                <div class="size-3 rounded-full bg-orange-400 ring-2 ring-white shadow-sm"></div>
-                                <span>Próximo (7 días o menos)</span>
+                                <div class="size-2.5 sm:size-3 rounded-full bg-orange-400 ring-2 ring-white shadow-sm"></div>
+                                <span>Próximo (≤ 7 días)</span>
                             </div>
                             <div class="flex items-center gap-1.5">
-                                <div class="size-3 rounded-full bg-green-400 ring-2 ring-white shadow-sm"></div>
-                                <span>A tiempo (Más de 7 días)</span>
+                                <div class="size-2.5 sm:size-3 rounded-full bg-green-400 ring-2 ring-white shadow-sm"></div>
+                                <span>A tiempo (> 7 días)</span>
                             </div>
                             <div class="flex items-center gap-1.5">
-                                <div class="size-3 rounded-full bg-green-600 ring-2 ring-white shadow-sm"></div>
+                                <div class="size-2.5 sm:size-3 rounded-full bg-green-600 ring-2 ring-white shadow-sm"></div>
                                 <span>Finalizado</span>
                             </div>
                         </div>
@@ -394,77 +422,88 @@ const groupedItems = computed(() => {
                         <template v-if="Object.keys(groupedItems).length > 0">
                             <div v-for="(itemsInArea, areaName) in groupedItems" :key="areaName" class="mb-2">
                                 <!-- Cabecera del Área -->
-                                <div class="bg-gray-100/50 px-6 py-3 border-y border-gray-100 flex items-center gap-2">
-                                    <svg class="size-5 text-ugel-azul" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <div class="bg-gray-100/50 px-4 sm:px-6 py-2.5 sm:py-3 border-y border-gray-100 flex items-center gap-2">
+                                    <svg class="size-4 sm:size-5 text-ugel-azul" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
-                                    <h4 class="font-bold text-ugel-azul uppercase text-sm tracking-wide">{{ areaName }}</h4>
-                                    <span class="ml-2 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200">{{ itemsInArea.length }}</span>
+                                    <h4 class="font-bold text-ugel-azul uppercase text-xs sm:text-sm tracking-wide">{{ areaName }}</h4>
+                                    <span class="ml-1.5 sm:ml-2 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200">{{ itemsInArea.length }}</span>
                                 </div>
                                 
-                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
                                     <thead class="bg-white text-gray-400 border-b border-gray-100 text-xs uppercase tracking-wider">
                                         <tr>
-                                            <th class="px-6 py-3 font-semibold w-12 text-center">Estado</th>
-                                            <th class="px-6 py-3 font-semibold">Oficina</th>
-                                            <th class="px-6 py-3 font-semibold">Actividad</th>
-                                            <th class="px-6 py-3 font-semibold">Fecha Inicio</th>
-                                            <th class="px-6 py-3 font-semibold">Fecha Fin</th>
-                                            <th class="px-6 py-3 font-semibold text-center w-24">Días</th>
-                                            <th class="px-6 py-3 font-semibold text-center w-16">Acciones</th>
+                                            <th class="px-4 sm:px-6 py-3 font-semibold w-12 text-center">Estado</th>
+                                            <th class="px-4 sm:px-6 py-3 font-semibold">Oficina</th>
+                                            <th class="px-4 sm:px-6 py-3 font-semibold">Actividad</th>
+                                            <th class="px-4 sm:px-6 py-3 font-semibold">Fecha Inicio</th>
+                                            <th class="px-4 sm:px-6 py-3 font-semibold">Fecha Fin</th>
+                                            <th class="px-4 sm:px-6 py-3 font-semibold text-center w-20 sm:w-24">Días</th>
+                                            <th class="px-4 sm:px-6 py-3 font-semibold text-center w-16 sm:w-20">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 bg-white">
                                         <tr v-for="item in itemsInArea" :key="item.id" class="hover:bg-gray-50/80 transition-colors">
-                                            <td class="px-6 py-4 text-center align-middle">
+                                            <td class="px-4 sm:px-6 py-3.5 text-center align-middle">
                                                 <div class="flex justify-center">
                                                     <div 
-                                                        class="size-3.5 rounded-full shadow-sm ring-2 ring-white" 
+                                                        class="size-3 sm:size-3.5 rounded-full shadow-sm ring-2 ring-white" 
                                                         :class="getStatusColor(item)" 
                                                         :title="getStatusColor(item) === 'bg-red-500' ? 'En curso' : (getStatusColor(item) === 'bg-orange-500' ? 'Próximo' : (getStatusColor(item) === 'bg-green-700' ? 'Finalizado' : 'A tiempo'))"
                                                     ></div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4">
+                                            <td class="px-4 sm:px-6 py-3.5">
                                                 <div class="font-bold text-gray-900">{{ item.oficina?.nombre || 'N/A' }}</div>
                                             </td>
-                                            <td class="px-6 py-4">
-                                                <div class="text-gray-600 truncate max-w-[250px]" :title="item.actividad">{{ item.actividad }}</div>
+                                            <td class="px-4 sm:px-6 py-3.5">
+                                                <div class="text-gray-600 truncate max-w-[200px] sm:max-w-[250px]" :title="item.actividad">{{ item.actividad }}</div>
                                             </td>
-                                            <td class="px-6 py-4 font-medium text-gray-700">
+                                            <td class="px-4 sm:px-6 py-3.5 font-medium text-gray-700">
                                                 {{ formatDate(item.fecha_inicio) }}
                                             </td>
-                                            <td class="px-6 py-4 font-medium text-gray-700">
+                                            <td class="px-4 sm:px-6 py-3.5 font-medium text-gray-700">
                                                 {{ formatDate(item.fecha_fin) }}
                                             </td>
-                                            <td class="px-6 py-4 text-center">
-                                                <span class="inline-flex items-center justify-center bg-gray-100 text-gray-800 font-bold px-2.5 py-1 rounded-md text-xs border border-gray-200">
+                                            <td class="px-4 sm:px-6 py-3.5 text-center">
+                                                <span class="inline-flex items-center justify-center bg-gray-100 text-gray-800 font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[11px] sm:text-xs border border-gray-200">
                                                     {{ getDays(item.fecha_inicio, item.fecha_fin) }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 text-center">
-                                                <button 
-                                                    @click="openEditModal(item)"
-                                                    class="text-ugel-azul hover:text-ugel-guinda p-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                                                    title="Editar actividad"
-                                                >
-                                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                    </svg>
-                                                </button>
+                                            <td class="px-4 sm:px-6 py-3.5 text-center">
+                                                <div class="flex items-center justify-center gap-1">
+                                                    <button 
+                                                        @click="openEditModal(item)"
+                                                        class="size-8 inline-flex items-center justify-center rounded-full text-ugel-azul hover:text-white hover:bg-ugel-azul transition-colors"
+                                                        title="Editar actividad"
+                                                    >
+                                                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                        </svg>
+                                                    </button>
+                                                    <button 
+                                                        @click="openDeleteModal(item)"
+                                                        class="size-8 inline-flex items-center justify-center rounded-full text-red-500 hover:text-white hover:bg-red-600 transition-colors"
+                                                        title="Eliminar actividad"
+                                                    >
+                                                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </template>
-                        <div v-else class="p-16 text-center">
+                        <div v-else class="p-10 sm:p-16 text-center">
                             <div class="flex flex-col items-center justify-center text-gray-400">
-                                <svg class="size-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="size-12 sm:size-16 mb-3 sm:mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <h3 class="text-lg font-bold text-gray-900 mb-1">Sin coincidencias</h3>
-                                <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">
+                                <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-1">Sin coincidencias</h3>
+                                <p class="text-xs sm:text-sm font-medium text-gray-500 max-w-sm mx-auto">
                                     No se encontraron oficinas que coincidan con los filtros aplicados.
                                 </p>
                             </div>
@@ -478,6 +517,7 @@ const groupedItems = computed(() => {
             :show="isAddModalOpen"
             :planId="plan.id"
             :oficinas="oficinas"
+            :items="plan.items"
             @close="isAddModalOpen = false"
         />
 
@@ -485,6 +525,7 @@ const groupedItems = computed(() => {
             :show="isEditModalOpen"
             :item="selectedItem"
             :oficinas="oficinas"
+            :items="plan.items"
             @close="isEditModalOpen = false"
         />
 
@@ -495,6 +536,15 @@ const groupedItems = computed(() => {
             :errors="editPlanErrors"
             @close="isEditPlanModalOpen = false"
             @save="handleUpdatePlan"
+        />
+
+        <ModalEliminar
+            :show="isDeleteModalOpen"
+            :title="'Eliminar actividad'"
+            :itemName="itemToDelete ? `${itemToDelete.actividad} (${itemToDelete.oficina?.nombre || ''})` : ''"
+            :loading="isDeletingItem"
+            @close="isDeleteModalOpen = false"
+            @confirm="handleDeleteItem"
         />
     </AppLayout>
 </template>

@@ -221,13 +221,13 @@ const obtenerExtension = (archivo) => {
 <template>
     <AppLayout title="Archivos">
         <template #header>
-            <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
+            <h2 class="font-bold text-2xl sm:text-3xl text-ugel-guinda leading-tight">
                 Archivos
             </h2>
         </template>
 
-        <section class="py-10 space-y-6">
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-2">
+        <section class="py-6 sm:py-8 space-y-4 sm:space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
                 <FeedbackBanner
                     :show="showSuccess"
                     :message="successMessage"
@@ -240,9 +240,9 @@ const obtenerExtension = (archivo) => {
                 />
             </div>
 
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
                 <div
-                    class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4"
                 >
                     <div class="w-full sm:w-80">
                         <label class="sr-only" for="search-archivo"
@@ -250,7 +250,7 @@ const obtenerExtension = (archivo) => {
                         >
                         <div class="relative">
                             <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-ugel-azul/70"
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-ugel-azul/70 pointer-events-none"
                             >
                                 <svg
                                     class="size-4"
@@ -271,17 +271,30 @@ const obtenerExtension = (archivo) => {
                                 v-model="searchTerm"
                                 type="text"
                                 placeholder="Buscar por título..."
-                                class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                class="w-full rounded-lg border border-ugel-azul/30 pl-9 sm:pl-10 pr-4 py-2 text-xs sm:text-sm focus:border-ugel-azul focus:ring-ugel-azul transition"
                             />
                         </div>
                     </div>
 
                     <button
                         type="button"
-                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-ugel-azul px-3.5 sm:px-4 py-2 text-xs sm:text-sm text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                         @click="abrirAgregar"
                     >
-                        + Agregar archivo
+                        <svg
+                            class="size-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 4.5v15m7.5-7.5h-15"
+                            />
+                        </svg>
+                        <span>Agregar archivo</span>
                     </button>
                 </div>
 
@@ -292,17 +305,17 @@ const obtenerExtension = (archivo) => {
                     <article
                         v-for="archivo in filteredArchivos"
                         :key="archivo.id"
-                        class="rounded-2xl border border-ugel-azul/15 bg-white/90 shadow-sm p-5 hover:shadow-md transition"
+                        class="rounded-xl sm:rounded-2xl border border-ugel-azul/15 bg-white/90 shadow-sm p-4 sm:p-5 hover:shadow-md transition flex flex-col justify-between"
                     >
-                        <div class="flex items-start justify-between gap-4">
-                            <div class="min-w-0">
+                        <div class="flex items-start justify-between gap-3 sm:gap-4">
+                            <div class="min-w-0 flex-1">
                                 <div
-                                    class="text-xs font-semibold uppercase tracking-wider text-ugel-azul/70"
+                                    class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-ugel-azul/70"
                                 >
                                     Archivo
                                 </div>
                                 <div
-                                    class="mt-1 text-base font-bold text-ugel-guinda break-words"
+                                    class="mt-1 text-sm sm:text-base font-bold text-ugel-guinda break-words"
                                 >
                                     {{ archivo.nombre_archivo }}
                                 </div>
@@ -312,7 +325,7 @@ const obtenerExtension = (archivo) => {
                                     class="mt-2"
                                 >
                                     <span
-                                        class="inline-flex items-center rounded-full bg-ugel-azul/10 px-2.5 py-1 text-[11px] font-bold tracking-wide text-ugel-azul"
+                                        class="inline-flex items-center rounded-full bg-ugel-azul/10 px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold tracking-wide text-ugel-azul"
                                     >
                                         {{ obtenerExtension(archivo) }}
                                     </span>
@@ -331,15 +344,15 @@ const obtenerExtension = (archivo) => {
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-2 shrink-0">
+                            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                                 <button
                                     type="button"
-                                    class="inline-flex items-center rounded-full border border-ugel-azul/40 p-2 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
+                                    class="size-8 sm:size-9 inline-flex items-center justify-center rounded-full border border-ugel-azul/40 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
                                     @click="abrirEditar(archivo)"
                                     title="Editar nombre"
                                 >
                                     <svg
-                                        class="size-5"
+                                        class="size-4 sm:size-4.5"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -354,12 +367,12 @@ const obtenerExtension = (archivo) => {
                                 </button>
                                 <button
                                     type="button"
-                                    class="inline-flex items-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-600 hover:text-white transition"
+                                    class="size-8 sm:size-9 inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition"
                                     @click="abrirEliminar(archivo)"
                                     title="Eliminar"
                                 >
                                     <svg
-                                        class="size-5"
+                                        class="size-4 sm:size-4.5"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -375,16 +388,16 @@ const obtenerExtension = (archivo) => {
                             </div>
                         </div>
 
-                        <div class="mt-4">
+                        <div class="mt-4 pt-3 border-t border-gray-100">
                             <a
                                 v-if="archivo.url"
                                 :href="archivo.url"
                                 target="_blank"
-                                class="inline-flex items-center gap-2 text-sm font-semibold text-ugel-azul hover:text-ugel-guinda transition"
+                                class="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-ugel-azul hover:text-ugel-guinda transition"
                             >
-                                Ver / Descargar
+                                <span>Ver / Descargar</span>
                                 <svg
-                                    class="size-4"
+                                    class="size-3.5 sm:size-4"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
@@ -406,7 +419,7 @@ const obtenerExtension = (archivo) => {
 
                 <div
                     v-else
-                    class="rounded-2xl border border-dashed border-ugel-azul/20 bg-white/70 p-10 text-center text-gray-600"
+                    class="rounded-xl sm:rounded-2xl border border-dashed border-ugel-azul/20 bg-white/70 p-8 sm:p-12 text-center text-xs sm:text-sm text-gray-600"
                 >
                     No hay archivos registrados.
                 </div>

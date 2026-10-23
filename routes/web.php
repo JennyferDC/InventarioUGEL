@@ -83,6 +83,7 @@ Route::middleware([
     // Actividades del Cronograma
     Route::post('/mantenimiento/{mantenimiento}/actividades', [App\Http\Controllers\ItemCronogramaController::class, 'store'])->name('mantenimiento.actividades.store');
     Route::put('/mantenimiento/actividades/{actividad}', [App\Http\Controllers\ItemCronogramaController::class, 'update'])->name('mantenimiento.actividades.update');
+    Route::delete('/mantenimiento/actividades/{actividad}', [App\Http\Controllers\ItemCronogramaController::class, 'destroy'])->name('mantenimiento.actividades.destroy');
 
     Route::get('/api/caracteristicas', [CaracteristicaEquipoController::class, 'index'])->name('api.caracteristicas.index');
     Route::post('/api/caracteristicas', [CaracteristicaEquipoController::class, 'store'])->name('api.caracteristicas.store');

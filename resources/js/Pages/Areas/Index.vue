@@ -178,14 +178,14 @@ const crearArea = async (payload) => {
     <AppLayout title="Unidades">
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
+                <h2 class="font-bold text-2xl sm:text-3xl text-ugel-guinda leading-tight">
                     Directorio de Unidades
                 </h2>
             </div>
         </template>
 
-        <section class="py-10 space-y-6">
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-2">
+        <section class="py-6 sm:py-8 space-y-4 sm:space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
                 <FeedbackBanner
                     :show="showSuccess"
                     :message="successMessage"
@@ -198,18 +198,18 @@ const crearArea = async (payload) => {
                 />
             </div>
 
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
-                <div class="flex justify-end">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end">
                     <button
                         type="button"
-                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-ugel-azul px-3.5 sm:px-4 py-2 text-xs sm:text-sm text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                         @click="abrirModalCrear"
                     >
                         + Nueva unidad
                     </button>
                 </div>
                 <!-- Grid de Unidades -->
-                <div v-if="hayAreas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+                <div v-if="hayAreas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-6 sm:pb-12">
                     <div 
                         v-for="area in filteredAreas" 
                         :key="area.id"
@@ -218,28 +218,28 @@ const crearArea = async (payload) => {
                     >
                         <div class="h-1.5 w-full bg-gradient-to-r from-ugel-azul to-ugel-guinda opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         
-                        <div class="p-6 flex-1 flex flex-col relative z-10">
-                            <div class="flex items-start justify-between mb-5">
-                                <div class="flex items-center justify-center size-12 rounded-xl bg-blue-50/80 text-ugel-azul group-hover:bg-ugel-azul group-hover:text-white transition-all duration-300 shadow-inner">
-                                    <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="p-5 sm:p-6 flex-1 flex flex-col relative z-10">
+                            <div class="flex items-start justify-between mb-4 sm:mb-5">
+                                <div class="flex items-center justify-center size-11 sm:size-12 rounded-xl bg-blue-50/80 text-ugel-azul group-hover:bg-ugel-azul group-hover:text-white transition-all duration-300 shadow-inner shrink-0">
+                                    <svg class="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
                                 </div>
-                                <div class="flex items-center gap-1 text-ugel-azul font-medium text-sm bg-ugel-azul/10 px-3 py-1 rounded-full group-hover:bg-ugel-azul group-hover:text-white transition-colors">
+                                <div class="flex items-center gap-1 text-ugel-azul font-medium text-xs sm:text-sm bg-ugel-azul/10 px-2.5 sm:px-3 py-1 rounded-full group-hover:bg-ugel-azul group-hover:text-white transition-colors">
                                     Editar
                                 </div>
                             </div>
                             
-                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-ugel-azul transition-colors line-clamp-2 leading-tight">
+                            <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-1.5 sm:mb-2 group-hover:text-ugel-azul transition-colors line-clamp-2 leading-tight">
                                 {{ area.nombre }}
                             </h3>
                             
-                            <p class="text-sm text-gray-500 line-clamp-3 mb-4 flex-1">
+                            <p class="text-xs sm:text-sm text-gray-500 line-clamp-3 mb-4 flex-1">
                                 {{ area.descripcion || 'Sin descripción.' }}
                             </p>
                             
-                            <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                                <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                            <div class="mt-auto pt-3 sm:pt-4 border-t border-gray-100 flex items-center justify-between">
+                                <span class="text-[11px] sm:text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
                                     {{ area.oficinas_count || 0 }} {{ area.oficinas_count === 1 ? 'oficina' : 'oficinas' }}
                                 </span>
                                 
@@ -259,9 +259,9 @@ const crearArea = async (payload) => {
                 </div>
 
                 <!-- Empty state -->
-                <div v-else class="flex flex-col items-center justify-center py-20 px-4 text-center h-full bg-white rounded-3xl border border-dashed border-gray-300">
-                    <div class="size-20 bg-gray-50 text-gray-300 rounded-2xl flex items-center justify-center mb-5 rotate-3 hover:rotate-0 transition-transform">
-                        <svg class="size-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div v-else class="flex flex-col items-center justify-center py-16 sm:py-20 px-4 text-center h-full bg-white rounded-3xl border border-dashed border-gray-300">
+                    <div class="size-16 sm:size-20 bg-gray-50 text-gray-300 rounded-2xl flex items-center justify-center mb-4 sm:mb-5 rotate-3 hover:rotate-0 transition-transform">
+                        <svg class="size-8 sm:size-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>

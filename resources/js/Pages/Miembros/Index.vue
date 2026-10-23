@@ -196,13 +196,13 @@ const crearMiembro = async (payload) => {
 <template>
     <AppLayout title="Miembros">
         <template #header>
-            <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
+            <h2 class="font-bold text-2xl sm:text-3xl text-ugel-guinda leading-tight">
                 Miembros
             </h2>
         </template>
 
-        <section class="py-10 space-y-6">
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-2">
+        <section class="py-6 sm:py-8 space-y-4 sm:space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
                 <FeedbackBanner
                     :show="showSuccess"
                     :message="successMessage"
@@ -215,50 +215,46 @@ const crearMiembro = async (payload) => {
                 />
             </div>
 
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
                 <div
-                    class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
                 >
-                    <div
-                        class="flex flex-col gap-3 sm:flex-row sm:items-center"
-                    >
-                        <div class="w-full sm:w-72">
-                            <label class="sr-only" for="search-persona"
-                                >Buscar miembro</label
+                    <div class="w-full sm:w-72 md:w-80 relative">
+                        <label class="sr-only" for="search-persona"
+                            >Buscar miembro</label
+                        >
+                        <div class="relative">
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-ugel-azul/70"
                             >
-                            <div class="relative">
-                                <span
-                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-ugel-azul/70"
+                                <svg
+                                    class="size-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
                                 >
-                                    <svg
-                                        class="size-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
-                                        />
-                                    </svg>
-                                </span>
-                                <input
-                                    id="search-persona"
-                                    v-model="searchTerm"
-                                    type="text"
-                                    placeholder="Buscar por nombre, email o rol..."
-                                    class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
-                                />
-                            </div>
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
+                                    />
+                                </svg>
+                            </span>
+                            <input
+                                id="search-persona"
+                                v-model="searchTerm"
+                                type="text"
+                                placeholder="Buscar por nombre, email o rol..."
+                                class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-xs sm:text-sm focus:border-ugel-azul focus:ring-ugel-azul shadow-sm"
+                            />
                         </div>
                     </div>
 
                     <button
                         v-if="$page.props.auth.user.rol === 'ADMIN'"
                         type="button"
-                        class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-ugel-azul px-3.5 sm:px-4 py-2 text-xs sm:text-sm text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150 w-full sm:w-auto shrink-0"
                         @click="abrirModalCrear"
                     >
                         + Nuevo miembro
@@ -273,33 +269,33 @@ const crearMiembro = async (payload) => {
                             <thead class="bg-ugel-azul/5">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         #
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Nombre
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Email
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Rol
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Estado
                                     </th>
                                     <th
                                         v-if="$page.props.auth.user.rol === 'ADMIN'"
-                                        class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Acciones
                                     </th>
@@ -315,24 +311,24 @@ const crearMiembro = async (payload) => {
                                     class="hover:bg-ugel-azul/5 transition"
                                 >
                                     <td
-                                        class="px-6 py-4 text-sm text-gray-600 font-semibold"
+                                        class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-gray-600 font-semibold whitespace-nowrap"
                                     >
                                         #{{ miembro.id }}
                                     </td>
                                     <td
-                                        class="px-6 py-4 text-sm text-ugel-guinda font-semibold"
+                                        class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-ugel-guinda font-semibold min-w-[130px]"
                                     >
                                         {{ miembro.name }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                    <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-gray-700 min-w-[130px]">
                                         {{ miembro.email }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                    <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-gray-700 whitespace-nowrap font-medium">
                                         {{ miembro.rol }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm">
+                                    <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm whitespace-nowrap">
                                         <span
-                                            class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
                                             :class="
                                                 miembro.activo
                                                     ? 'bg-green-100 text-green-700'
@@ -346,19 +342,20 @@ const crearMiembro = async (payload) => {
                                             }}
                                         </span>
                                     </td>
-                                    <td v-if="$page.props.auth.user.rol === 'ADMIN'" class="px-6 py-4">
+                                    <td v-if="$page.props.auth.user.rol === 'ADMIN'" class="px-4 sm:px-6 py-3.5 whitespace-nowrap text-center">
                                         <div
-                                            class="flex items-center justify-center gap-3"
+                                            class="flex items-center justify-center gap-2 sm:gap-3"
                                         >
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-full border border-ugel-azul/40 p-2 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
+                                                class="size-8 inline-flex items-center justify-center rounded-full border border-ugel-azul/40 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
                                                 @click="
                                                     abrirModalEditar(miembro)
                                                 "
+                                                title="Editar miembro"
                                             >
                                                 <svg
-                                                    class="size-5"
+                                                    class="size-4 sm:size-4.5"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -373,13 +370,14 @@ const crearMiembro = async (payload) => {
                                             </button>
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-600 hover:text-white transition"
+                                                class="size-8 inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition"
                                                 @click="
                                                     abrirModalEliminar(miembro)
                                                 "
+                                                title="Eliminar miembro"
                                             >
                                                 <svg
-                                                    class="size-5"
+                                                    class="size-4 sm:size-4.5"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -400,7 +398,7 @@ const crearMiembro = async (payload) => {
                                 <tr>
                                     <td
                                         :colspan="$page.props.auth.user.rol === 'ADMIN' ? 6 : 5"
-                                        class="px-6 py-12 text-center text-gray-600"
+                                        class="px-6 py-12 text-center text-xs sm:text-sm text-gray-600"
                                     >
                                         No hay miembros registrados o que
                                         coincidan con la búsqueda.

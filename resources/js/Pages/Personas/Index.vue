@@ -350,13 +350,13 @@ const crearPersona = async (payload) => {
 <template>
     <AppLayout title="Personas">
         <template #header>
-            <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
-                Personas
+            <h2 class="font-bold text-2xl sm:text-3xl text-ugel-guinda leading-tight">
+                Directorio de Personas
             </h2>
         </template>
 
-        <section class="py-10 space-y-6">
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-2">
+        <section class="py-6 sm:py-8 space-y-4 sm:space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
                 <FeedbackBanner
                     :show="showSuccess"
                     :message="successMessage"
@@ -369,10 +369,10 @@ const crearPersona = async (payload) => {
                 />
             </div>
 
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
-                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center w-full">
-                        <div class="w-full sm:w-72 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2.5 sm:gap-3 flex-1">
+                        <div class="w-full sm:w-64 md:w-72 lg:w-80 relative">
                             <label class="sr-only" for="search-persona">Buscar persona</label>
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-ugel-azul/70">
                                 <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -384,12 +384,12 @@ const crearPersona = async (payload) => {
                                 v-model="searchTerm"
                                 type="text"
                                 placeholder="Buscar por nombre u oficina..."
-                                class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul transition-shadow"
+                                class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-xs sm:text-sm focus:border-ugel-azul focus:ring-ugel-azul transition-shadow shadow-sm"
                             />
                         </div>
 
                         <!-- Select Personalizado de Oficinas -->
-                        <div class="relative w-full sm:w-72">
+                        <div class="relative w-full sm:w-64 md:w-72">
                             <!-- Overlay para cerrar clickeando fuera -->
                             <div v-if="isOficinaDropdownOpen" @click="isOficinaDropdownOpen = false" class="fixed inset-0 z-10"></div>
                             
@@ -397,7 +397,7 @@ const crearPersona = async (payload) => {
                                 <button 
                                     @click="isOficinaDropdownOpen = !isOficinaDropdownOpen"
                                     type="button" 
-                                    class="w-full flex items-center justify-between rounded-lg border border-ugel-azul/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul transition-all"
+                                    class="w-full flex items-center justify-between rounded-lg border border-ugel-azul/30 bg-white px-3 py-2 text-xs sm:text-sm text-gray-700 shadow-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul transition-all"
                                 >
                                     <span class="truncate">{{ getOficinaName }}</span>
                                     <svg class="size-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -407,18 +407,18 @@ const crearPersona = async (payload) => {
 
                                 <div 
                                     v-if="isOficinaDropdownOpen"
-                                    class="absolute mt-1 max-h-60 w-full overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col"
+                                    class="absolute mt-1 max-h-60 w-full overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col z-30"
                                 >
                                     <div class="p-2 border-b border-gray-100 bg-gray-50/50 sticky top-0 z-10">
                                         <input 
                                             type="text" 
                                             v-model="searchSelectOficina" 
                                             placeholder="Buscar oficina..." 
-                                            class="w-full rounded-md border border-ugel-azul/30 px-3 py-1.5 text-sm focus:border-ugel-azul focus:ring-ugel-azul shadow-sm"
+                                            class="w-full rounded-md border border-ugel-azul/30 px-3 py-1.5 text-xs sm:text-sm focus:border-ugel-azul focus:ring-ugel-azul shadow-sm"
                                             autofocus
                                         >
                                     </div>
-                                    <ul class="overflow-y-auto py-1">
+                                    <ul class="overflow-y-auto py-1 text-xs sm:text-sm">
                                     <li 
                                         v-if="!searchSelectOficina"
                                         @click="selectOficina('todos')"
@@ -453,7 +453,7 @@ const crearPersona = async (payload) => {
 
                     <button
                         type="button"
-                        class="inline-flex items-center justify-center whitespace-nowrap gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                        class="inline-flex items-center justify-center whitespace-nowrap gap-2 rounded-lg bg-ugel-azul px-3.5 sm:px-4 py-2 text-xs sm:text-sm text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150 w-full sm:w-auto shrink-0"
                         @click="abrirModalCrear"
                     >
                         + Nueva persona
@@ -465,53 +465,53 @@ const crearPersona = async (payload) => {
                         <table class="min-w-full divide-y divide-ugel-azul/20">
                             <thead class="bg-ugel-azul/5">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">#</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Nombre completo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul">Contacto</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors" @click="setSort('oficinas')">
+                                    <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap">#</th>
+                                    <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap">Nombre completo</th>
+                                    <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap">Contacto</th>
+                                    <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors whitespace-nowrap" @click="setSort('oficinas')">
                                         <div class="flex items-center gap-1">
                                             Oficina / Área
                                             <span v-html="getSortIcon('oficinas')"></span>
                                         </div>
                                     </th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors" @click="setSort('estado')">
+                                    <th class="px-4 sm:px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors whitespace-nowrap" @click="setSort('estado')">
                                         <div class="flex items-center justify-center gap-1">
                                             Estado
                                             <span v-html="getSortIcon('estado')"></span>
                                         </div>
                                     </th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors" @click="setSort('equipos')">
+                                    <th class="px-4 sm:px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul cursor-pointer group hover:bg-ugel-azul/10 transition-colors whitespace-nowrap" @click="setSort('equipos')">
                                         <div class="flex items-center justify-center gap-1">
                                             Equipos
                                             <span v-html="getSortIcon('equipos')"></span>
                                         </div>
                                     </th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul">Acciones</th>
+                                    <th class="px-4 sm:px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody v-if="hayPersonas" class="divide-y divide-ugel-azul/10">
                                 <tr v-for="persona in filteredPersonas" :key="persona.id" class="hover:bg-ugel-azul/5 transition">
-                                    <td class="px-6 py-4 text-sm text-gray-600 font-semibold">#{{ persona.id }}</td>
-                                    <td class="px-6 py-4 text-sm text-ugel-guinda font-semibold">
+                                    <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-gray-600 font-semibold whitespace-nowrap">#{{ persona.id }}</td>
+                                    <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-ugel-guinda font-semibold min-w-[140px]">
                                         {{ persona.nombre_completo }}
                                         <div v-if="persona.cargo" class="text-xs text-gray-500 font-normal mt-0.5">{{ persona.cargo }}</div>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                    <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-gray-600 min-w-[130px]">
                                         <div class="flex items-center gap-1.5 mb-1" v-if="persona.celular">
-                                            <svg class="size-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                                            {{ persona.celular }}
+                                            <svg class="size-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                            <span class="truncate">{{ persona.celular }}</span>
                                         </div>
                                         <div class="flex items-center gap-1.5 text-xs" v-if="persona.correo">
-                                            <svg class="size-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                            {{ persona.correo }}
+                                            <svg class="size-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                            <span class="truncate">{{ persona.correo }}</span>
                                         </div>
                                         <div v-if="!persona.celular && !persona.correo" class="text-gray-400">-</div>
                                     </td>
-                                    <td class="px-6 py-4 text-sm">
+                                    <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm min-w-[130px]">
                                         <div class="font-medium text-gray-700">{{ persona.oficina?.nombre ?? "Sin oficina" }}</div>
                                         <div class="text-[10px] text-gray-500 uppercase tracking-wide font-medium">{{ persona.oficina?.area?.nombre ?? "Sin área" }}</div>
                                     </td>
-                                    <td class="px-6 py-4 text-center">
+                                    <td class="px-4 sm:px-6 py-3.5 text-center whitespace-nowrap">
                                         <span 
                                             class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border"
                                             :class="persona.estado === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'"
@@ -519,19 +519,20 @@ const crearPersona = async (payload) => {
                                             {{ persona.estado }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <span class="inline-flex items-center justify-center bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-full px-3 py-1 text-xs">
+                                    <td class="px-4 sm:px-6 py-3.5 text-center whitespace-nowrap">
+                                        <span class="inline-flex items-center justify-center bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-full px-3 py-0.5 text-xs">
                                             {{ persona.equipos_count ?? 0 }} 
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center justify-center gap-3">
+                                    <td class="px-4 sm:px-6 py-3.5 whitespace-nowrap text-center">
+                                        <div class="flex items-center justify-center gap-2 sm:gap-3">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-full border border-ugel-azul/40 p-2 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
+                                                class="size-8 inline-flex items-center justify-center rounded-full border border-ugel-azul/40 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
                                                 @click="abrirModalEditar(persona)"
+                                                title="Editar persona"
                                             >
-                                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="size-4 sm:size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 </svg>
@@ -542,7 +543,7 @@ const crearPersona = async (payload) => {
                             </tbody>
                             <tbody v-else>
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-600">
+                                    <td colspan="7" class="px-6 py-12 text-center text-xs sm:text-sm text-gray-600">
                                         No hay personas registradas o que coincidan con los filtros aplicados.
                                     </td>
                                 </tr>

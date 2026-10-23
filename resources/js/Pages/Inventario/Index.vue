@@ -313,13 +313,13 @@ const confirmarEliminacion = async () => {
 <template>
     <AppLayout title="Inventario">
         <template #header>
-            <h2 class="font-bold text-3xl text-ugel-guinda leading-tight">
+            <h2 class="font-bold text-2xl sm:text-3xl text-ugel-guinda leading-tight">
                 Inventario
             </h2>
         </template>
 
-        <section class="py-10 space-y-6">
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-2">
+        <section class="py-6 sm:py-8 space-y-4 sm:space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
                 <FeedbackBanner
                     :show="showSuccess"
                     :message="successMessage"
@@ -332,14 +332,14 @@ const confirmarEliminacion = async () => {
                 />
             </div>
 
-            <div class="max-w-6xl mx-auto px-6 lg:px-0 space-y-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
                 <!-- Selector de Categoría Premium -->
-                <div class="bg-gray-100/80 backdrop-blur p-1 rounded-xl flex items-center gap-1 w-full max-w-xs border border-gray-200">
+                <div class="inline-flex bg-gray-100/80 backdrop-blur p-1 rounded-xl items-center gap-1 w-full sm:w-auto max-w-xs border border-gray-200 shadow-sm">
                     <button
                         type="button"
                         @click="filtroCategoria = 'equipo'"
                         :class="[
-                            'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200',
+                            'flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-3.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200',
                             filtroCategoria === 'equipo' 
                                 ? 'bg-white text-ugel-guinda shadow-sm' 
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
@@ -354,7 +354,7 @@ const confirmarEliminacion = async () => {
                         type="button"
                         @click="filtroCategoria = 'programa'"
                         :class="[
-                            'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200',
+                            'flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-3.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200',
                             filtroCategoria === 'programa' 
                                 ? 'bg-white text-ugel-guinda shadow-sm' 
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
@@ -367,9 +367,10 @@ const confirmarEliminacion = async () => {
                     </button>
                 </div>
 
-                <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                    <div class="flex flex-col gap-3 md:flex-row md:items-center flex-wrap">
-                        <div class="w-full sm:w-72">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
+                    <!-- Filtros y Buscador -->
+                    <div class="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2.5 sm:gap-3 flex-1">
+                        <div class="w-full sm:w-64 md:w-72 lg:w-80 relative">
                             <label class="sr-only" for="search-equipo"
                                 >Buscar equipo</label
                             >
@@ -396,19 +397,19 @@ const confirmarEliminacion = async () => {
                                     v-model="searchTerm"
                                     type="text"
                                     placeholder="Buscar por código, tipo o responsable..."
-                                    class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul"
+                                    class="w-full rounded-lg border border-ugel-azul/30 pl-10 pr-4 py-2 text-xs sm:text-sm focus:border-ugel-azul focus:ring-ugel-azul shadow-sm"
                                 />
                             </div>
                         </div>
 
-                        <div class="w-full sm:w-48">
+                        <div class="w-full sm:w-44 md:w-48">
                             <label class="sr-only" for="filtro-tipo"
                                 >Tipo</label
                             >
                             <select
                                 id="filtro-tipo"
                                 v-model="filtroTipo"
-                                class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
+                                class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-xs sm:text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul shadow-sm"
                             >
                                 <option value="todos">Todos los tipos</option>
                                 <option v-for="tipo in tiposDisponibles" :key="tipo" :value="tipo.toLowerCase()">
@@ -417,14 +418,14 @@ const confirmarEliminacion = async () => {
                             </select>
                         </div>
 
-                        <div v-if="filtroCategoria !== 'programa'" class="w-full sm:w-44">
+                        <div v-if="filtroCategoria !== 'programa'" class="w-full sm:w-40 md:w-44">
                             <label class="sr-only" for="filtro-estado"
                                 >Estado</label
                             >
                             <select
                                 id="filtro-estado"
                                 v-model="filtroEstado"
-                                class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul"
+                                class="w-full rounded-lg border border-ugel-azul/30 px-3 py-2 text-xs sm:text-sm text-gray-700 focus:border-ugel-azul focus:ring-ugel-azul shadow-sm"
                             >
                                 <option value="todos">Todos los estados</option>
                                 <option value="libre">Libre</option>
@@ -434,14 +435,15 @@ const confirmarEliminacion = async () => {
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    <!-- Botones de Acción -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 shrink-0">
                         <button
                             v-if="filtroCategoria !== 'programa'"
                             type="button"
-                            class="inline-flex items-center gap-2 rounded-lg border border-ugel-azul bg-white px-4 py-2 text-ugel-azul font-semibold shadow-sm hover:bg-gray-50 transition-colors duration-150"
+                            class="inline-flex items-center justify-center gap-2 rounded-lg border border-ugel-azul bg-white px-3.5 sm:px-4 py-2 text-xs sm:text-sm text-ugel-azul font-semibold shadow-sm hover:bg-gray-50 transition-colors duration-150"
                             @click="abrirModalReportes"
                         >
-                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="size-4 sm:size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h1.5m1.5 0H15m-6 3h6m-6 3h6" />
                             </svg>
@@ -450,7 +452,7 @@ const confirmarEliminacion = async () => {
 
                         <button
                             type="button"
-                            class="inline-flex items-center gap-2 rounded-lg bg-ugel-azul px-4 py-2 text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
+                            class="inline-flex items-center justify-center gap-2 rounded-lg bg-ugel-azul px-3.5 sm:px-4 py-2 text-xs sm:text-sm text-white font-semibold shadow-sm hover:bg-ugel-guinda transition-colors duration-150"
                             @click="abrirModalCrear"
                         >
                             + {{ filtroCategoria === 'programa' ? 'Nuevo programa' : 'Nuevo equipo' }}
@@ -466,37 +468,37 @@ const confirmarEliminacion = async () => {
                             <thead class="bg-ugel-azul/5">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Código
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Nombre
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Tipo
                                     </th>
                                     <th v-if="filtroCategoria !== 'programa'"
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Estado
                                     </th>
                                     <th v-if="filtroCategoria !== 'programa'"
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Responsable
                                     </th>
                                     <th v-if="filtroCategoria !== 'programa'"
-                                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Clasificación
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul"
+                                        class="px-4 sm:px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ugel-azul whitespace-nowrap"
                                     >
                                         Acciones
                                     </th>
@@ -512,11 +514,11 @@ const confirmarEliminacion = async () => {
                                     class="hover:bg-ugel-azul/5 transition"
                                 >
                                     <td
-                                        class="px-6 py-4 text-sm text-gray-700 font-semibold"
+                                        class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-gray-800 font-semibold whitespace-nowrap"
                                     >
                                         <div class="flex flex-col">
                                             <span>{{ equipo.cod_informatica }}</span>
-                                            <span v-if="equipo.cod_serial" class="text-[11px] font-mono text-gray-500 mt-0.5" title="Código serial">
+                                            <span v-if="equipo.cod_serial" class="text-[11px] font-mono text-gray-500 mt-0.5" title="Número de serie">
                                                 S/N: {{ equipo.cod_serial }}
                                             </span>
                                             <span v-if="equipo.ip" class="text-[11px] font-mono text-blue-600 mt-0.5" title="Dirección IP">
@@ -525,7 +527,7 @@ const confirmarEliminacion = async () => {
                                         </div>
                                     </td>
                                     <td
-                                        class="px-6 py-4 text-sm text-gray-700"
+                                        class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-gray-700"
                                     >
                                         <div class="flex flex-col">
                                             <span>{{ equipo.nombre || '-' }}</span>
@@ -535,60 +537,60 @@ const confirmarEliminacion = async () => {
                                         </div>
                                     </td>
                                     <td
-                                        class="px-6 py-4 text-sm text-ugel-guinda"
+                                        class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm text-ugel-guinda whitespace-nowrap"
                                     >
                                         <span class="font-semibold uppercase">{{ (equipo.tipo || '').toUpperCase() }}</span>
                                     </td>
-                                    <td v-if="filtroCategoria !== 'programa'" class="px-6 py-4">
+                                    <td v-if="filtroCategoria !== 'programa'" class="px-4 sm:px-6 py-3.5 whitespace-nowrap">
                                         <span :class="[
-                                            'px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full border',
+                                            'px-2.5 py-0.5 inline-flex text-[11px] sm:text-xs leading-5 font-semibold rounded-full border',
                                             equipo.estado === 'LIBRE' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
-                                            equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                             equipo.estado === 'EN USO' ? 'bg-blue-100 text-blue-700 border-blue-200' :
                                             equipo.estado === 'BAJA' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-gray-100 text-gray-800 border-gray-200'
                                         ]">
                                             {{ equipo.estado === 'BAJA' ? 'DE BAJA' : (equipo.estado || 'Sin estado') }}
                                         </span>
                                     </td>
-                                    <td v-if="filtroCategoria !== 'programa'" class="px-6 py-4">
+                                    <td v-if="filtroCategoria !== 'programa'" class="px-4 sm:px-6 py-3.5">
                                         <div v-if="equipo.persona" class="flex flex-col">
-                                            <span class="text-sm text-gray-700">{{ equipo.persona.nombre_completo }}</span>
-                                            <span v-if="equipo.persona.oficina?.area" class="text-xs text-gray-500 mt-0.5">
+                                            <span class="text-xs sm:text-sm text-gray-700 font-medium">{{ equipo.persona.nombre_completo }}</span>
+                                            <span v-if="equipo.persona.oficina?.area" class="text-[11px] sm:text-xs text-gray-500 mt-0.5">
                                                 {{ equipo.persona.oficina.area.nombre }}
                                             </span>
                                         </div>
-                                        <span v-else class="text-sm text-gray-700">No asignado</span>
+                                        <span v-else class="text-xs sm:text-sm text-gray-500 italic">No asignado</span>
                                     </td>
-                                    <td v-if="filtroCategoria !== 'programa'" class="px-6 py-4">
-                                        <span v-if="equipo.clasificacion" class="bg-gray-100 text-gray-700 border border-gray-200 uppercase px-2.5 py-0.5 rounded-md text-xs font-semibold">
+                                    <td v-if="filtroCategoria !== 'programa'" class="px-4 sm:px-6 py-3.5 whitespace-nowrap">
+                                        <span v-if="equipo.clasificacion" class="bg-gray-100 text-gray-700 border border-gray-200 uppercase px-2 sm:px-2.5 py-0.5 rounded-md text-[11px] sm:text-xs font-semibold">
                                             {{ equipo.clasificacion }}
                                         </span>
-                                        <span v-else class="text-sm text-gray-400 italic">
+                                        <span v-else class="text-xs sm:text-sm text-gray-400 italic">
                                             Sin clasificación
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-4 sm:px-6 py-3.5 whitespace-nowrap text-center">
                                         <div
-                                            class="flex items-center justify-center gap-3"
+                                            class="flex items-center justify-center gap-2 sm:gap-3"
                                         >
                                             <Link
                                                 :href="route('equipos.showByCodigo', equipo.cod_informatica)"
-                                                class="inline-flex items-center rounded-full border border-ugel-azul/40 p-2 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
+                                                class="size-8 inline-flex items-center justify-center rounded-full border border-ugel-azul/40 text-ugel-azul hover:bg-ugel-azul hover:text-white transition"
                                                 title="Ver Detalles"
                                             >
-                                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="size-4 sm:size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                 </svg>
                                             </Link>
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-600 hover:text-white transition"
+                                                class="size-8 inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition"
                                                 @click="
                                                     abrirModalEliminar(equipo)
                                                 "
                                             >
                                                 <svg
-                                                    class="size-5"
+                                                    class="size-4 sm:size-4.5"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -609,7 +611,7 @@ const confirmarEliminacion = async () => {
                                 <tr>
                                     <td
                                         :colspan="filtroCategoria === 'programa' ? 4 : 7"
-                                        class="px-6 py-12 text-center text-gray-600"
+                                        class="px-6 py-12 text-center text-xs sm:text-sm text-gray-600"
                                     >
                                         No hay {{ filtroCategoria === 'programa' ? 'programas' : 'equipos' }} que coincidan con la
                                         búsqueda o filtros aplicados.

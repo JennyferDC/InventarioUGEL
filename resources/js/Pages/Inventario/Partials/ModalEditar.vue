@@ -157,7 +157,7 @@ watch(
         form.cod_serial = value?.cod_serial ?? "";
         form.nombre = value?.nombre ?? "";
         form.descripcion = value?.descripcion ?? "";
-        form.tipo = value?.tipo ?? "";
+        form.tipo = value?.tipo ? value.tipo.toLowerCase() : "";
         form.estado = value?.estado ?? "";
         form.fecha_ingreso = value?.fecha_ingreso ?? "";
         form.fecha_disponible_uso = value?.fecha_disponible_uso ?? "";
@@ -354,7 +354,7 @@ const quitarCaracteristica = (index) => {
                                 <label
                                     for="equipo_serial"
                                     class="block text-sm font-medium text-gray-700"
-                                    >Código serial</label
+                                    >Número de serie</label
                                 >
                                 <input
                                     id="equipo_serial"
@@ -380,15 +380,16 @@ const quitarCaracteristica = (index) => {
                                     :disabled="loading"
                                 >
                                     <option value="">Seleccione tipo</option>
-                                    <option value="PC">PC</option>
-                                    <option value="LAPTOP">LAPTOP</option>
-                                    <option value="TODO EN UNO">TODO EN UNO</option>
-                                    <option value="COMPONENTE">COMPONENTE</option>
-                                    <option value="TECLADO">TECLADO</option>
-                                    <option value="MOUSE">MOUSE</option>
-                                    <option value="GABINETE">GABINETE</option>
-                                    <option value="OTRO">OTRO</option>
-                                    <option value="MONITOR">MONITOR</option>
+                                    <option value="pc">PC</option>
+                                    <option value="laptop">LAPTOP</option>
+                                    <option value="todo en uno">TODO EN UNO</option>
+                                    <option value="monitor">MONITOR</option>
+                                    <option value="teclado">TECLADO</option>
+                                    <option value="mouse">MOUSE</option>
+                                    <option value="gabinete">GABINETE</option>
+                                    <option value="componente">COMPONENTE</option>
+                                    <option value="otro (equipos)">OTRO (EQUIPOS)</option>
+                                    <option value="otro">OTRO</option>
                                 </select>
                                 <p v-if="errors.tipo" class="mt-1 text-xs text-red-600">{{ errors.tipo[0] }}</p>
                             </div>
@@ -482,7 +483,7 @@ const quitarCaracteristica = (index) => {
                                 </select>
                             </div>
 
-                            <div v-if="['PC', 'LAPTOP', 'TODO EN UNO'].includes(form.tipo)">
+                            <div v-if="['PC', 'LAPTOP', 'TODO EN UNO', 'pc', 'laptop', 'todo en uno'].includes(form.tipo)">
                                 <label
                                     for="editar_ip"
                                     class="block text-sm font-medium text-gray-700"

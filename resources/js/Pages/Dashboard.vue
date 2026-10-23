@@ -602,58 +602,58 @@ const formatDateRange = (startStr, endStr) => {
                     </div>
 
                     <!-- Right: Quick actions buttons -->
-                    <div class="bg-white shadow-sm border border-slate-100 rounded-3xl p-6 flex flex-col h-full">
-                        <div class="flex-1 flex flex-col h-full">
+                    <div class="bg-white shadow-sm border border-slate-100 rounded-3xl p-6 flex flex-col h-full min-w-0">
+                        <div class="flex-1 flex flex-col h-full min-w-0">
                             <div>
                                 <h3 class="text-base font-extrabold text-slate-800">Accesos Rápidos</h3>
                                 <p class="text-xs text-slate-400 font-semibold mt-0.5">Accede de forma directa a las principales herramientas de administración.</p>
                             </div>
                             
-                            <!-- Grid stretches to fill the vertical height -->
-                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6 flex-1">
-                                <Link :href="route('equipos.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#EFF6FF] hover:border-blue-200 transition duration-300 group shadow-sm">
-                                    <span class="rounded-2xl bg-[#EFF6FF] p-3.5 text-[#2563EB] group-hover:scale-110 transition duration-300">
-                                        <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <!-- Grid with responsive columns and non-overflowing item wrappers -->
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 mt-6 flex-1 items-stretch">
+                                <Link :href="route('equipos.index')" class="h-full min-w-0 w-full flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#EFF6FF] hover:border-blue-200 transition duration-300 group shadow-sm text-center" title="Ver Equipos">
+                                    <span class="size-10 sm:size-11 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center group-hover:scale-110 transition duration-300 shrink-0">
+                                        <svg class="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                         </svg>
                                     </span>
-                                    <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Ver Equipos</span>
+                                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-700 mt-2 block w-full truncate uppercase tracking-wider">Equipos</span>
                                 </Link>
 
-                                <Link :href="route('programas.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FAF5FF] hover:border-purple-200 transition duration-300 group shadow-sm">
-                                    <span class="rounded-2xl bg-[#FAF5FF] p-3.5 text-[#9333EA] group-hover:scale-110 transition duration-300">
-                                        <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <Link :href="route('programas.index')" class="h-full min-w-0 w-full flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FAF5FF] hover:border-purple-200 transition duration-300 group shadow-sm text-center" title="Ver Programas">
+                                    <span class="size-10 sm:size-11 rounded-xl bg-[#FAF5FF] text-[#9333EA] flex items-center justify-center group-hover:scale-110 transition duration-300 shrink-0">
+                                        <svg class="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                         </svg>
                                     </span>
-                                    <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Ver Programas</span>
+                                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-700 mt-2 block w-full truncate uppercase tracking-wider">Programas</span>
                                 </Link>
 
-                                <Link :href="route('mantenimiento.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#ECFDF5] hover:border-emerald-200 transition duration-300 group shadow-sm">
-                                    <span class="rounded-2xl bg-[#ECFDF5] p-3.5 text-[#10B981] group-hover:scale-110 transition duration-300">
-                                        <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
+                                <Link :href="route('mantenimiento.index')" class="h-full min-w-0 w-full flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#ECFDF5] hover:border-emerald-200 transition duration-300 group shadow-sm text-center" title="Planes de Mantenimiento">
+                                    <span class="size-10 sm:size-11 rounded-xl bg-[#ECFDF5] text-[#10B981] flex items-center justify-center group-hover:scale-110 transition duration-300 shrink-0">
+                                        <svg class="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </span>
-                                    <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Mantenimientos</span>
+                                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-700 mt-2 block w-full truncate uppercase tracking-wider">Mantenimiento</span>
                                 </Link>
 
-                                <Link :href="route('personas.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FFFBEB] hover:border-amber-200 transition duration-300 group shadow-sm">
-                                    <span class="rounded-2xl bg-[#FFFBEB] p-3.5 text-[#D97706] group-hover:scale-110 transition duration-300">
-                                        <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <Link :href="route('personas.index')" class="h-full min-w-0 w-full flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#FFFBEB] hover:border-amber-200 transition duration-300 group shadow-sm text-center" title="Colaboradores y Personal">
+                                    <span class="size-10 sm:size-11 rounded-xl bg-[#FFFBEB] text-[#D97706] flex items-center justify-center group-hover:scale-110 transition duration-300 shrink-0">
+                                        <svg class="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                         </svg>
                                     </span>
-                                    <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Personas</span>
+                                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-700 mt-2 block w-full truncate uppercase tracking-wider">Personas</span>
                                 </Link>
 
-                                <Link :href="route('miembros.index')" class="h-full flex flex-col items-center justify-center p-3.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#F5F3FF] hover:border-indigo-200 transition duration-300 group shadow-sm">
-                                    <span class="rounded-2xl bg-[#F5F3FF] p-3.5 text-[#6366F1] group-hover:scale-110 transition duration-300">
-                                        <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <Link :href="route('miembros.index')" class="h-full min-w-0 w-full flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#F5F3FF] hover:border-indigo-200 transition duration-300 group shadow-sm text-center" title="Miembros y Usuarios">
+                                    <span class="size-10 sm:size-11 rounded-xl bg-[#F5F3FF] text-[#6366F1] flex items-center justify-center group-hover:scale-110 transition duration-300 shrink-0">
+                                        <svg class="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
                                     </span>
-                                    <span class="text-[9px] font-black text-slate-600 mt-2.5 block text-center uppercase tracking-wide">Miembros</span>
+                                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-700 mt-2 block w-full truncate uppercase tracking-wider">Miembros</span>
                                 </Link>
                             </div>
                         </div>
@@ -676,15 +676,15 @@ const formatDateRange = (startStr, endStr) => {
                                     </Link>
                                 </div>
                                 
-                                <!-- Logs layout matching exact picture styling with scroll and clickability -->
-                                <div class="max-h-[300px] overflow-y-auto overflow-x-hidden pr-1.5 space-y-2.5 mt-6 custom-scrollbar" v-if="movimientos_recientes.length > 0">
+                                <!-- Logs layout matching exact picture styling with scroll, user info, and clickability -->
+                                <div class="max-h-[320px] overflow-y-auto overflow-x-hidden pr-1.5 space-y-2.5 mt-6 custom-scrollbar" v-if="movimientos_recientes.length > 0">
                                     <component
                                         :is="item.equipo ? Link : 'div'"
                                         :href="item.equipo ? route('equipos.showByCodigo', item.equipo.cod_informatica) : null"
                                         v-for="item in movimientos_recientes" 
                                         :key="item.id" 
-                                        class="flex items-center justify-between gap-4 py-1.5 border-b border-slate-50 last:border-0 transition duration-150"
-                                        :class="item.equipo ? 'hover:bg-slate-50/80 hover:scale-[1.01] hover:shadow-sm cursor-pointer rounded-xl px-2 -mx-2' : ''"
+                                        class="flex items-center justify-between gap-3 p-2.5 rounded-2xl border border-slate-100 bg-[#F8FAFC]/50 hover:bg-[#EFF6FF] hover:border-blue-100 transition duration-150"
+                                        :class="item.equipo ? 'cursor-pointer hover:shadow-sm' : ''"
                                     >
                                         <div class="flex items-center gap-3 min-w-0 flex-1">
                                             <span :class="[getActivityIconInfo(item).bg, getActivityIconInfo(item).color]" class="size-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-slate-100/50">
@@ -711,14 +711,26 @@ const formatDateRange = (startStr, endStr) => {
                                                 </svg>
                                             </span>
                                             <div class="min-w-0 flex-1">
-                                                <span class="text-xs font-bold text-slate-700 block truncate">
+                                                <span class="text-xs font-bold text-slate-800 block truncate" :title="item.descripcion">
                                                     {{ item.descripcion }}
                                                 </span>
+                                                <div class="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5 font-medium truncate">
+                                                    <span class="inline-flex items-center gap-1 font-bold text-slate-600">
+                                                        <svg class="size-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                        </svg>
+                                                        {{ item.usuario?.name || 'Sistema' }}
+                                                    </span>
+                                                    <span class="text-slate-300">•</span>
+                                                    <span>{{ getTimeAgo(item.fecha_hora) }}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <span class="text-[10px] font-bold text-slate-400 shrink-0">
-                                            {{ getTimeAgo(item.fecha_hora) }}
-                                        </span>
+                                        <div class="shrink-0 text-right">
+                                            <span v-if="item.tipo_accion" class="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/60">
+                                                {{ item.tipo_accion }}
+                                            </span>
+                                        </div>
                                     </component>
                                 </div>
                                 <div v-else class="text-center py-12 text-xs font-semibold text-slate-400">

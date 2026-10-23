@@ -64,7 +64,9 @@ class EquipoController extends Controller
             'persona.oficina.area:id,nombre', 
             'caracteristicas:id,clave,valor,id_equipo',
             'programas:id,cod_informatica,nombre,tipo,estado',
-            'comentarios.usuario:id,name,email'
+            'comentarios.usuario:id,name,email',
+            'equipos:id,cod_informatica,nombre,tipo,estado,id_persona',
+            'equipos.persona:id,nombre_completo'
         ])
         ->where('cod_informatica', $cod_informatica)
         ->firstOrFail();
@@ -294,9 +296,9 @@ class EquipoController extends Controller
             // Helper lists for beautiful labels and relation resolving
             $fieldLabels = [
                 'cod_patrimonial' => 'CÓDIGO PATRIMONIAL',
-                'cod_serial' => 'CÓDIGO SERIAL',
+                'cod_serial' => 'NÚMERO DE SERIE',
                 'nombre' => strtolower($equipo->categoria) === 'programa' ? 'NOMBRE DEL PROGRAMA' : 'NOMBRE DEL EQUIPO',
-                'descripcion' => 'DESCRIPCIÓN',
+                'descripcion' => strtolower($equipo->categoria) === 'programa' ? 'CONCEPTO' : 'DESCRIPCIÓN',
                 'nombre_usuario' => 'CUENTA',
                 'tipo' => 'TIPO',
                 'estado' => 'ESTADO',

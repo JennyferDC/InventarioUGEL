@@ -59,14 +59,6 @@ class OficinaSeeder extends Seeder
             ],
             'Unidad de Gestión Pedagógica' => [
                 [
-                    'nombre' => 'EVA',
-                    'descripcion' => 'Educación Básica Alternativa.'
-                ],
-                [
-                    'nombre' => 'EVE',
-                    'descripcion' => 'Educación Básica Especial.'
-                ],
-                [
                     'nombre' => 'Inicial - Especial',
                     'descripcion' => 'Acompañamiento y soporte técnico pedagógico al nivel inicial y especial.'
                 ],

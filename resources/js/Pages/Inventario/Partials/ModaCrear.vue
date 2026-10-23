@@ -370,15 +370,18 @@ defineExpose({ resetForm });
                                 <p v-if="errors.tipo" class="mt-1 text-xs text-red-600">{{ errors.tipo[0] }}</p>
                             </div>
 
-                            <!-- Descripción del Programa -->
+                            <!-- Concepto del Programa -->
                             <div class="md:col-span-2">
-                                <label for="prog_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label for="prog_descripcion" class="block text-sm font-medium text-gray-700">Concepto</label>
+                                    <span class="text-xs text-gray-500">Breve descripción de qué trata</span>
+                                </div>
                                 <textarea
                                     id="prog_descripcion"
                                     v-model="form.descripcion"
                                     rows="3"
                                     class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul focus:ring-1"
-                                    placeholder="Detalles o finalidad del programa..."
+                                    placeholder="Indique brevemente de qué trata este programa (finalidad, uso principal, etc.)..."
                                     :disabled="loading"
                                 ></textarea>
                                 <p v-if="errors.descripcion" class="mt-1 text-xs text-red-600">{{ errors.descripcion[0] }}</p>
@@ -406,13 +409,13 @@ defineExpose({ resetForm });
                                         <p v-if="errors.cod_patrimonial" class="mt-1 text-xs text-red-600">{{ errors.cod_patrimonial[0] }}</p>
                                     </div>
                                     <div>
-                                        <label for="eq_serial" class="block text-sm font-medium text-gray-700">Código serial</label>
+                                        <label for="eq_serial" class="block text-sm font-medium text-gray-700">Número de serie</label>
                                         <input
                                             id="eq_serial"
                                             v-model="form.cod_serial"
                                             type="text"
                                             class="mt-1 block w-full rounded-lg border border-ugel-azul/40 px-3 py-2 text-sm focus:border-ugel-azul focus:ring-ugel-azul focus:ring-1"
-                                            placeholder="SN-XXXX..."
+                                            placeholder="Ej: SN-4829103..."
                                             :disabled="loading"
                                         />
                                         <p v-if="errors.cod_serial" class="mt-1 text-xs text-red-600">{{ errors.cod_serial[0] }}</p>

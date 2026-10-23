@@ -82,7 +82,7 @@
             @endif
             @if($equipo->cod_serial)
             <tr>
-                <th>Código Serial</th>
+                <th>Número de Serie</th>
                 <td>{{ $equipo->cod_serial }}</td>
             </tr>
             @endif
@@ -94,6 +94,12 @@
                 <th>Estado Actual</th>
                 <td>{{ $equipo->estado }}</td>
             </tr>
+            @if(strtoupper($equipo->estado ?? '') === 'BAJA')
+            <tr>
+                <th>Observación Técnica de Baja</th>
+                <td>{{ $equipo->observacion_tecnica ?? '' }}</td>
+            </tr>
+            @endif
             <tr>
                 <th>Fecha Ingreso</th>
                 <td>{{ $equipo->fecha_ingreso ? date('d/m/Y', strtotime($equipo->fecha_ingreso)) : 'No registrada' }}</td>
@@ -109,7 +115,7 @@
             </tr>
             <tr>
                 <th>Área del Responsable</th>
-                <td>{{ ($equipo->persona && $equipo->persona->area) ? $equipo->persona->area->nombre : '-' }}</td>
+                <td>{{ ($equipo->persona && $equipo->persona->oficina && $equipo->persona->oficina->area) ? $equipo->persona->oficina->area->nombre : (($equipo->persona && $equipo->persona->area) ? $equipo->persona->area->nombre : '-') }}</td>
             </tr>
             @if($equipo->persona && $equipo->persona->celular)
             <tr>

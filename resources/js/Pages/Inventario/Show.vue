@@ -52,7 +52,7 @@ const form = useForm({
     nombre: props.equipo.nombre ?? "",
     descripcion: props.equipo.descripcion ?? "",
     nombre_usuario: props.equipo.nombre_usuario ?? "",
-    tipo: props.equipo.tipo,
+    tipo: props.equipo.tipo ? props.equipo.tipo.toLowerCase() : "",
     estado: props.equipo.estado,
     fecha_ingreso: props.equipo.fecha_ingreso,
     fecha_disponible_uso: props.equipo.fecha_disponible_uso,
@@ -72,6 +72,7 @@ const comentarios = ref([...(props.equipo.comentarios || [])]);
 const nuevoComentario = ref("");
 const guardandoComentario = ref(false);
 const errorComentario = ref("");
+const comentarioSuccess = ref(false);
 
 watch(() => props.equipo.comentarios, (newVal) => {
     comentarios.value = [...(newVal || [])];
@@ -89,10 +90,10 @@ const publicarComentario = async () => {
         if (response.data?.data) {
             comentarios.value.unshift(response.data.data);
             nuevoComentario.value = "";
-            showSuccess.value = true;
+            comentarioSuccess.value = true;
             setTimeout(() => {
-                showSuccess.value = false;
-            }, 3000);
+                comentarioSuccess.value = false;
+            }, 3500);
         }
     } catch (err) {
         console.error("Error al publicar comentario:", err);
@@ -461,6 +462,39 @@ const formatMarkdown = (text) => {
 const localProgramas = ref([...(props.equipo.programas || [])]);
 const showModalProgramas = ref(false);
 
+const programasAgrupados = computed(() => {
+    if (!localProgramas.value || localProgramas.value.length === 0) {
+        return [];
+    }
+
+    const groups = {};
+
+    localProgramas.value.forEach((prog) => {
+        let cat = (prog.tipo || "Otro (programas)").trim();
+        cat = cat.charAt(0).toUpperCase() + cat.slice(1);
+        if (!groups[cat]) {
+            groups[cat] = [];
+        }
+        groups[cat].push(prog);
+    });
+
+    // Ordenar las categorías de menor a mayor (alfabéticamente)
+    const sortedCategories = Object.keys(groups).sort((a, b) =>
+        a.localeCompare(b, "es", { sensitivity: "base" })
+    );
+
+    return sortedCategories.map((categoria) => ({
+        categoria,
+        programas: groups[categoria].sort((a, b) =>
+            (a.nombre || a.cod_informatica || "").localeCompare(
+                b.nombre || b.cod_informatica || "",
+                "es",
+                { sensitivity: "base" }
+            )
+        ),
+    }));
+});
+
 watch(() => props.equipo.programas, (newVal) => {
     localProgramas.value = [...(newVal || [])];
 }, { deep: true });
@@ -594,7 +628,7 @@ const onProgramasSaved = (nuevosProgramas) => {
                             @submit="handleSubmit"
                         />
 
-                        <!-- Sección de Comentarios del Dispositivo -->
+                        <!-- Sección de Comentarios -->
                         <div class="bg-white shadow-xl rounded-2xl overflow-hidden border-t-4 border-ugel-azul">
                             <!-- Header de Comentarios -->
                             <div class="border-b border-ugel-azul/10 px-6 py-5 bg-gray-50 flex items-center justify-between">
@@ -606,19 +640,25 @@ const onProgramasSaved = (nuevosProgramas) => {
                                     </div>
                                     <div>
                                         <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
-                                            Comentarios del Dispositivo
+                                            Comentarios
                                             <span class="inline-flex items-center rounded-full bg-ugel-azul/10 px-2.5 py-0.5 text-xs font-bold text-ugel-azul">
                                                 {{ comentarios.length }}
                                             </span>
                                         </h3>
                                         <p class="text-xs text-gray-500 mt-0.5">
-                                            Anotaciones, incidencias y observaciones registradas por el personal sobre este activo.
+                                            Registra detalles como: Falta número de serie, incidencias o anotaciones sobre este {{ form.categoria === 'programa' ? 'programa' : 'equipo' }}.
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="p-6 space-y-6">
+                                <!-- Notificación de comentario registrado con éxito -->
+                                <div v-if="comentarioSuccess" class="rounded-lg bg-green-50 p-3 text-xs text-green-700 border border-green-200 flex items-center gap-2">
+                                    <svg class="size-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                    <span>Comentario registrado correctamente.</span>
+                                </div>
+
                                 <!-- Formulario para agregar comentario -->
                                 <form @submit.prevent="publicarComentario" class="space-y-3">
                                     <div v-if="errorComentario" class="rounded-lg bg-red-50 p-3 text-xs text-red-600 border border-red-200">
@@ -630,7 +670,7 @@ const onProgramasSaved = (nuevosProgramas) => {
                                             rows="3"
                                             maxlength="2000"
                                             class="block w-full rounded-xl border border-gray-300 p-3 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul transition resize-none placeholder-gray-400"
-                                            :placeholder="`Escribe un comentario o anotación técnica sobre este ${form.categoria === 'programa' ? 'programa' : 'equipo'}...`"
+                                            :placeholder="form.categoria === 'programa' ? 'Escribe un comentario o anotación sobre este programa...' : 'Escribe un comentario o detalle (ej: Falta número de serie, cambio de pieza, etc.)...'"
                                             :disabled="guardandoComentario"
                                         ></textarea>
                                         <div class="text-[11px] text-gray-400 text-right mt-1">
@@ -760,60 +800,67 @@ const onProgramasSaved = (nuevosProgramas) => {
                                         {{ localProgramas.length }}
                                     </span>
                                 </div>
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-ugel-azul hover:text-ugel-guinda transition bg-ugel-azul/10 hover:bg-ugel-azul/20 px-2.5 py-1.5 rounded-md"
-                                    @click="openModalProgramas"
-                                >
-                                    <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    Gestionar
-                                </button>
                             </div>
                             <div class="p-0">
-                                <ul v-if="localProgramas.length > 0" class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
-                                    <li v-for="prog in localProgramas" :key="prog.id" class="px-6 py-3.5 hover:bg-gray-50/80 transition flex items-center justify-between group/item">
-                                        <div class="flex items-center gap-3">
-                                            <div class="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
-                                                <svg v-if="prog.tipo === 'antivirus'" class="size-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                                </svg>
-                                                <svg v-else-if="prog.tipo === 'navegador'" class="size-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                                </svg>
-                                                <svg v-else-if="prog.tipo === 'ofimática' || prog.tipo === 'ofimatica'" class="size-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <svg v-else-if="prog.tipo === 'institucional'" class="size-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                                </svg>
-                                                <svg v-else class="size-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-semibold text-gray-800 leading-snug group-hover/item:text-ugel-azul transition">{{ prog.nombre }}</p>
-                                                <p class="text-xs text-gray-400 capitalize">{{ prog.tipo || 'Software' }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-[10px] font-mono bg-gray-100 text-gray-500 px-2 py-0.5 rounded border border-gray-200/50">
-                                                {{ prog.cod_informatica }}
+                                <div v-if="programasAgrupados.length > 0" class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                                    <div v-for="grupo in programasAgrupados" :key="grupo.categoria" class="space-y-0">
+                                        <!-- Header de Categoría -->
+                                        <div class="bg-gray-50/95 px-6 py-2 border-b border-t first:border-t-0 border-gray-100 flex items-center justify-between sticky top-0 z-10 backdrop-blur-sm">
+                                            <span class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                                                <span class="size-2 rounded-full bg-ugel-azul"></span>
+                                                {{ grupo.categoria }}
                                             </span>
-                                            <Link 
-                                                :href="route('equipos.showByCodigo', prog.cod_informatica)" 
-                                                class="text-gray-400 hover:text-ugel-azul p-1 hover:bg-gray-100 rounded transition"
-                                                title="Ver detalle del programa"
-                                            >
-                                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                </svg>
-                                            </Link>
+                                            <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-200/50">
+                                                {{ grupo.programas.length }} {{ grupo.programas.length === 1 ? 'programa' : 'programas' }}
+                                            </span>
                                         </div>
-                                    </li>
-                                </ul>
+                                        <!-- Listado de programas del grupo -->
+                                        <ul class="divide-y divide-gray-100/60">
+                                            <li v-for="prog in grupo.programas" :key="prog.id" class="px-6 py-3.5 hover:bg-gray-50/80 transition flex items-center justify-between group/item">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
+                                                        <svg v-if="(prog.tipo || '').toLowerCase() === 'antivirus'" class="size-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                                        </svg>
+                                                        <svg v-else-if="(prog.tipo || '').toLowerCase() === 'navegador'" class="size-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                                        </svg>
+                                                        <svg v-else-if="(prog.tipo || '').toLowerCase() === 'ofimática' || (prog.tipo || '').toLowerCase() === 'ofimatica'" class="size-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <svg v-else-if="(prog.tipo || '').toLowerCase() === 'institucional'" class="size-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                        </svg>
+                                                        <svg v-else-if="(prog.tipo || '').toLowerCase() === 'soporte'" class="size-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                        </svg>
+                                                        <svg v-else class="size-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-semibold text-gray-800 leading-snug group-hover/item:text-ugel-azul transition">{{ prog.nombre }}</p>
+                                                        <p class="text-xs text-gray-400 capitalize">{{ prog.tipo || 'Software' }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[10px] font-mono bg-gray-100 text-gray-500 px-2 py-0.5 rounded border border-gray-200/50">
+                                                        {{ prog.cod_informatica }}
+                                                    </span>
+                                                    <Link 
+                                                        :href="route('equipos.showByCodigo', prog.cod_informatica)" 
+                                                        class="text-gray-400 hover:text-ugel-azul p-1 hover:bg-gray-100 rounded transition"
+                                                        title="Ver detalle del programa"
+                                                    >
+                                                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        </svg>
+                                                    </Link>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                                 <div v-else class="px-6 py-10 text-center flex flex-col items-center justify-center">
                                     <div class="size-12 rounded-full bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center text-gray-400 mb-3">
                                         <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -832,6 +879,53 @@ const onProgramasSaved = (nuevosProgramas) => {
                                         </svg>
                                         Asignar Software
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de Equipos Físicos que tienen instalado este programa (Solo para programas) -->
+                        <div v-if="form.categoria === 'programa'" class="bg-white shadow-xl rounded-2xl overflow-hidden border-t-4 border-ugel-azul">
+                            <div class="border-b border-gray-100 px-6 py-4 bg-gray-50 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-sm font-bold text-gray-900">Equipos con este Programa</h3>
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200/50">
+                                        {{ (equipo.equipos || []).length }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="p-0">
+                                <ul v-if="(equipo.equipos || []).length > 0" class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                                    <li v-for="eq in equipo.equipos" :key="eq.id" class="px-6 py-3.5 hover:bg-gray-50/80 transition flex items-center justify-between group/item">
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
+                                                <svg class="size-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-gray-800 leading-snug group-hover/item:text-ugel-azul transition">{{ eq.nombre || eq.cod_informatica }}</p>
+                                                <p class="text-xs text-gray-400 capitalize">{{ eq.tipo || 'Equipo' }} {{ eq.persona ? '• ' + eq.persona.nombre_completo : '' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-mono bg-gray-100 text-gray-500 px-2 py-0.5 rounded border border-gray-200/50">
+                                                {{ eq.cod_informatica }}
+                                            </span>
+                                            <Link 
+                                                :href="route('equipos.showByCodigo', eq.cod_informatica)" 
+                                                class="text-gray-400 hover:text-ugel-azul p-1 hover:bg-gray-100 rounded transition"
+                                                title="Ver detalle del equipo"
+                                            >
+                                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </Link>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <div v-else class="px-6 py-8 text-center flex flex-col items-center justify-center">
+                                    <p class="text-sm font-medium text-gray-700">Sin equipos asociados</p>
+                                    <p class="text-xs text-gray-400 max-w-[220px] mt-1 leading-normal">Este software no se encuentra asignado a ningún equipo físico actualmente.</p>
                                 </div>
                             </div>
                         </div>

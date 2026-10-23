@@ -17,6 +17,10 @@ const props = defineProps({
     oficinas: {
         type: Array,
         required: true
+    },
+    items: {
+        type: Array,
+        default: () => []
     }
 });
 
@@ -62,6 +66,32 @@ const handleBlur = () => {
     }, 200);
 };
 
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
+};
+
+const areaConflict = computed(() => {
+    if (!form.id_oficinas || !form.fecha_inicio || !form.fecha_fin) return null;
+    if (form.fecha_fin < form.fecha_inicio) return null;
+
+    const selectedOficina = props.oficinas.find(o => o.id === form.id_oficinas);
+    if (!selectedOficina) return null;
+
+    const areaId = selectedOficina.area_id;
+
+    return props.items.find(item => {
+        if (props.item && item.id === props.item.id) return false;
+
+        const itemAreaId = item.oficina?.area_id ?? item.oficina?.area?.id;
+        const sameArea = areaId ? (itemAreaId === areaId) : (item.id_oficinas === form.id_oficinas);
+        if (!sameArea) return false;
+
+        return item.fecha_inicio <= form.fecha_fin && item.fecha_fin >= form.fecha_inicio;
+    });
+});
+
 watch(
     () => props.show,
     (isOpen) => {
@@ -85,21 +115,29 @@ watch(
 const submit = () => {
     if (!props.item) return;
     
+    form.clearErrors();
+
+    if (!form.id_oficinas) {
+        form.setError('id_oficinas', 'Debe seleccionar una oficina.');
+        return;
+    }
+
+    if (form.fecha_inicio && form.fecha_fin && form.fecha_fin < form.fecha_inicio) {
+        form.setError('fecha_fin', 'La fecha de fin debe ser posterior o igual a la fecha de inicio.');
+        return;
+    }
+
+    if (areaConflict.value) {
+        const areaName = areaConflict.value.oficina?.area?.nombre;
+        const ofiName = areaConflict.value.oficina?.nombre || 'otra oficina';
+        const msg = `Existe un cruce de fechas con la actividad '${areaConflict.value.actividad}' en ${ofiName}${areaName ? ' (' + areaName + ')' : ''} del ${formatDate(areaConflict.value.fecha_inicio)} al ${formatDate(areaConflict.value.fecha_fin)}. Las actividades de una misma área no pueden cruzarse en fechas.`;
+        form.setError('fecha_inicio', msg);
+        return;
+    }
+
     form.put(route('mantenimiento.actividades.update', props.item.id), {
         onSuccess: () => {
             closeModal();
-            if (!page.props.jetstream) page.props.jetstream = { flash: {} };
-            page.props.jetstream.flash = {
-                bannerStyle: 'success',
-                banner: 'Actividad actualizada exitosamente.',
-            };
-        },
-        onError: () => {
-            if (!page.props.jetstream) page.props.jetstream = { flash: {} };
-            page.props.jetstream.flash = {
-                bannerStyle: 'danger',
-                banner: 'Ocurrió un error al actualizar la actividad.',
-            };
         },
         preserveScroll: true
     });
@@ -207,6 +245,16 @@ const closeModal = () => {
                             required
                         />
                         <InputError :message="form.errors.fecha_fin" class="mt-2" />
+                    </div>
+                </div>
+
+                <!-- Alerta visual de cruce de fechas en la misma área -->
+                <div v-if="areaConflict" class="p-3.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5 text-xs text-red-700">
+                    <svg class="size-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                        <span class="font-bold">Cruce de fechas detectado:</span> La oficina seleccionada pertenece a <span class="font-semibold">{{ areaConflict.oficina?.area?.nombre || 'la misma área' }}</span>, donde ya está programada la actividad <em>"{{ areaConflict.actividad }}"</em> en <strong>{{ areaConflict.oficina?.nombre }}</strong> del {{ formatDate(areaConflict.fecha_inicio) }} al {{ formatDate(areaConflict.fecha_fin) }}.
                     </div>
                 </div>
 

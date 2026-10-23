@@ -53,6 +53,46 @@ const filteredLeftPrograms = computed(() => {
     );
 });
 
+const groupedLeftPrograms = computed(() => {
+    if (!filteredLeftPrograms.value || filteredLeftPrograms.value.length === 0) return [];
+    const groups = {};
+    filteredLeftPrograms.value.forEach(p => {
+        let cat = (p.tipo || "Otro (programas)").trim();
+        cat = cat.charAt(0).toUpperCase() + cat.slice(1);
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(p);
+    });
+    const sortedCats = Object.keys(groups).sort((a, b) =>
+        a.localeCompare(b, "es", { sensitivity: "base" })
+    );
+    return sortedCats.map(categoria => ({
+        categoria,
+        programas: groups[categoria].sort((a, b) =>
+            (a.nombre || a.cod_informatica || "").localeCompare(b.nombre || b.cod_informatica || "", "es", { sensitivity: "base" })
+        )
+    }));
+});
+
+const groupedRightPrograms = computed(() => {
+    if (!localProgramas.value || localProgramas.value.length === 0) return [];
+    const groups = {};
+    localProgramas.value.forEach(p => {
+        let cat = (p.tipo || "Otro (programas)").trim();
+        cat = cat.charAt(0).toUpperCase() + cat.slice(1);
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(p);
+    });
+    const sortedCats = Object.keys(groups).sort((a, b) =>
+        a.localeCompare(b, "es", { sensitivity: "base" })
+    );
+    return sortedCats.map(categoria => ({
+        categoria,
+        programas: groups[categoria].sort((a, b) =>
+            (a.nombre || a.cod_informatica || "").localeCompare(b.nombre || b.cod_informatica || "", "es", { sensitivity: "base" })
+        )
+    }));
+});
+
 const toggleSelectLeft = (program) => {
     const idx = selectedProgramasLeft.value.findIndex(p => p.id === program.id);
     if (idx > -1) {
@@ -221,43 +261,56 @@ const saveProgramas = async () => {
 
                         <!-- Listado Izquierda -->
                         <div class="p-2 overflow-y-auto flex-1 divide-y divide-gray-100/50 min-h-[30vh]">
-                            <div 
-                                v-for="prog in filteredLeftPrograms" 
-                                :key="prog.id" 
-                                @click="toggleSelectLeft(prog)"
-                                @dblclick="transferToRight([prog])"
-                                :class="[
-                                    'p-2.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center justify-between group my-0.5 border border-transparent',
-                                    isSelectedLeft(prog) ? 'bg-blue-50/60 border-blue-200/80 shadow-sm' : 'hover:bg-gray-50'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3 pr-2 min-w-0">
-                                    <input
-                                        type="checkbox"
-                                        :checked="isSelectedLeft(prog)"
-                                        @click.stop="toggleSelectLeft(prog)"
-                                        class="size-3.5 rounded border-gray-300 text-ugel-azul focus:ring-ugel-azul cursor-pointer shrink-0"
-                                    />
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-semibold text-gray-800 truncate leading-snug">{{ prog.nombre }}</p>
-                                        <div class="flex items-center gap-1.5 mt-0.5">
-                                            <span class="text-[9px] font-semibold text-gray-400 capitalize">{{ prog.tipo || 'Programa' }}</span>
-                                            <span class="text-[9px] font-mono text-gray-400">• {{ prog.cod_informatica }}</span>
+                            <div v-if="groupedLeftPrograms.length > 0" class="space-y-3">
+                                <div v-for="grupo in groupedLeftPrograms" :key="grupo.categoria" class="space-y-1">
+                                    <div class="px-2.5 py-1 bg-gray-100/80 rounded-md text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center justify-between sticky top-0 z-10 backdrop-blur-sm border border-gray-200/50">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="size-1.5 rounded-full bg-ugel-azul"></span>
+                                            {{ grupo.categoria }}
+                                        </span>
+                                        <span class="text-[9px] font-semibold text-gray-500 bg-white/80 px-1.5 py-0.2 rounded-full border border-gray-200/50">
+                                            {{ grupo.programas.length }}
+                                        </span>
+                                    </div>
+                                    <div 
+                                        v-for="prog in grupo.programas" 
+                                        :key="prog.id" 
+                                        @click="toggleSelectLeft(prog)"
+                                        @dblclick="transferToRight([prog])"
+                                        :class="[
+                                            'p-2.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center justify-between group my-0.5 border border-transparent',
+                                            isSelectedLeft(prog) ? 'bg-blue-50/60 border-blue-200/80 shadow-sm' : 'hover:bg-gray-50'
+                                        ]"
+                                    >
+                                        <div class="flex items-center gap-3 pr-2 min-w-0">
+                                            <input
+                                                type="checkbox"
+                                                :checked="isSelectedLeft(prog)"
+                                                @click.stop="toggleSelectLeft(prog)"
+                                                class="size-3.5 rounded border-gray-300 text-ugel-azul focus:ring-ugel-azul cursor-pointer shrink-0"
+                                            />
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-semibold text-gray-800 truncate leading-snug">{{ prog.nombre }}</p>
+                                                <div class="flex items-center gap-1.5 mt-0.5">
+                                                    <span class="text-[9px] font-semibold text-gray-400 capitalize">{{ prog.tipo || 'Programa' }}</span>
+                                                    <span class="text-[9px] font-mono text-gray-400">• {{ prog.cod_informatica }}</span>
+                                                </div>
+                                            </div>
                                         </div>
+                                        <button 
+                                            type="button" 
+                                            @click.stop="transferToRight([prog])"
+                                            class="opacity-0 group-hover:opacity-100 transition p-1 hover:bg-blue-100 hover:text-ugel-azul text-gray-400 rounded shrink-0"
+                                            title="Instalar en el equipo"
+                                        >
+                                            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
-                                <button 
-                                    type="button" 
-                                    @click.stop="transferToRight([prog])"
-                                    class="opacity-0 group-hover:opacity-100 transition p-1 hover:bg-blue-100 hover:text-ugel-azul text-gray-400 rounded shrink-0"
-                                    title="Instalar en el equipo"
-                                >
-                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
                             </div>
-                            <div v-if="filteredLeftPrograms.length === 0" class="py-12 text-center text-xs text-gray-450 flex flex-col items-center justify-center">
+                            <div v-else class="py-12 text-center text-xs text-gray-450 flex flex-col items-center justify-center">
                                 <svg class="size-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -349,43 +402,56 @@ const saveProgramas = async () => {
 
                         <!-- Listado Derecha -->
                         <div class="p-2 overflow-y-auto flex-1 divide-y divide-gray-100/50 min-h-[30vh]">
-                            <div 
-                                v-for="prog in localProgramas" 
-                                :key="prog.id" 
-                                @click="toggleSelectRight(prog)"
-                                @dblclick="transferToLeft([prog])"
-                                :class="[
-                                    'p-2.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center justify-between group my-0.5 border border-transparent',
-                                    isSelectedRight(prog) ? 'bg-red-50/60 border-red-200/80 shadow-sm' : 'hover:bg-gray-50'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3 pr-2 min-w-0">
-                                    <input
-                                        type="checkbox"
-                                        :checked="isSelectedRight(prog)"
-                                        @click.stop="toggleSelectRight(prog)"
-                                        class="size-3.5 rounded border-gray-300 text-red-500 focus:ring-red-500 cursor-pointer shrink-0"
-                                    />
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-semibold text-gray-800 truncate leading-snug">{{ prog.nombre }}</p>
-                                        <div class="flex items-center gap-1.5 mt-0.5">
-                                            <span class="text-[9px] font-semibold text-gray-400 capitalize">{{ prog.tipo || 'Programa' }}</span>
-                                            <span class="text-[9px] font-mono text-gray-400">• {{ prog.cod_informatica }}</span>
+                            <div v-if="groupedRightPrograms.length > 0" class="space-y-3">
+                                <div v-for="grupo in groupedRightPrograms" :key="grupo.categoria" class="space-y-1">
+                                    <div class="px-2.5 py-1 bg-gray-100/80 rounded-md text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center justify-between sticky top-0 z-10 backdrop-blur-sm border border-gray-200/50">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="size-1.5 rounded-full bg-blue-600"></span>
+                                            {{ grupo.categoria }}
+                                        </span>
+                                        <span class="text-[9px] font-semibold text-gray-500 bg-white/80 px-1.5 py-0.2 rounded-full border border-gray-200/50">
+                                            {{ grupo.programas.length }}
+                                        </span>
+                                    </div>
+                                    <div 
+                                        v-for="prog in grupo.programas" 
+                                        :key="prog.id" 
+                                        @click="toggleSelectRight(prog)"
+                                        @dblclick="transferToLeft([prog])"
+                                        :class="[
+                                            'p-2.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center justify-between group my-0.5 border border-transparent',
+                                            isSelectedRight(prog) ? 'bg-red-50/60 border-red-200/80 shadow-sm' : 'hover:bg-gray-50'
+                                        ]"
+                                    >
+                                        <div class="flex items-center gap-3 pr-2 min-w-0">
+                                            <input
+                                                type="checkbox"
+                                                :checked="isSelectedRight(prog)"
+                                                @click.stop="toggleSelectRight(prog)"
+                                                class="size-3.5 rounded border-gray-300 text-red-500 focus:ring-red-500 cursor-pointer shrink-0"
+                                            />
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-semibold text-gray-800 truncate leading-snug">{{ prog.nombre }}</p>
+                                                <div class="flex items-center gap-1.5 mt-0.5">
+                                                    <span class="text-[9px] font-semibold text-gray-400 capitalize">{{ prog.tipo || 'Programa' }}</span>
+                                                    <span class="text-[9px] font-mono text-gray-400">• {{ prog.cod_informatica }}</span>
+                                                </div>
+                                            </div>
                                         </div>
+                                        <button 
+                                            type="button" 
+                                            @click.stop="transferToLeft([prog])"
+                                            class="opacity-0 group-hover:opacity-100 transition p-1 hover:bg-red-100 hover:text-red-600 text-gray-400 rounded shrink-0"
+                                            title="Desinstalar del equipo"
+                                        >
+                                            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
-                                <button 
-                                    type="button" 
-                                    @click.stop="transferToLeft([prog])"
-                                    class="opacity-0 group-hover:opacity-100 transition p-1 hover:bg-red-100 hover:text-red-600 text-gray-400 rounded shrink-0"
-                                    title="Desinstalar del equipo"
-                                >
-                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
                             </div>
-                            <div v-if="localProgramas.length === 0" class="py-12 text-center text-xs text-gray-450 flex flex-col items-center justify-center">
+                            <div v-else class="py-12 text-center text-xs text-gray-450 flex flex-col items-center justify-center">
                                 <svg class="size-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>

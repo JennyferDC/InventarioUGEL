@@ -203,61 +203,72 @@ const quitarCaracteristica = (index) => {
             </div>
 
             <form @submit.prevent="emit('submit')" class="space-y-6">
-                <!-- VISTA PARA PROGRAMAS -->
-                <div v-if="form.categoria === 'programa'" class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <!-- Código informática (deshabilitado, autogenerado) -->
-                    <div>
-                        <label for="prog_cod" class="block text-sm font-medium text-gray-700">Código informática</label>
-                        <input
-                            id="prog_cod"
-                            v-model="form.cod_informatica"
-                            type="text"
-                            disabled
-                            class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
-                        />
-                    </div>
+                <!-- VISTA PARA PROGRAMAS (SECCIONADA) -->
+                <div v-if="form.categoria === 'programa'" class="space-y-6">
+                    <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-200/80 space-y-4">
+                        <div class="text-xs font-bold text-ugel-guinda uppercase tracking-wider border-b border-gray-200 pb-2">
+                            Apartado del Programa
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Código informática (deshabilitado, autogenerado) -->
+                            <div>
+                                <label for="prog_cod" class="block text-sm font-medium text-gray-700">Código informática</label>
+                                <input
+                                    id="prog_cod"
+                                    v-model="form.cod_informatica"
+                                    type="text"
+                                    disabled
+                                    class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
+                                />
+                            </div>
 
-                    <!-- Nombre del programa -->
-                    <div>
-                        <label for="prog_nombre" class="block text-sm font-medium text-gray-700">Nombre del programa <span class="text-red-500">*</span></label>
-                        <input
-                            id="prog_nombre"
-                            v-model="form.nombre"
-                            type="text"
-                            required
-                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
-                            placeholder=""
-                        />
-                        <div v-if="form.errors.nombre" class="mt-1 text-xs text-red-500">{{ form.errors.nombre }}</div>
-                    </div>
+                            <!-- Nombre del programa -->
+                            <div>
+                                <label for="prog_nombre" class="block text-sm font-medium text-gray-700">Nombre del programa <span class="text-red-500">*</span></label>
+                                <input
+                                    id="prog_nombre"
+                                    v-model="form.nombre"
+                                    type="text"
+                                    required
+                                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                    placeholder="Ej: Microsoft Office 2021, AutoCAD..."
+                                />
+                                <div v-if="form.errors.nombre" class="mt-1 text-xs text-red-500">{{ form.errors.nombre }}</div>
+                            </div>
 
-                    <!-- Tipo de programa -->
-                    <div class="md:col-span-2">
-                        <label for="prog_tipo" class="block text-sm font-medium text-gray-700">Tipo de programa <span class="text-red-500">*</span></label>
-                        <select
-                            id="prog_tipo"
-                            v-model="form.tipo"
-                            required
-                            :disabled="true"
-                            class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
-                        >
-                            <option value="" disabled>Seleccione un tipo</option>
-                            <option v-for="t in tiposDisponibles" :key="t" :value="t.toLowerCase()">{{ t }}</option>
-                        </select>
-                        <div v-if="form.errors.tipo" class="mt-1 text-xs text-red-500">{{ form.errors.tipo }}</div>
-                    </div>
+                            <!-- Tipo de programa -->
+                            <div class="md:col-span-2">
+                                <label for="prog_tipo" class="block text-sm font-medium text-gray-700">Tipo de programa <span class="text-red-500">*</span></label>
+                                <select
+                                    id="prog_tipo"
+                                    v-model="form.tipo"
+                                    required
+                                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul bg-white"
+                                >
+                                    <option value="" disabled>Seleccione un tipo</option>
+                                    <option v-for="t in tiposDisponibles" :key="t" :value="t.toLowerCase()">{{ t }}</option>
+                                </select>
+                                <div v-if="form.errors.tipo" class="mt-1 text-xs text-red-500">{{ form.errors.tipo }}</div>
+                            </div>
 
-                    <!-- Descripción del programa -->
-                    <div class="md:col-span-2">
-                        <label for="prog_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
-                        <textarea
-                            id="prog_descripcion"
-                            v-model="form.descripcion"
-                            rows="3"
-                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
-                            placeholder="Detalles o finalidad del programa..."
-                        ></textarea>
-                        <div v-if="form.errors.descripcion" class="mt-1 text-xs text-red-500">{{ form.errors.descripcion }}</div>
+                            <!-- Campo Concepto para indicar brevemente de qué trata -->
+                            <div class="md:col-span-2">
+                                <div class="flex items-center justify-between mb-1">
+                                    <label for="prog_descripcion" class="block text-sm font-medium text-gray-700">
+                                        Concepto
+                                    </label>
+                                    <span class="text-xs text-gray-500">Breve descripción de qué trata</span>
+                                </div>
+                                <textarea
+                                    id="prog_descripcion"
+                                    v-model="form.descripcion"
+                                    rows="3"
+                                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
+                                    placeholder="Indique brevemente de qué trata este programa (finalidad, uso principal, etc.)..."
+                                ></textarea>
+                                <div v-if="form.errors.descripcion" class="mt-1 text-xs text-red-500">{{ form.errors.descripcion }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -281,6 +292,21 @@ const quitarCaracteristica = (index) => {
                                 />
                             </div>
 
+                            <!-- Tipo de equipo (Editable, incluye Gabinete) -->
+                            <div>
+                                <label for="equipo_tipo" class="block text-sm font-medium text-gray-700">Tipo de equipo <span class="text-red-500">*</span></label>
+                                <select
+                                    id="equipo_tipo"
+                                    v-model="form.tipo"
+                                    required
+                                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul bg-white"
+                                >
+                                    <option value="" disabled>Seleccione un tipo</option>
+                                    <option v-for="t in tiposDisponibles" :key="t" :value="t.toLowerCase()">{{ t }}</option>
+                                </select>
+                                <div v-if="form.errors.tipo" class="mt-1 text-xs text-red-500">{{ form.errors.tipo }}</div>
+                            </div>
+
                             <!-- Código patrimonial -->
                             <div>
                                 <label for="eq_patrimonial" class="block text-sm font-medium text-gray-700">Código patrimonial</label>
@@ -294,21 +320,21 @@ const quitarCaracteristica = (index) => {
                                 <div v-if="form.errors.cod_patrimonial" class="mt-1 text-xs text-red-500">{{ form.errors.cod_patrimonial }}</div>
                             </div>
 
-                            <!-- Código serial -->
+                            <!-- Número de serie (independiente del Código Patrimonial) -->
                             <div>
-                                <label for="eq_serial" class="block text-sm font-medium text-gray-700">Código serial</label>
+                                <label for="eq_serial" class="block text-sm font-medium text-gray-700">Número de serie</label>
                                 <input
                                     id="eq_serial"
                                     v-model="form.cod_serial"
                                     type="text"
                                     class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ugel-azul focus:outline-none focus:ring-1 focus:ring-ugel-azul"
-                                    placeholder="SN-XXXX..."
+                                    placeholder="Ej: SN-4829103..."
                                 />
                                 <div v-if="form.errors.cod_serial" class="mt-1 text-xs text-red-500">{{ form.errors.cod_serial }}</div>
                             </div>
 
-                            <!-- Nombre de equipo -->
-                            <div v-if="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())">
+                            <!-- Nombre de equipo (Solo para computadoras completas: PC, Laptop, Todo en uno) -->
+                            <div v-if="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase())" class="md:col-span-2">
                                 <label for="eq_nombre" class="block text-sm font-medium text-gray-700">Nombre de equipo</label>
                                 <input
                                     id="eq_nombre"
@@ -318,22 +344,6 @@ const quitarCaracteristica = (index) => {
                                     placeholder="DESKTOP-EAOR902..."
                                 />
                                 <div v-if="form.errors.nombre" class="mt-1 text-xs text-red-500">{{ form.errors.nombre }}</div>
-                            </div>
-
-                            <!-- Tipo de equipo -->
-                            <div :class="!['monitor', 'teclado', 'mouse', 'gabinete', 'otro (equipos)'].includes((form.tipo || '').toLowerCase()) ? '' : 'md:col-span-2'">
-                                <label for="equipo_tipo" class="block text-sm font-medium text-gray-700">Tipo de equipo <span class="text-red-500">*</span></label>
-                                <select
-                                    id="equipo_tipo"
-                                    v-model="form.tipo"
-                                    required
-                                    :disabled="true"
-                                    class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 cursor-not-allowed"
-                                >
-                                    <option value="" disabled>Seleccione un tipo</option>
-                                    <option v-for="t in tiposDisponibles" :key="t" :value="t.toLowerCase()">{{ t }}</option>
-                                </select>
-                                <div v-if="form.errors.tipo" class="mt-1 text-xs text-red-500">{{ form.errors.tipo }}</div>
                             </div>
                         </div>
                     </div>

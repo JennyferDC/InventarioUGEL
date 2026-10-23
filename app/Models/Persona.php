@@ -29,6 +29,14 @@ class Persona extends Model
     }
 
     /**
+     * Accesor: Obtener el área a través de la oficina
+     */
+    public function getAreaAttribute()
+    {
+        return $this->oficina?->area;
+    }
+
+    /**
      * Relación: Persona tiene muchos Equipos
      */
     public function equipos()

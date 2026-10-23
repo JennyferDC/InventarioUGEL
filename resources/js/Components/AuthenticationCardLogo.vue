@@ -1,13 +1,7 @@
-<script setup>
-import { Link } from "@inertiajs/vue3";
-</script>
-
 <template>
-    <Link :href="'/'">
-        <img
-            :src="$page.props.app_url + '/logo.png'"
-            alt="Logo Ugel Huánuco - Inventario"
-            class="h-20 w-auto"
-        />
-    </Link>
+    <img
+        src="/logo.png"
+        alt="UGEL Huánuco"
+        class="h-14 w-auto max-w-full object-contain select-none pointer-events-none"
+    />
 </template>

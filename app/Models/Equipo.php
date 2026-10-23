@@ -39,6 +39,14 @@ class Equipo extends Model
     }
 
     /**
+     * Accesor: Obtener el área del equipo a través del responsable y su oficina
+     */
+    public function getAreaAttribute()
+    {
+        return $this->persona?->oficina?->area;
+    }
+
+    /**
      * Relación: Equipo tiene muchas Características
      */
     public function caracteristicas()

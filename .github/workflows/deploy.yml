@@ -86,3 +86,14 @@ jobs:
           **/storage/framework/cache/**
           release.zip
           test_zip.php
+
+    - name: 🚀 Subir assets compilados de Vite (public/build)
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./public/build/
+        server-dir: ./public/build/
+        state-name: .build-sync-state.json
+        log-level: verbose

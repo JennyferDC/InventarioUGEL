@@ -23,21 +23,4 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-$request = Request::capture();
-
-$reqPath = trim($request->path(), '/');
-if ($reqPath === '' || $reqPath === 'Henrry') {
-    $target = config('app.url', '/Henrry') . '/login';
-    header('Location: ' . $target, true, 302);
-    exit;
-}
-
-$response = $app->handleRequest($request);
-
-if ($response->getStatusCode() === 405) {
-    $target = config('app.url', '/Henrry') . '/login';
-    header('Location: ' . $target, true, 302);
-    exit;
-}
-
-$response->send();
+$app->handleRequest(Request::capture());

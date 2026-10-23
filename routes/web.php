@@ -15,7 +15,14 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
+Route::match(['get', 'head'], '/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+});
+
+Route::match(['get', 'head'], '/Henrry', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }

@@ -1,3 +1,44 @@
 <?php
 
-require_once __DIR__ . '/public/index.php';
+// Ajuste para despliegue en subdirectorio (cPanel)
+if (isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/public/index.php') !== false) {
+    $_SERVER['SCRIPT_NAME'] = str_replace('/public/index.php', '/index.php', $_SERVER['SCRIPT_NAME']);
+    $_SERVER['PHP_SELF'] = str_replace('/public/index.php', '/index.php', $_SERVER['PHP_SELF']);
+}
+
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+
+define('LARAVEL_START', microtime(true));
+
+// Determine if the application is in maintenance mode...
+if (file_exists($maintenance = __DIR__.'/storage/framework/maintenance.php')) {
+    require $maintenance;
+}
+
+// Register the Composer autoloader...
+require __DIR__.'/vendor/autoload.php';
+
+// Bootstrap Laravel and handle the request...
+/** @var Application $app */
+$app = require_once __DIR__.'/bootstrap/app.php';
+
+$request = Request::capture();
+
+// Si la petición es directamente a la raíz '/', redirigir a login o dashboard
+$reqPath = trim($request->path(), '/');
+if ($reqPath === '' || $reqPath === 'Henrry') {
+    $target = config('app.url', '/Henrry') . '/login';
+    header('Location: ' . $target, true, 302);
+    exit;
+}
+
+$response = $app->handleRequest($request);
+
+if ($response->getStatusCode() === 405) {
+    $target = config('app.url', '/Henrry') . '/login';
+    header('Location: ' . $target, true, 302);
+    exit;
+}
+
+$response->send();

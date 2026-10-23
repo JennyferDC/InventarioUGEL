@@ -12,37 +12,24 @@ $kernel->bootstrap();
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-echo "=== SERVER VARIABLES FOR CURRENT REQUEST ===\n";
-echo "REQUEST_URI: " . $_SERVER['REQUEST_URI'] . "\n";
-echo "SCRIPT_NAME: " . ($_SERVER['SCRIPT_NAME'] ?? '') . "\n";
-echo "PHP_SELF: " . ($_SERVER['PHP_SELF'] ?? '') . "\n\n";
+// Simular la petición real tal como entra por public/index.php
+$server = $_SERVER;
+$server['REQUEST_URI'] = '/Henrry/';
+$server['REQUEST_METHOD'] = 'GET';
+$server['SCRIPT_NAME'] = '/Henrry/index.php';
+$server['PHP_SELF'] = '/Henrry/index.php';
 
-$req = Request::capture();
-echo "Request baseUrl: '" . $req->getBaseUrl() . "'\n";
-echo "Request pathInfo: '" . $req->getPathInfo() . "'\n";
-echo "Request path: '" . $req->path() . "'\n\n";
+$req = Request::create('/Henrry/', 'GET', [], [], [], $server);
 
-echo "=== TESTING ROUTES FOR '/' ===\n";
+echo "BaseUrl: '" . $req->getBaseUrl() . "'\n";
+echo "PathInfo: '" . $req->getPathInfo() . "'\n";
+echo "Path: '" . $req->path() . "'\n";
+
 try {
-    $r = Request::create('/', 'GET');
-    $route = Route::getRoutes()->match($r);
-    echo "Matched route for '/': " . $route->uri() . " (methods: " . implode(',', $route->methods()) . ")\n";
+    $response = $app->handleRequest($req);
+    echo "Response status: " . $response->getStatusCode() . "\n";
+    echo "Response headers: " . json_encode($response->headers->all()) . "\n";
+    echo "Response content preview: " . substr($response->getContent(), 0, 200) . "\n";
 } catch (\Throwable $t) {
-    echo "Match '/' failed: " . $t->getMessage() . "\n";
-}
-
-echo "\n=== TESTING ROUTES FOR '/Henrry' ===\n";
-try {
-    $r = Request::create('/Henrry', 'GET');
-    $route = Route::getRoutes()->match($r);
-    echo "Matched route for '/Henrry': " . $route->uri() . " (methods: " . implode(',', $route->methods()) . ")\n";
-} catch (\Throwable $t) {
-    echo "Match '/Henrry' failed: " . $t->getMessage() . "\n";
-}
-
-echo "\n=== ALL NON-GET ROUTES ===\n";
-foreach (Route::getRoutes() as $rt) {
-    if (!in_array('GET', $rt->methods())) {
-        echo implode('|', $rt->methods()) . " -> " . $rt->uri() . "\n";
-    }
+    echo "Exception: " . get_class($t) . ": " . $t->getMessage() . "\n" . $t->getTraceAsString() . "\n";
 }

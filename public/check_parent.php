@@ -4,18 +4,29 @@ ini_set('display_errors', 1);
 
 header('Content-Type: text/plain; charset=utf-8');
 
-$parent = realpath(__DIR__ . '/../../');
-echo "Parent directory: $parent\n";
+$parentHt = '/home2/ugelhuanucogob/inventario.ugelhuanuco.gob.pe/.htaccess';
 
-if ($parent && file_exists("$parent/.htaccess")) {
-    echo "=== PARENT .HTACCESS ===\n";
-    echo file_get_contents("$parent/.htaccess") . "\n";
+if (file_exists($parentHt) && is_writable($parentHt)) {
+    $parentContent = <<<EOT
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # No reescribir subdirectorios como Henrry
+    RewriteCond %{REQUEST_URI} ^/Henrry(/|$) [NC]
+    RewriteRule ^ - [L]
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Deny access to sensitive files
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+EOT;
+    file_put_contents($parentHt, $parentContent);
+    echo "Parent .htaccess UPDATED successfully!\n";
+    echo file_get_contents($parentHt) . "\n";
 } else {
-    echo "Parent .htaccess not found\n";
-}
-
-$currentHtaccess = realpath(__DIR__ . '/../.htaccess');
-echo "=== CURRENT ROOT .HTACCESS ($currentHtaccess) ===\n";
-if (file_exists($currentHtaccess)) {
-    echo file_get_contents($currentHtaccess) . "\n";
+    echo "Parent .htaccess is not writable or does not exist\n";
 }

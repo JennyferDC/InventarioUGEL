@@ -377,10 +377,11 @@ const quitarCaracteristica = (index) => {
                                 </div>
                                 <div class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm flex items-center">
                                     <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold border', 
+                                        (form.estado || '').toUpperCase() === 'BORRADOR' ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold' :
                                         form.estado === 'LIBRE' ? 'bg-green-100 text-green-700 border-green-200' :
                                         form.estado === 'EN USO' ? 'bg-blue-100 text-blue-700 border-blue-200' :
                                         'bg-red-100 text-red-700 border-red-200']">
-                                        {{ form.estado }}
+                                        {{ (form.estado || '').toUpperCase() === 'BORRADOR' ? 'BORRADOR PENDIENTE' : form.estado }}
                                     </span>
                                 </div>
                                 <p class="text-[11px] text-gray-500 mt-1 leading-tight">

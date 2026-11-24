@@ -6,6 +6,7 @@ import ModalAgregarActividad from "./Partials/Actividades/ModalAgregarActividad.
 import ModalEditarActividad from "./Partials/Actividades/ModalEditarActividad.vue";
 import ModalEditar from "./Partials/ModalEditar.vue";
 import ModalEliminar from "./Partials/ModalEliminar.vue";
+import ModalReporteCronograma from "./Partials/ModalReporteCronograma.vue";
 import FeedbackBanner from "@/Components/FeedbackBanner.vue";
 
 const props = defineProps({
@@ -22,6 +23,7 @@ const props = defineProps({
 const page = usePage();
 const searchQuery = ref("");
 const showUpcomingOnly = ref(false);
+const isReportModalOpen = ref(false);
 
 const isAddModalOpen = ref(false);
 const isEditModalOpen = ref(false);
@@ -386,6 +388,18 @@ const groupedItems = computed(() => {
                                 <span>{{ showUpcomingOnly ? 'Ver todas' : 'Actividades próximas' }}</span>
                             </button>
 
+                            <!-- Descargar cronograma PDF -->
+                            <button 
+                                @click="isReportModalOpen = true"
+                                class="w-full sm:w-auto px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 border bg-red-600 text-white hover:bg-red-700 shadow-sm"
+                                title="Descargar cronograma PDF"
+                            >
+                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <span>Descargar cronograma PDF</span>
+                            </button>
+
                             <!-- Agregar actividad -->
                             <button 
                                 @click="openAddModal"
@@ -545,6 +559,12 @@ const groupedItems = computed(() => {
             :loading="isDeletingItem"
             @close="isDeleteModalOpen = false"
             @confirm="handleDeleteItem"
+        />
+
+        <ModalReporteCronograma
+            :show="isReportModalOpen"
+            :plan="plan"
+            @close="isReportModalOpen = false"
         />
     </AppLayout>
 </template>

@@ -54,4 +54,8 @@ return [
         ],
     ],
 
+    'agente' => [
+        'token' => env('AGENT_API_TOKEN', 'ugel_agente_hardware_secret_token_2026'),
+    ],
+
 ];

@@ -14,23 +14,49 @@
             color: #333;
         }
         .header {
-            text-align: center;
             margin-bottom: 15px;
         }
-        .header h1 {
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none !important;
+            margin-top: 0 !important;
+            table-layout: auto !important;
+        }
+        .header-table td {
+            border: none !important;
+            padding: 0 !important;
+            vertical-align: middle;
+        }
+        .header-logo {
+            width: 160px;
+            text-align: left;
+        }
+        .header-logo img {
+            max-height: 52px;
+            max-width: 150px;
+            height: auto;
+        }
+        .header-titles {
+            text-align: center;
+        }
+        .header-titles h1 {
             color: #8B0000; /* ugel-guinda */
             margin: 0;
             font-size: 20px;
         }
-        .header h2 {
+        .header-titles h2 {
             margin: 4px 0;
             color: #1e293b;
             font-size: 13px;
         }
-        .header p {
+        .header-titles p {
             margin: 2px 0;
             color: #64748b;
             font-size: 9px;
+        }
+        .header-spacer {
+            width: 160px;
         }
         table {
             width: 100%;
@@ -71,11 +97,38 @@
     </style>
 </head>
 <body>
+@php
+    $logoBase64 = '';
+    $possiblePaths = [
+        public_path('images/logo_ugel.png'),
+        public_path('logo_ugel.png'),
+        'C:/Users/WilsonE/Documents/Ugel-huanuco.png',
+        'C:/Users/WilsonE/Documents/Ugel-huanuco',
+    ];
+    foreach ($possiblePaths as $path) {
+        if (file_exists($path) && is_file($path)) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($path));
+            break;
+        }
+    }
+@endphp
 
     <div class="header">
-        <h1>Inventario UGEL</h1>
-        <h2>{{ $titulo ?? 'Reporte General de Equipos' }}</h2>
-        <p>Fecha de generación: {{ date('d/m/Y H:i:s') }}</p>
+        <table class="header-table">
+            <tr>
+                <td class="header-logo">
+                    @if(!empty($logoBase64))
+                        <img src="{{ $logoBase64 }}" alt="Logo UGEL Huánuco">
+                    @endif
+                </td>
+                <td class="header-titles">
+                    <h1>Inventario UGEL</h1>
+                    <h2>{{ $titulo ?? 'Reporte General de Equipos' }}</h2>
+                    <p>Fecha de generación: {{ date('d/m/Y H:i:s') }}</p>
+                </td>
+                <td class="header-spacer"></td>
+            </tr>
+        </table>
     </div>
 
     <table>

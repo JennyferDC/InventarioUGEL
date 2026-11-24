@@ -30,6 +30,7 @@ Route::match(['get', 'head'], '/Henrry', function () {
 });
 
 Route::get('/cronograma-mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'publicShow'])->name('mantenimiento.public');
+Route::get('/descargas/agente-inventario', [\App\Http\Controllers\AgenteHardwareController::class, 'descargarAgente'])->name('agente.descargar');
 
 Route::middleware([
     'auth:sanctum',
@@ -65,6 +66,7 @@ Route::middleware([
         Route::get('/{equipo}', [EquipoController::class, 'show'])->name('equipos.show');
         Route::put('/{equipo}', [EquipoController::class, 'update'])->name('equipos.update');
         Route::post('/{equipo}/programas', [EquipoController::class, 'updateProgramas'])->name('equipos.updateProgramas');
+        Route::post('/{equipo}/confirmar-borrador', [\App\Http\Controllers\AgenteHardwareController::class, 'confirmarBorrador'])->name('equipos.confirmarBorrador');
         Route::delete('/{equipo}', [EquipoController::class, 'destroy'])->name('equipos.destroy');
         Route::get('/{equipo}/historial', [HistorialMovimientoController::class, 'getHistorial'])->name('equipos.historial');
         Route::post('/{equipo}/comentarios', [ComentarioEquipoController::class, 'store'])->name('equipos.comentarios.store');
@@ -84,6 +86,7 @@ Route::middleware([
     Route::get('/mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'index'])->name('mantenimiento.index');
     Route::post('/mantenimiento', [App\Http\Controllers\CronogramaMantenimientoController::class, 'store'])->name('mantenimiento.store');
     Route::get('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'show'])->name('mantenimiento.show');
+    Route::match(['get', 'post'], '/mantenimiento/{mantenimiento}/pdf', [App\Http\Controllers\CronogramaMantenimientoController::class, 'pdf'])->name('mantenimiento.pdf');
     Route::put('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'update'])->name('mantenimiento.update');
     Route::delete('/mantenimiento/{mantenimiento}', [App\Http\Controllers\CronogramaMantenimientoController::class, 'destroy'])->name('mantenimiento.destroy');
     

@@ -10,20 +10,45 @@
             color: #333;
         }
         .header {
-            text-align: center;
             margin-bottom: 30px;
             border-bottom: 2px solid #8B0000;
             padding-bottom: 15px;
         }
-        .header h1 {
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none !important;
+            margin: 0 !important;
+        }
+        .header-table td {
+            border: none !important;
+            padding: 0 !important;
+            vertical-align: middle;
+        }
+        .header-logo {
+            width: 130px;
+            text-align: left;
+        }
+        .header-logo img {
+            max-height: 55px;
+            max-width: 125px;
+            height: auto;
+        }
+        .header-titles {
+            text-align: center;
+        }
+        .header-titles h1 {
             color: #8B0000; /* ugel-guinda */
             margin: 0 0 5px 0;
             font-size: 26px;
         }
-        .header h2 {
+        .header-titles h2 {
             margin: 0;
             color: #333;
             font-size: 18px;
+        }
+        .header-spacer {
+            width: 130px;
         }
         .section-title {
             background-color: #0f172a; /* ugel-azul */
@@ -60,11 +85,38 @@
     </style>
 </head>
 <body>
+@php
+    $logoBase64 = '';
+    $possiblePaths = [
+        public_path('images/logo_ugel.png'),
+        public_path('logo_ugel.png'),
+        'C:/Users/WilsonE/Documents/Ugel-huanuco.png',
+        'C:/Users/WilsonE/Documents/Ugel-huanuco',
+    ];
+    foreach ($possiblePaths as $path) {
+        if (file_exists($path) && is_file($path)) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($path));
+            break;
+        }
+    }
+@endphp
 
     <div class="header">
-        <h1>Inventario UGEL</h1>
-        <h2>Ficha Técnica de Equipo</h2>
-        <p style="color: #666; margin-top: 5px; font-size: 11px;">Impreso el: {{ date('d/m/Y H:i') }}</p>
+        <table class="header-table">
+            <tr>
+                <td class="header-logo">
+                    @if(!empty($logoBase64))
+                        <img src="{{ $logoBase64 }}" alt="Logo UGEL Huánuco">
+                    @endif
+                </td>
+                <td class="header-titles">
+                    <h1>Inventario UGEL</h1>
+                    <h2>Ficha Técnica de Equipo</h2>
+                    <p style="color: #666; margin-top: 5px; font-size: 11px;">Impreso el: {{ date('d/m/Y H:i') }}</p>
+                </td>
+                <td class="header-spacer"></td>
+            </tr>
+        </table>
     </div>
 
     <div class="section-title">Información General</div>

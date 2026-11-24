@@ -247,8 +247,40 @@ const handleSubmit = () => {
 
 const currentUrl = computed(() => window.location.href);
 
+const confirmingDraft = ref(false);
+
+const confirmarBorradorDirecto = async () => {
+    if (!form.cod_patrimonial && !confirm("¿Desea confirmar el equipo y pasarlo a OPERATIVO sin asignarle un Código Patrimonial todavía?")) {
+        return;
+    }
+    confirmingDraft.value = true;
+    try {
+        const response = await axios.post(route('equipos.confirmarBorrador', form.id), {
+            cod_patrimonial: form.cod_patrimonial || null,
+            clasificacion: form.clasificacion || 'BUENO',
+            estado: form.id_persona ? 'EN USO' : 'LIBRE',
+        });
+        if (response.data && response.data.success) {
+            form.estado = response.data.data.estado;
+            showSuccess.value = true;
+            setTimeout(() => {
+                showSuccess.value = false;
+            }, 3000);
+            if (showHistorialDrawer.value) {
+                fetchHistorial();
+            }
+        }
+    } catch (e) {
+        alert(e.response?.data?.message || 'Error al confirmar el equipo en borrador.');
+    } finally {
+        confirmingDraft.value = false;
+    }
+};
+
 const getEstadoClass = (estado) => {
-    switch (estado) {
+    switch ((estado || '').toUpperCase()) {
+        case "BORRADOR":
+            return "bg-amber-100 text-amber-900 border border-amber-300 font-bold";
         case "LIBRE":
             return "bg-green-100 text-green-800";
         case "EN USO":
@@ -616,6 +648,41 @@ const onProgramasSaved = (nuevosProgramas) => {
                         </div>
                     </div>
                 </transition>
+
+                <!-- Banner de confirmación para Equipos en BORRADOR -->
+                <div 
+                    v-if="(form.estado || '').toUpperCase() === 'BORRADOR'" 
+                    class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                >
+                    <div class="flex items-start gap-3">
+                        <div class="rounded-lg bg-amber-500 text-white p-2 mt-0.5 shrink-0 shadow-xs">
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-amber-900">Equipo Registrado en Estado BORRADOR (Agente USB)</h3>
+                            <p class="text-xs text-amber-800 mt-0.5 leading-relaxed">
+                                Este equipo fue capturado automáticamente. Revise la ficha técnica prellenada, asigne el código patrimonial administrativo si corresponde y confirme su pase al estado operativo.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        :disabled="confirmingDraft"
+                        @click="confirmarBorradorDirecto"
+                        class="shrink-0 inline-flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2 text-xs sm:text-sm font-bold shadow-md transition disabled:opacity-50"
+                    >
+                        <svg v-if="!confirmingDraft" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <svg v-else class="animate-spin size-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        {{ confirmingDraft ? 'Confirmando...' : 'Confirmar y Pasar a Operativo' }}
+                    </button>
+                </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
